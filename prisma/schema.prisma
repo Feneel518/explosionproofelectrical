@@ -13,43 +13,27 @@ datasource db {
   provider = "postgresql"
 }
 
-//enums
-enum UserRole {
-  USER
-  ADMIN
-  STAFF
-  OWNER
-  MANAGER
-}
-
-model Post {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  title   String
-  content String?
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-
-  @@map("posts")
+// enums
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
 }
 
 model User {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  role      UserRole @default(USER)
 
   email         String  @unique
   emailVerified Boolean
   name          String?
   image         String?
 
-  accounts Account[]
-  sessions Session[]
-  posts    Post[]
+  accounts          Account[]
+  sessions          Session[]
+  customerCreatedBy Customer[] @relation("CustomerCreatedBy")
+  customerDeletedBy Customer[] @relation("CustomerDeletedBy")
+  customerUpdatedBy Customer[] @relation("CustomerUpdatedBy")
 
   @@map("users")
 }
@@ -101,4 +85,44 @@ model Verification {
   expiresAt  DateTime
 
   @@map("verifications")
+}
+
+// Customer
+model Customer {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyName  String
+  companyEmail String?
+  companyPhone String?
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  country      String
+  pincode      String
+  gstin        String?
+
+  status CustomerStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("CustomerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // optional: who created / last updated
+  createdById String?
+  createdBy   User?   @relation("CustomerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("CustomerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([companyName])
+  @@index([companyPhone])
+  @@index([companyEmail])
+  @@index([gstin])
+  @@index([city])
+  @@index([status])
+  @@index([deletedAt])
 }

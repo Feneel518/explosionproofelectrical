@@ -9,10 +9,10 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "./ui/field";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Spinner } from "./ui/spinner";
+} from "../ui/field";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import Link from "next/link";
 import { toast } from "sonner";
 import { sendVerificationEmail } from "@/lib/auth/authClient";

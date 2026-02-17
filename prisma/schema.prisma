@@ -19,6 +19,8 @@ enum CustomerStatus {
   INACTIVE
 }
 
+//enums
+
 model User {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -34,6 +36,7 @@ model User {
   customerCreatedBy Customer[] @relation("CustomerCreatedBy")
   customerDeletedBy Customer[] @relation("CustomerDeletedBy")
   customerUpdatedBy Customer[] @relation("CustomerUpdatedBy")
+ 
 
   @@map("users")
 }

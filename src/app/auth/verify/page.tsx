@@ -1,4 +1,4 @@
-import SendVerificationMail from "@/components/send-verificatopn-mail";
+import SendVerificationMail from "@/components/auth/send-verificatopn-mail";
 import { redirect } from "next/navigation";
 import { FC } from "react";
 

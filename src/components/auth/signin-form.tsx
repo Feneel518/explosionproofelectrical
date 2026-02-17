@@ -10,9 +10,9 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "./ui/field";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+} from "../ui/field";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import Link from "next/link";
 import {
   loginValidator,
@@ -21,7 +21,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "@/lib/auth/authClient";
 import { toast } from "sonner";
-import { Spinner } from "./ui/spinner";
+import { Spinner } from "../ui/spinner";
 import { useRouter } from "next/navigation";
 import { signInEmailAction } from "@/lib/actions/auth/sign-in-email.action";
 
@@ -67,7 +67,7 @@ const SigninForm: FC<SigninFormProps> = ({}) => {
         },
         onError: (ctx) => {
           toast.error(
-            ctx.error.message || "Something went wrong with Google Sign-In"
+            ctx.error.message || "Something went wrong with Google Sign-In",
           );
         },
       },

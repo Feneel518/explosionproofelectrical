@@ -21,7 +21,7 @@ import { signUp } from "@/lib/auth/authClient";
 import { toast } from "sonner";
 import Link from "next/link";
 import React from "react";
-import { Spinner } from "./ui/spinner";
+import { Spinner } from "../ui/spinner";
 import { useRouter } from "next/navigation";
 import { signUpEmailAction } from "@/lib/actions/auth/sign-up-email.action";
 

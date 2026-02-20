@@ -51,7 +51,7 @@ export default function CustomersToolbar({ qp }: { qp: CustomersQP }) {
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-      <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+      <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center max-md:grid max-md:grid-cols-2">
         <Input
           className="md:max-w-sm"
           value={search}

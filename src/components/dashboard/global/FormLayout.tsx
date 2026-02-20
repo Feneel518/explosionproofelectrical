@@ -44,9 +44,9 @@ const FormLayout: FC<FormLayoutProps> = ({
         <>
           <Separator />
           <CardFooter className="flex flex-col items-end gap-2 p-5 md:p-6">
-            <div className="flex  w-full justify-between gap-2">
+            <div className="flex  w-full justify-between gap-2 ">
               {footerHint ? (
-                <div className="text-xs text-muted-foreground w-full ">
+                <div className="text-xs text-muted-foreground w-full max-md:hidden ">
                   {footerHint}
                 </div>
               ) : null}

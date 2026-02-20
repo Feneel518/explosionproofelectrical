@@ -19,6 +19,26 @@ enum CustomerStatus {
   INACTIVE
 }
 
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductMediaKind {
+  IMAGE
+  DRAWING
+}
+
+enum NewsletterStatus {
+  SUBSCRIBED
+  UNSUBSCRIBED
+}
+
 //enums
 
 model User {
@@ -31,12 +51,15 @@ model User {
   name          String?
   image         String?
 
-  accounts          Account[]
-  sessions          Session[]
-  customerCreatedBy Customer[] @relation("CustomerCreatedBy")
-  customerDeletedBy Customer[] @relation("CustomerDeletedBy")
-  customerUpdatedBy Customer[] @relation("CustomerUpdatedBy")
- 
+  accounts            Account[]
+  sessions            Session[]
+  customerCreatedBy   Customer[] @relation("CustomerCreatedBy")
+  customerDeletedBy   Customer[] @relation("CustomerDeletedBy")
+  customerUpdatedBy   Customer[] @relation("CustomerUpdatedBy")
+  categoriesCreatedBY Category[] @relation("CategoryCreatedBy")
+  categoriesDeletedBy Category[] @relation("CategoryDeletedBy")
+  categoriesUpdatedBY Category[] @relation("CategoryUpdatedBy")
+  productDeletedBy    Product[]  @relation("ProductDeletedBy")
 
   @@map("users")
 }
@@ -118,8 +141,9 @@ model Customer {
   createdById String?
   createdBy   User?   @relation("CustomerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
-  updatedById String?
-  updatedBy   User?   @relation("CustomerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedById          String?
+  updatedBy            User?                 @relation("CustomerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  newsletterSubscriber NewsletterSubscriber?
 
   @@index([companyName])
   @@index([companyPhone])
@@ -128,4 +152,194 @@ model Customer {
   @@index([city])
   @@index([status])
   @@index([deletedAt])
+}
+
+// Category
+model Category {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  slug        String  @unique
+  description String?
+
+  status CategoryStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("CategoryDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // optional: who created / last updated
+  createdById String?
+  createdBy   User?   @relation("CategoryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("CategoryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  products Product[]
+
+  @@index([status])
+  @@index([name])
+  @@map("categories")
+}
+
+// Product
+model Product {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Identity
+  name String // "FLP/WP Well Glass"
+  slug String @unique
+
+  flpType    String?
+  protection String?
+  gasGroup   String?
+  material   String?
+  finish     String?
+  hardware   String?
+  hsnCode    String?
+  zones      String[] // Zone-1 & Zone-2
+
+  // SEO / Website (safe to keep here; can be used later)
+  shortDesc String?
+  longDesc  String?
+
+  // Relations
+  variants ProductVariant[]
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  // Soft controls
+  status ProductStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ProductDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([name, slug])
+  @@index([categoryId])
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Identity
+  variant    String
+  sku        String? @unique
+  typeNumber String?
+
+  // Technical specs (variant-specific)
+  rating     String? // "45W"
+  terminals  String?
+  gasket     String?
+  mounting   String?
+  cableEntry String?
+  earthing   String? // ✅ fix spelling (was earting)
+
+  // Dimensions / mechanical (optional, keep as String for flexibility)
+  cutoutSize String?
+  plateSize  String?
+  size       String?
+  glass      String?
+  wireGuard  String?
+
+  // Motor-related variants (optional)
+  rpm        String?
+  kW         String?
+  horsePower String?
+
+  // ✅ Media (ONLY in variant)
+  images   ProductMedia[] @relation("VariantImages")
+  drawings ProductMedia[] @relation("VariantDrawings")
+
+  // ✅ Components (ONLY in variant)
+  components ProductComponentsOnVariants[]
+
+  // General
+  status ProductStatus @default(ACTIVE)
+
+  @@unique([productId, variant])
+  @@index([productId])
+  @@index([variant])
+}
+
+model ProductMedia {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ✅ Two separate optional relations
+  imageVariantId String?
+  imageVariant   ProductVariant? @relation("VariantImages", fields: [imageVariantId], references: [id], onDelete: Cascade)
+
+  drawingVariantId String?
+  drawingVariant   ProductVariant? @relation("VariantDrawings", fields: [drawingVariantId], references: [id], onDelete: Cascade)
+
+  kind      ProductMediaKind
+  url       String
+  title     String?
+  sortOrder Int              @default(0)
+
+  @@index([kind])
+  @@index([imageVariantId, sortOrder])
+  @@index([drawingVariantId, sortOrder])
+}
+
+model ProductComponent {
+  id   String  @id @default(uuid())
+  item String
+  unit String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants ProductComponentsOnVariants[]
+}
+
+model ProductComponentsOnVariants {
+  id String @id @default(uuid())
+
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  componentId String
+  component   ProductComponent @relation(fields: [componentId], references: [id], onDelete: Restrict)
+
+  @@unique([variantId, componentId])
+  @@index([variantId])
+  @@index([componentId])
+}
+
+// NewsKetter
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email  String           @unique
+  name   String?
+  status NewsletterStatus @default(SUBSCRIBED)
+
+  // where it came from
+  source     String? // "CUSTOMER", "FOOTER_FORM"
+  customerId String?   @unique
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // unsubscribe + compliance-friendly metadata
+  unsubscribedAt DateTime?
+  lastSentAt     DateTime?
+
+  @@index([status])
+  @@index([createdAt])
 }

@@ -113,7 +113,7 @@ export default function CustomersTable({
               items.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell>
-                    <div className="font-medium">
+                    <div className="">
                       <Link
                         className="hover:underline"
                         href={`/dashboard/customers/${c.id}`}>

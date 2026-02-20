@@ -25,8 +25,6 @@ const SendVerificationMail: FC<SendVerificationMailProps> = ({}) => {
   const [isPending, setIsPending] = React.useState(false);
 
   const onSubmit = async (data: any) => {
-    console.log(data);
-
     if (!data.email) return toast.error("Please enter your email");
 
     await sendVerificationEmail({

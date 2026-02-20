@@ -17,7 +17,7 @@ const layout: FC<layoutProps> = ({ children }) => {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
+        <header className="flex h-14 lg:h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1  p-2 cursor-pointer" />
             <Separator
@@ -27,7 +27,7 @@ const layout: FC<layoutProps> = ({ children }) => {
             <DashboardBreadcrumbs></DashboardBreadcrumbs>
           </div>
         </header>
-        <div className="p-8">{children}</div>
+        <div className="p-4 lg:p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

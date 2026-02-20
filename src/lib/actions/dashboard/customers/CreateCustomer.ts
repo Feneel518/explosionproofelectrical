@@ -45,6 +45,27 @@ export const createCustomerAction = async (values: CustomerSchemaRequest) => {
         status: (data.status as any) ?? "ACTIVE",
       },
     });
+    if (data.companyEmail) {
+      const newsLetter = await prisma.newsletterSubscriber.upsert({
+        where: {
+          email: data.companyEmail,
+        },
+        create: {
+          email: data.companyEmail.toLowerCase().trim(),
+          name: data.companyName,
+          status: "SUBSCRIBED",
+          source: "CUSTOMER",
+          customerId: data.id,
+        },
+        update: {
+          status: "SUBSCRIBED",
+          name: data.companyName,
+          source: "CUSTOMER",
+          customerId: data.id,
+          unsubscribedAt: null,
+        },
+      });
+    }
 
     revalidatePath("/dashboard/customers");
     return {

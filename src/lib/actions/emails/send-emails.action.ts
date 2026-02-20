@@ -18,7 +18,7 @@ export const sendEmail = async (
   meta: {
     description: string;
     link: string;
-  }
+  },
 ) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -36,7 +36,6 @@ export const sendEmail = async (
 
     return { error: null };
   } catch (error) {
-    console.log(error);
     return {
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };

@@ -74,7 +74,7 @@ export const updateCustomerAction = async (values: CustomerSchemaRequest) => {
     revalidatePath(`/dashboard/customers/${response.id}`);
     return {
       ok: true,
-      message: "Customer created successfully.",
+      message: "Customer updated successfully.",
     };
   } catch (error: any) {
     return fail(error?.message ?? "Failed to create customer.");

@@ -52,8 +52,8 @@ const data = {
           url: "/dashboard/categories",
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Products",
+          url: "/dashboard/products",
         },
       ],
     },

@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} ${garamond.variable} antialiased font-sans`}>
+        className={`${poppins.variable} ${garamond.variable} antialiased font-sans no-scrollbar`}>
         <NuqsAdapter>
           <TooltipProvider>{children}</TooltipProvider>
         </NuqsAdapter>

@@ -34,7 +34,7 @@ export default function ProductAction({
           <Link href={`/dashboard/products/${id}/edit`}>Edit</Link>
         </DropdownMenuItem>
 
-        {!deletedAt ? (
+        {/* {!deletedAt ? (
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={() =>
@@ -49,7 +49,7 @@ export default function ProductAction({
             }>
             Restore
           </DropdownMenuItem>
-        )}
+        )} */}
       </DropdownMenuContent>
     </DropdownMenu>
   );

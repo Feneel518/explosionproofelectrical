@@ -222,7 +222,7 @@ export async function sendInvoiceDispatchDetailsEmailAction(
     });
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM,
+      from: process.env.SMTP_FROM || process.env.EMAIL_USER,
       to: recipients.join(", "),
       subject,
       html,

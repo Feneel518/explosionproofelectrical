@@ -1,0 +1,1204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// enums
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductMediaKind {
+  IMAGE
+  DRAWING
+}
+
+enum NewsletterStatus {
+  SUBSCRIBED
+  UNSUBSCRIBED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  FOLLOWUP
+  WON
+  LOST
+  EXPIRED
+  CANCELLED
+}
+
+enum LeadPlatform {
+  WHATSAPP
+  PHONE_CALL
+  REDIFFMAIL
+  INFO
+  SALES1
+  EECMINES
+  WEBSITE
+  INDIA_MART
+  TRADE_INDIA
+  DIRECT_VISIT
+  REFERENCE
+  OTHER
+}
+
+enum FollowupOutcome {
+  NO_RESPONSE
+  INTERESTED
+  NEED_DISCOUNT
+  NEED_REVISED_QUOTE
+  POSTPONED
+  LOST_TO_COMPETITOR
+  WON
+  OTHER
+}
+
+enum GST {
+  IGST_18
+  CGST_SGST_18
+  IGST_0_SEZ
+  CGST_SGST_0_SEZ
+  IGST_5
+  CGST_SGST_5
+  IGST_12
+  CGST_SGST_12
+  IGST_28
+  CGST_SGST_28
+  IGST_0_1
+  CGST_SGST_0_1
+}
+
+enum PackingCharges {
+  INCLUDED
+  EXCLUDED
+}
+
+enum PaymentTerms {
+  ADVANCE
+  AGAINST_PERFOMA_INVOICE
+  AGAINST_DELIVERY
+  CREDIT_30
+  CREDIT_60
+  CREDIT_45
+}
+
+enum TransportationPayment {
+  PAID
+  TO_PAY
+}
+
+//enums
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email         String  @unique
+  emailVerified Boolean
+  name          String?
+  image         String?
+
+  accounts                   Account[]
+  sessions                   Session[]
+  customerCreatedBy          Customer[]          @relation("CustomerCreatedBy")
+  customerDeletedBy          Customer[]          @relation("CustomerDeletedBy")
+  customerUpdatedBy          Customer[]          @relation("CustomerUpdatedBy")
+  categoriesCreatedBY        Category[]          @relation("CategoryCreatedBy")
+  categoriesDeletedBy        Category[]          @relation("CategoryDeletedBy")
+  categoriesUpdatedBY        Category[]          @relation("CategoryUpdatedBy")
+  productDeletedBy           Product[]           @relation("ProductDeletedBy")
+  quotationsCreatedBy        Quotation[]         @relation("QuotationCreatedBy")
+  quotationsUpdatedBy        Quotation[]         @relation("QuotationUpdatedBy")
+  quotationsDeletedBy        Quotation[]         @relation("QuotationDeletedBy")
+  quotationFollowups         QuotationFollowup[] @relation("QuotationFollowupCreatedBy")
+  deliveryChallanCreatedBy   DeliveryChallan[]   @relation("DeliveryChallanCreatedBy")
+  deliveryChallanUpdatedBy   DeliveryChallan[]   @relation("DeliveryChallanUpdatedBy")
+  deliveryChallanFinalizedBy DeliveryChallan[]   @relation("DeliveryChallanFinalizedBy")
+  deliveryChallanClosedBy    DeliveryChallan[]   @relation("DeliveryChallanClosedBy")
+  deliveryChallanDeletedBy   DeliveryChallan[]   @relation("DeliveryChallanDeletedBy")
+  salesOrderCreatedBy        SalesOrder[]        @relation("SalesOrderCreatedBy")
+  salesOrderUpdatedBy        SalesOrder[]        @relation("SalesOrderUpdatedBy")
+  salesOrderDeletedBy        SalesOrder[]        @relation("SalesOrderDeletedBy")
+
+  @@map("users")
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Verification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identifier String
+  value      String   @unique
+  expiresAt  DateTime
+
+  @@map("verifications")
+}
+
+// Customer
+model Customer {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyName  String
+  companyEmail String?
+  companyPhone String?
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  country      String
+  pincode      String
+  gstin        String?
+
+  status CustomerStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("CustomerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // optional: who created / last updated
+  createdById String?
+  createdBy   User?   @relation("CustomerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById          String?
+  updatedBy            User?                 @relation("CustomerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  newsletterSubscriber NewsletterSubscriber?
+  quotations           Quotation[]
+  deliveryChallans     DeliveryChallan[]
+  salesOrders          SalesOrder[]
+  invoices             Invoice[]
+
+  @@index([companyName])
+  @@index([companyPhone])
+  @@index([companyEmail])
+  @@index([gstin])
+  @@index([city])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+// Category
+model Category {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  slug        String  @unique
+  description String?
+
+  status CategoryStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("CategoryDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // optional: who created / last updated
+  createdById String?
+  createdBy   User?   @relation("CategoryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("CategoryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  products Product[]
+
+  @@index([status])
+  @@index([name])
+  @@map("categories")
+}
+
+// Product
+model Product {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Identity
+  name String // "FLP/WP Well Glass"
+  slug String @unique
+
+  flpType    String?
+  protection String?
+  gasGroup   String?
+  material   String?
+  finish     String?
+  hardware   String?
+  hsnCode    String?
+  zones      String[] // Zone-1 & Zone-2
+
+  // SEO / Website (safe to keep here; can be used later)
+  shortDesc String?
+  longDesc  String?
+
+  // Relations
+  variants ProductVariant[]
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  // Soft controls
+  status ProductStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt       DateTime?
+  deletedById     String?
+  deletedBy       User?            @relation("ProductDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+  quotationItems  QuotationItem[]
+  salesOrderItems SalesOrderItem[]
+  invoiceItems    InvoiceItem[]
+
+  @@index([name, slug])
+  @@index([categoryId])
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Identity
+  variant    String
+  sku        String? @unique
+  typeNumber String?
+
+  // Technical specs (variant-specific)
+  rating     String? // "45W"
+  terminals  String?
+  gasket     String?
+  mounting   String?
+  cableEntry String?
+  earthing   String? // ✅ fix spelling (was earting)
+
+  // Dimensions / mechanical (optional, keep as String for flexibility)
+  cutoutSize String?
+  plateSize  String?
+  size       String?
+  glass      String?
+  wireGuard  String?
+
+  // Motor-related variants (optional)
+  rpm        String?
+  kW         String?
+  horsePower String?
+
+  // ✅ Media (ONLY in variant)
+  images   ProductMedia[] @relation("VariantImages")
+  drawings ProductMedia[] @relation("VariantDrawings")
+
+  // ✅ Components (ONLY in variant)
+  components ProductComponentsOnVariants[]
+
+  // General
+  status               ProductStatus         @default(ACTIVE)
+  quotationItems       QuotationItem[]
+  deliveryChallanItems DeliveryChallanItem[]
+  salesOrderItems      SalesOrderItem[]
+  invoiceItems         InvoiceItem[]
+
+  @@unique([productId, variant])
+  @@index([productId])
+  @@index([variant])
+}
+
+model ProductMedia {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ✅ Two separate optional relations
+  imageVariantId String?
+  imageVariant   ProductVariant? @relation("VariantImages", fields: [imageVariantId], references: [id], onDelete: Cascade)
+
+  drawingVariantId String?
+  drawingVariant   ProductVariant? @relation("VariantDrawings", fields: [drawingVariantId], references: [id], onDelete: Cascade)
+
+  kind          ProductMediaKind
+  url           String
+  title         String?
+  sortOrder     Int              @default(0)
+  salesOrder    SalesOrder?      @relation(fields: [salesOrderId], references: [id])
+  salesOrderId  String?
+  invoiceItem   InvoiceItem?     @relation(fields: [invoiceItemId], references: [id])
+  invoiceItemId String?
+  invoice       Invoice?         @relation(fields: [invoiceId], references: [id])
+  invoiceId     String?
+
+  @@index([kind])
+  @@index([imageVariantId, sortOrder])
+  @@index([drawingVariantId, sortOrder])
+}
+
+model ProductComponent {
+  id   String  @id @default(uuid())
+  item String
+  unit String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants ProductComponentsOnVariants[]
+}
+
+model ProductComponentsOnVariants {
+  id String @id @default(uuid())
+
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  componentId String
+  component   ProductComponent @relation(fields: [componentId], references: [id], onDelete: Restrict)
+
+  @@unique([variantId, componentId])
+  @@index([variantId])
+  @@index([componentId])
+}
+
+// NewsKetter
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email  String           @unique
+  name   String?
+  status NewsletterStatus @default(SUBSCRIBED)
+
+  // where it came from
+  source     String? // "CUSTOMER", "FOOTER_FORM"
+  customerId String?   @unique
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // unsubscribe + compliance-friendly metadata
+  unsubscribedAt DateTime?
+  lastSentAt     DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Fiscal Counter
+/**
+ * /**
+ * Example keys:
+ * - "QUOTATION:FY2025-26"
+ * - "ORDER:FY2025-26"
+ */
+
+model FiscalCounter {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  key   String @unique
+  value Int    @default(0)
+
+  @@map("fiscal_counters")
+}
+
+model Quotation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ✅ Financial-year based numbering
+  quoteNo Int
+  quoteFy String // "FY2025-26"
+
+  status   QuotationStatus @default(DRAFT)
+  platform LeadPlatform    @default(OTHER)
+
+  // Lead / enquiry context (works even without a Customer)
+  receivedFromName  String?
+  receivedFromPhone String?
+  receivedFromEmail String?
+  enquiryMessage    String?
+
+  // Optional customer link
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  clientName String?
+
+  // Follow-up helper fields (optional but useful for fast table rendering)
+  // Keep these updated in code when followups change
+  nextFollowupAt DateTime?
+  lastFollowupAt DateTime?
+
+  // Conversion to order (1 quote -> 0/1 order)
+  convertedToOrderAt DateTime?
+  // orderId            String? @unique
+  // order              Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Audit + soft delete
+  createdById String?
+  createdBy   User?   @relation("QuotationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("QuotationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("QuotationDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // ✅ Draft snapshot (fast autosave)
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  additionalNotes       String?
+  gst                   GST
+  packingCharges        PackingCharges        @default(INCLUDED)
+  paymentTerms          PaymentTerms          @default(ADVANCE)
+  transportationPayment TransportationPayment @default(TO_PAY)
+  deliveryDate          String?
+
+  discount String?
+
+  // Relations
+  items            QuotationItem[]
+  followups        QuotationFollowup[]
+  deliveryChallans DeliveryChallan[]
+  salesOrders      SalesOrder[]
+
+  @@unique([quoteFy, quoteNo])
+  @@index([createdAt])
+  @@index([status])
+  @@index([platform])
+  @@index([customerId])
+  @@index([quoteFy])
+  @@index([deletedAt])
+  @@index([nextFollowupAt])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  // Optional catalog links
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  // ✅ Snapshot fields (always fill these)
+  title       String // e.g. "FLP Well Glass - 45W - Variant A"
+  sku         String?
+  typeNumber  String?
+  description String?
+  rating      String?
+  terminals   String?
+  hardware    String?
+  gasket      String?
+  mounting    String?
+  cableEntry  String?
+  earthing    String?
+  hsnCode     String?
+  cutoutSize  String?
+  plateSize   String?
+  glass       String?
+  wireGuard   String?
+  variantType String?
+  size        String?
+  rpm         String?
+  kW          String?
+  horsePower  String?
+  poReference String?
+
+  showVariantImages   Boolean? @default(true)
+  showVariantDrawings Boolean? @default(true)
+
+  selectedVariantImageIds   String[]
+  selectedVariantDrawingIds String[]
+
+  variantImagesSnapshot   Json?
+  variantDrawingsSnapshot Json?
+
+  // Pricing
+  qty       Int     @default(1)
+  unit      String? // optional: "Nos", "Set"
+  unitPrice Decimal @default(0) @db.Decimal(12, 2)
+
+  ComponentsOfProductInQuotation ComponentsOfProductInQuotation[]
+
+  sortOrder Int @default(0)
+
+  @@index([quotationId, sortOrder])
+  @@index([productId])
+  @@index([variantId])
+  @@map("quotation_items")
+}
+
+model ComponentsOfProductInQuotation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productInQuotationId String
+  productInQuotation   QuotationItem @relation(fields: [productInQuotationId], references: [id])
+
+  componentsOfQuotation   ComponentsOfQuotation @relation(fields: [componentsOfQuotationId], references: [id])
+  componentsOfQuotationId String
+
+  @@unique([productInQuotationId, componentsOfQuotationId])
+  @@index([productInQuotationId])
+  @@index([componentsOfQuotationId])
+  @@map("quotation_item_components")
+}
+
+model ComponentsOfQuotation {
+  id                             String                           @id @default(uuid())
+  item                           String
+  unit                           String?
+  createdAt                      DateTime                         @default(now())
+  updatedAt                      DateTime                         @updatedAt
+  ComponentsOfProductInQuotation ComponentsOfProductInQuotation[]
+
+  @@index([item])
+}
+
+model QuotationFollowup {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  scheduledAt DateTime
+  doneAt      DateTime?
+
+  outcome FollowupOutcome?
+  note    String?
+
+  createdById String?
+  createdBy   User?   @relation("QuotationFollowupCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([quotationId])
+  @@index([scheduledAt])
+  @@index([doneAt])
+  @@map("quotation_followups")
+}
+
+/**
+ * /**
+ * Delivery Challan
+ */
+
+enum DeliveryChallanType {
+  TO_BE_BILLED
+  JOB_WORK
+  SAMPLE
+  RETURNABLE
+}
+
+enum DeliveryChallanStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_CLOSED
+  CLOSED
+  CANCELLED
+}
+
+enum DeliveryChallanPartyType {
+  CUSTOMER
+  VENDOR
+  OTHER
+}
+
+enum DeliveryChallanItemSourceType {
+  PRODUCT
+  RAW_MATERIAL
+}
+
+model DeliveryChallan {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ✅ Financial-year based numbering
+  challanNo   Int
+  challanFy   String
+  challanCode String @unique // ex: DC/25-26/0001
+
+  type      DeliveryChallanType
+  status    DeliveryChallanStatus    @default(DRAFT)
+  partyType DeliveryChallanPartyType
+
+  date        DateTime  @default(now())
+  issuedAt    DateTime?
+  closedAt    DateTime?
+  cancelledAt DateTime?
+
+  expectedClosureDate DateTime?
+  expectedReturnDate  DateTime?
+
+  // optional PO ref
+  poNumber String?
+
+  // refs
+  quotationId String?
+  quotation   Quotation? @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // Dispatch / transport details
+  transporterName  String?
+  vehicleNumber    String?
+  driverName       String?
+  driverPhone      String?
+  dispatchThrough  String?
+  lrNumber         String?
+  numberOfPackages Int?
+  remarks          String?
+
+  // Closure tracking
+  finalizedAt    DateTime?
+  closureRemarks String?
+
+  // Audit + soft delete
+  createdById String?
+  createdBy   User?   @relation("DeliveryChallanCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("DeliveryChallanUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  finalizedById String?
+  finalizedBy   User?   @relation("DeliveryChallanFinalizedBy", fields: [finalizedById], references: [id], onDelete: SetNull)
+
+  closedById String?
+  closedBy   User?   @relation("DeliveryChallanClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeliveryChallanDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // ✅ Draft snapshot (fast autosave)
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  // Relations
+  items        DeliveryChallanItem[]
+  salesOrder   SalesOrder?           @relation(fields: [salesOrderId], references: [id])
+  salesOrderId String?
+
+  @@unique([challanFy, challanNo])
+  @@index([createdAt])
+  @@index([status])
+  @@index([type])
+  @@index([quotationId])
+  @@index([customerId])
+  @@index([challanFy])
+  @@index([deletedAt])
+  @@index([expectedReturnDate])
+  @@map("delivery_challans")
+}
+
+model DeliveryChallanItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliveryChallanId String
+  deliveryChallan   DeliveryChallan @relation(fields: [deliveryChallanId], references: [id], onDelete: Cascade)
+
+  kind DeliveryChallanItemSourceType
+
+  // Optional finished product link
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: SetNull)
+
+  // Optional raw material link
+  // rawMaterialId String?
+  // rawMaterial   RawMaterial? @relation(fields: [rawMaterialId], references: [id], onDelete: SetNull)
+
+  // ✅ Snapshot fields
+  title       String
+  sku         String?
+  typeNumber  String?
+  description String?
+  hsnCode     String?
+  unit        String?
+
+  qty Int @default(1)
+
+  // Closure / pending tracking
+  closedQty  Int @default(0)
+  pendingQty Int @default(0)
+
+  sortOrder Int @default(0)
+
+  @@index([deliveryChallanId, sortOrder])
+  @@index([productVariantId])
+  // @@index([rawMaterialId])
+  @@map("delivery_challan_items")
+}
+
+/**
+ * /**
+ * Sales Order
+ */
+
+enum SalesOrderStatus {
+  DRAFT
+  CONFIRMED
+  IN_PRODUCTION
+  PARTIALLY_DISPATCHED
+  DISPATCHED
+  PARTIALLY_INVOICED
+  INVOICED
+  COMPLETED
+  CANCELLED
+}
+
+enum SalesOrderSourceType {
+  DIRECT
+  QUOTATION
+  MANUAL
+  IMPORTED
+}
+
+model SalesOrder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Financial-year based numbering
+  orderNo Int
+  orderFy String
+
+  status     SalesOrderStatus     @default(DRAFT)
+  sourceType SalesOrderSourceType @default(DIRECT)
+
+  // Optional quotation link
+  quotationId String?
+  quotation   Quotation? @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+
+  // Optional customer link
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  clientName String?
+
+  // Customer snapshots
+  clientNameSnapshot String?
+  citySnapshot       String?
+  stateSnapshot      String?
+  gstinSnapshot      String?
+
+  // Order / PO context
+  poNumber          String?
+  poFile            ProductMedia[]
+  poDate            DateTime?
+  orderDate         DateTime?
+  receivedFromName  String?
+  receivedFromPhone String?
+  receivedFromEmail String?
+
+  // Commercial fields
+  additionalNotes       String?
+  deliveryDate          String?
+  gst                   GST
+  packingCharges        PackingCharges        @default(INCLUDED)
+  paymentTerms          PaymentTerms          @default(ADVANCE)
+  transportationPayment TransportationPayment @default(TO_PAY)
+  discount              String?
+
+  // Analytics totals
+  subtotal      Decimal @default(0) @db.Decimal(14, 2)
+  discountTotal Decimal @default(0) @db.Decimal(14, 2)
+  taxableTotal  Decimal @default(0) @db.Decimal(14, 2)
+  gstTotal      Decimal @default(0) @db.Decimal(14, 2)
+  grandTotal    Decimal @default(0) @db.Decimal(14, 2)
+
+  // Analytics qty summaries
+  totalItemsCount    Int @default(0)
+  totalOrderedQty    Int @default(0)
+  totalDispatchedQty Int @default(0)
+  totalInvoicedQty   Int @default(0)
+  totalPendingQty    Int @default(0)
+
+  // Progress flags
+  isConvertedFromQuotation Boolean @default(false)
+  isClosed                 Boolean @default(false)
+  isFullyDispatched        Boolean @default(false)
+  isFullyInvoiced          Boolean @default(false)
+  isOverdueForDispatch     Boolean @default(false)
+
+  // Lifecycle dates
+  convertedFromQuotationAt DateTime?
+  confirmedAt              DateTime?
+  productionStartedAt      DateTime?
+  firstDispatchAt          DateTime?
+  lastDispatchAt           DateTime?
+  fullyDispatchedAt        DateTime?
+  firstInvoicedAt          DateTime?
+  fullyInvoicedAt          DateTime?
+  completedAt              DateTime?
+  cancelledAt              DateTime?
+
+  orderVersion  Int       @default(1)
+  lastAmendedAt DateTime?
+
+  // Audit + soft delete
+  createdById String?
+  createdBy   User?   @relation("SalesOrderCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("SalesOrderUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("SalesOrderDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // Draft snapshot
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  // Relations
+  items            SalesOrderItem[]
+  deliveryChallans DeliveryChallan[]
+  invoices         Invoice[]
+
+  @@unique([orderFy, orderNo])
+  @@index([createdAt])
+  @@index([status])
+  @@index([sourceType])
+  @@index([customerId])
+  @@index([quotationId])
+  @@index([orderFy])
+  @@index([deletedAt])
+  @@index([poNumber])
+  @@index([orderDate])
+  @@index([confirmedAt])
+  @@index([completedAt])
+  @@index([clientNameSnapshot])
+  @@map("sales_orders")
+}
+
+model SalesOrderItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salesOrderId String
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  // Optional catalog links
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  // ✅ Snapshot fields
+  title       String
+  sku         String?
+  typeNumber  String?
+  description String?
+  rating      String?
+  terminals   String?
+  hardware    String?
+  gasket      String?
+  mounting    String?
+  cableEntry  String?
+  earthing    String?
+  hsnCode     String?
+  cutoutSize  String?
+  plateSize   String?
+  glass       String?
+  wireGuard   String?
+  variantType String?
+  size        String?
+  rpm         String?
+  kW          String?
+  horsePower  String?
+  poReference String?
+
+  showVariantImages   Boolean? @default(true)
+  showVariantDrawings Boolean? @default(true)
+
+  selectedVariantImageIds   String[]
+  selectedVariantDrawingIds String[]
+
+  variantImagesSnapshot   Json?
+  variantDrawingsSnapshot Json?
+
+  // Pricing
+  qty       Int     @default(1)
+  unit      String?
+  unitPrice Decimal @default(0) @db.Decimal(12, 2)
+
+  // Dispatch / billing progress
+  dispatchedQty Int @default(0)
+  invoicedQty   Int @default(0)
+  pendingQty    Int @default(0)
+
+  ComponentsOfProductInSalesOrder ComponentsOfProductInSalesOrder[]
+
+  lineSubtotal   Decimal @default(0) @db.Decimal(14, 2)
+  lineGstTotal   Decimal @default(0) @db.Decimal(14, 2)
+  lineGrandTotal Decimal @default(0) @db.Decimal(14, 2)
+
+  sortOrder    Int           @default(0)
+  invoiceItems InvoiceItem[]
+
+  @@index([salesOrderId, sortOrder])
+  @@index([productId])
+  @@index([variantId])
+  @@map("sales_order_items")
+}
+
+model ComponentsOfProductInSalesOrder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salesOrderItemId String
+  salesOrderItem   SalesOrderItem @relation(fields: [salesOrderItemId], references: [id], onDelete: Cascade)
+
+  item String
+  unit String?
+  qty  String?
+
+  sortOrder Int @default(0)
+
+  @@index([salesOrderItemId, sortOrder])
+  @@map("components_of_product_in_sales_order")
+}
+
+/**
+ * /**
+ * Invoice Order
+ */
+
+enum InvoiceStatus {
+  DRAFT
+  FINALIZED
+  CANCELLED
+}
+
+model Invoice {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoiceNo Int
+  invoiceFy String
+
+  status InvoiceStatus @default(DRAFT)
+
+  invoiceDate DateTime @default(now())
+
+  salesOrderId String
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  poNumber     String?
+  poDate       DateTime?
+  draftData    Json?
+  draftVersion Int       @default(1)
+
+  clientNameSnapshot String?
+  citySnapshot       String?
+  stateSnapshot      String?
+  gstinSnapshot      String?
+
+  dispatchDate    DateTime?
+  transporterName String?
+  vehicleNumber   String?
+  driverName      String?
+  driverPhone     String?
+  dispatchThrough String?
+  lrNumber        String?
+  remarks         String?
+  ewayBill        String?
+
+  totalPackages Int            @default(0)
+  lrCopy        ProductMedia[]
+
+  emailedAt    DateTime?
+  emailedTo    String?
+  emailCc      String?
+  emailSubject String?
+
+  subtotal                  Decimal @default(0) @db.Decimal(14, 2)
+  discountTotal             Decimal @default(0) @db.Decimal(14, 2)
+  taxableTotal              Decimal @default(0) @db.Decimal(14, 2)
+  gstTotal                  Decimal @default(0) @db.Decimal(14, 2)
+  grandTotal                Decimal @default(0) @db.Decimal(14, 2)
+  salesOrderVersionSnapshot Int?
+
+  items    InvoiceItem[]
+  packages InvoicePackage[]
+
+  @@unique([invoiceFy, invoiceNo])
+  @@index([salesOrderId])
+  @@index([customerId])
+  @@index([invoiceDate])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  salesOrderItemId String
+  salesOrderItem   SalesOrderItem @relation(fields: [salesOrderItemId], references: [id], onDelete: Restrict)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  title        String
+  sku          String?
+  typeNumber   String?
+  description  String?
+  hsnCode      String?
+  unit         String?
+  cimfrNumber  String?
+  pesoNumber   String?
+  serialNumber String?
+
+  productPicture ProductMedia[]
+
+  orderedQty        Int @default(0)
+  alreadyInvoiced   Int @default(0)
+  qty               Int @default(1)
+  alreadyDispatched Int @default(0)
+
+  unitPrice      Decimal @default(0) @db.Decimal(12, 2)
+  lineSubtotal   Decimal @default(0) @db.Decimal(14, 2)
+  lineGstTotal   Decimal @default(0) @db.Decimal(14, 2)
+  lineGrandTotal Decimal @default(0) @db.Decimal(14, 2)
+
+  sortOrder    Int                  @default(0)
+  packageItems InvoicePackageItem[]
+
+  @@index([invoiceId, sortOrder])
+  @@index([salesOrderItemId])
+  @@map("invoice_items")
+}
+
+model InvoicePackage {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  packageNo   String
+  packageType String? // Box / Carton / Crate / Wooden Box
+  label       String? // optional display label
+  remarks     String?
+
+  grossWeight Decimal? @db.Decimal(12, 3)
+  netWeight   Decimal? @db.Decimal(12, 3)
+
+  sortOrder Int @default(0)
+
+  items InvoicePackageItem[]
+
+  @@index([invoiceId, sortOrder])
+  @@map("invoice_packages")
+}
+
+model InvoicePackageItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoicePackageId String
+  invoicePackage   InvoicePackage @relation(fields: [invoicePackageId], references: [id], onDelete: Cascade)
+
+  invoiceItemId String
+  invoiceItem   InvoiceItem @relation(fields: [invoiceItemId], references: [id], onDelete: Cascade)
+
+  qty Int @default(1)
+
+  remarks String?
+
+  @@unique([invoicePackageId, invoiceItemId])
+  @@index([invoicePackageId])
+  @@index([invoiceItemId])
+  @@map("invoice_package_items")
+}

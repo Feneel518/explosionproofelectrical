@@ -1208,6 +1208,11 @@ model Invoice {
   emailCc      String?
   emailSubject String?
 
+  paymentReceived           Boolean  @default(false)
+  paymentReceivedAt         DateTime?
+  paymentReminderLastSentAt DateTime?
+  paymentReminderCount      Int      @default(0)
+
   subtotal                  Decimal @default(0) @db.Decimal(14, 2)
   discountTotal             Decimal @default(0) @db.Decimal(14, 2)
   taxableTotal              Decimal @default(0) @db.Decimal(14, 2)

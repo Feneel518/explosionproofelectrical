@@ -239,7 +239,8 @@ const formSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["packages", pkgIndex, "items", itemIndex, "qty"],
-            message: "Package allocation item must be selected in invoice items",
+            message:
+              "Package allocation item must be selected in invoice items",
           });
           return;
         }
@@ -276,7 +277,7 @@ function toDate(value?: string | Date | null) {
 
 function displayValue(
   value: string | number | null | undefined,
-  placeholder = "â€”",
+  placeholder = "-",
 ) {
   if (value === null || value === undefined) return placeholder;
   if (typeof value === "string" && value.trim() === "") return placeholder;
@@ -401,8 +402,9 @@ function buildInvoiceDraftPayload(values: FormValues) {
             qty: safeQty,
           };
         })
-        .filter((pkgItem): pkgItem is { salesOrderItemId: string; qty: number } =>
-          Boolean(pkgItem),
+        .filter(
+          (pkgItem): pkgItem is { salesOrderItemId: string; qty: number } =>
+            Boolean(pkgItem),
         );
 
       const grossWeight = trimOrNull(pkg.grossWeight)
@@ -586,7 +588,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
             const salesOrderItemId =
               salesOrderItemIdDirect ??
               (draftItemId
-                ? draftItemIdToSalesOrderItemId.get(draftItemId) ?? null
+                ? (draftItemIdToSalesOrderItemId.get(draftItemId) ?? null)
                 : null);
 
             if (!salesOrderItemId) return null;
@@ -730,7 +732,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     }
   }
 
-  function getPackageAllocationQty(packageIndex: number, salesOrderItemId: string) {
+  function getPackageAllocationQty(
+    packageIndex: number,
+    salesOrderItemId: string,
+  ) {
     const packageRows = packages ?? [];
     const packageRow = packageRows[packageIndex];
     if (!packageRow) return 0;
@@ -748,7 +753,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     qty: number,
     maxQty: number,
   ) {
-    const safeQty = Math.max(0, Math.min(Number(qty || 0), Number(maxQty || 0)));
+    const safeQty = Math.max(
+      0,
+      Math.min(Number(qty || 0), Number(maxQty || 0)),
+    );
     const existing = form.getValues(`packages.${packageIndex}.items`) ?? [];
 
     const next = [...existing];
@@ -1835,16 +1843,21 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                 className="grid gap-3 rounded-lg border p-3 md:grid-cols-[1fr_140px_140px] md:items-center">
                                 <div>
                                   <div className="text-sm font-medium">
-                                    {displayValue(item.title, "Untitled Product")}
+                                    {displayValue(
+                                      item.title,
+                                      "Untitled Product",
+                                    )}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    Invoice Qty: {maxQty} {displayValue(item.unit, "Nos")}
+                                    Invoice Qty: {maxQty}{" "}
+                                    {displayValue(item.unit, "Nos")}
                                   </div>
                                 </div>
 
                                 <div className="text-xs text-muted-foreground">
                                   Allocated Total:{" "}
-                                  {totalAllocatedForItem(item.salesOrderItemId)} / {maxQty}
+                                  {totalAllocatedForItem(item.salesOrderItemId)}{" "}
+                                  / {maxQty}
                                 </div>
 
                                 <Input
@@ -1889,7 +1902,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                           invoice.invoiceFy,
                           form.watch("header.invoiceNo"),
                         )
-                      : "â€”"}
+                      : "-"}
                   </span>
                 </div>
 
@@ -1925,4 +1938,3 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     </div>
   );
 }
-

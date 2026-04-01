@@ -50,6 +50,19 @@ const page: FC<PageProps> = async ({ params }) => {
       invoice.salesOrder?.gstinSnapshot ||
       invoice.salesOrder?.customer?.gstin ||
       null,
+    addressLine1: invoice.salesOrder?.customer?.addressLine1 || null,
+    addressLine2: invoice.salesOrder?.customer?.addressLine2 || null,
+    countrySnapshot: invoice.salesOrder?.customer?.country || null,
+    pincodeSnapshot: invoice.salesOrder?.customer?.pincode || null,
+    contactNameSnapshot: invoice.salesOrder?.receivedFromName || null,
+    contactPhoneSnapshot:
+      invoice.salesOrder?.receivedFromPhone ||
+      invoice.salesOrder?.customer?.companyPhone ||
+      null,
+    contactEmailSnapshot:
+      invoice.salesOrder?.receivedFromEmail ||
+      invoice.salesOrder?.customer?.companyEmail ||
+      null,
     poNumber: invoice.poNumber || invoice.salesOrder?.poNumber || null,
     poDate: invoice.poDate || invoice.salesOrder?.poDate || null,
   };

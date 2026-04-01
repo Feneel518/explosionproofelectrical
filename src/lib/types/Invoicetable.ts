@@ -7,6 +7,7 @@ export const invoiceListSelect = {
   status: true,
 
   invoiceDate: true,
+  dispatchDate: true,
 
   customerId: true,
   customer: {
@@ -23,6 +24,7 @@ export const invoiceListSelect = {
       orderNo: true,
       orderFy: true,
       status: true,
+      paymentTerms: true,
     },
   },
 
@@ -37,6 +39,10 @@ export const invoiceListSelect = {
   grandTotal: true,
 
   emailedAt: true,
+  paymentReceived: true,
+  paymentReceivedAt: true,
+  paymentReminderLastSentAt: true,
+  paymentReminderCount: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.InvoiceSelect;

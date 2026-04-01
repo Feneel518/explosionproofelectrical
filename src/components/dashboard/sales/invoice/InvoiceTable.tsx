@@ -25,6 +25,7 @@ import { InvoiceStatus } from "@prisma/client";
 import InvoiceToolbar from "./InvoiceToolbar";
 import { InvoiceListItem } from "@/lib/types/Invoicetable";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import { getPaymentReminderState } from "@/lib/helpers/globalHelpers/invoicePaymentReminder";
 
 interface InvoiceTableProps {
   items: InvoiceListItem[];
@@ -66,6 +67,21 @@ function statusBadgeVariant(status: string) {
     default:
       return "secondary";
   }
+}
+
+function paymentBadgeVariant({
+  isPaid,
+  isOverdue,
+  isDueToday,
+}: {
+  isPaid: boolean;
+  isOverdue: boolean;
+  isDueToday: boolean;
+}) {
+  if (isPaid) return "default";
+  if (isOverdue) return "destructive";
+  if (isDueToday) return "outline";
+  return "secondary";
 }
 
 const InvoiceTable: FC<InvoiceTableProps> = ({
@@ -119,6 +135,12 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
               inv.customer?.companyName ||
               inv.clientNameSnapshot ||
               "Unnamed Client";
+            const paymentState = getPaymentReminderState({
+              paymentTerms: inv.salesOrder?.paymentTerms ?? null,
+              invoiceDate: inv.invoiceDate,
+              dispatchDate: inv.dispatchDate,
+              paymentReceived: inv.paymentReceived,
+            });
 
             return (
               <div key={inv.id} className="rounded-xl border bg-card p-4">
@@ -171,6 +193,10 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                     <div className="text-xs text-muted-foreground">Email</div>
                     <div>{inv.emailedAt ? "Sent" : "Not sent"}</div>
                   </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Payment</div>
+                    <div>{paymentState.statusText}</div>
+                  </div>
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
@@ -195,6 +221,7 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
               <TableHead className="text-white">Order</TableHead>
               <TableHead className="text-white">PO</TableHead>
               <TableHead className="text-white">Value</TableHead>
+              <TableHead className="text-white">Payment</TableHead>
               <TableHead className="text-white">Email</TableHead>
               <TableHead className="w-[120px] text-right text-white">
                 Actions
@@ -206,7 +233,7 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
             {items.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={9}
                   className="py-10 text-center text-sm text-muted-foreground">
                   No invoices found.
                 </TableCell>
@@ -217,6 +244,12 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                   inv.customer?.companyName ||
                   inv.clientNameSnapshot ||
                   "Unnamed Client";
+                const paymentState = getPaymentReminderState({
+                  paymentTerms: inv.salesOrder?.paymentTerms ?? null,
+                  invoiceDate: inv.invoiceDate,
+                  dispatchDate: inv.dispatchDate,
+                  paymentReceived: inv.paymentReceived,
+                });
 
                 return (
                   <TableRow key={inv.id}>
@@ -270,6 +303,19 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                     </TableCell>
 
                     <TableCell>{formatCurrency(inv.grandTotal)}</TableCell>
+
+                    <TableCell>
+                      <Badge
+                        variant={
+                          paymentBadgeVariant({
+                            isPaid: paymentState.isPaid,
+                            isOverdue: paymentState.isOverdue,
+                            isDueToday: paymentState.isDueToday,
+                          }) as any
+                        }>
+                        {paymentState.statusText}
+                      </Badge>
+                    </TableCell>
 
                     <TableCell>
                       {inv.emailedAt ? (

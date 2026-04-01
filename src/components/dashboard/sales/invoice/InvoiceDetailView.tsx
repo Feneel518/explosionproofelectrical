@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -14,13 +14,16 @@ import PdfPreviewCard from "../../global/PDFPreviewCard";
 import InvoicePackingStickerDialog from "@/components/customerCopy/invoice/InvoicePackingStickerDialog";
 import InvoiceTestCertificateDialog from "@/components/customerCopy/invoice/InvoiceTestCertificateDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import InvoicePaymentReminderCard from "./InvoicePaymentReminderCard";
+import InvoiceDispatchDetailsEmailDialog from "./InvoiceDispatchDetailsEmailDialog";
+import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 
 type Props = {
   invoice: any;
 };
 
 function fmtDate(value?: string | Date | null) {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -29,7 +32,7 @@ function fmtDate(value?: string | Date | null) {
 
 function fmtMoney(value?: number | string | null) {
   const n = Number(value ?? 0);
-  return `₹${n.toFixed(2)}`;
+  return `${formatCurrencyINR(n)}`;
 }
 
 function statusVariant(status: string) {
@@ -64,12 +67,58 @@ function getPackingRows(packing: unknown): Array<{
 export default function InvoiceDetailView({ invoice }: Props) {
   const router = useRouter();
 
+  const customer = invoice.salesOrder?.customer;
+  const companyName = customer?.companyName || "-";
   const clientName =
     invoice.clientNameSnapshot ||
-    formatFinancialDocumentNumber(
-      invoice.salesOrder.orderFy,
-      invoice.salesOrder.orderNo,
-    );
+    invoice.salesOrder?.clientNameSnapshot ||
+    customer?.companyName ||
+    invoice.salesOrder?.receivedFromName ||
+    "-";
+
+  const city =
+    invoice.citySnapshot ||
+    invoice.salesOrder?.citySnapshot ||
+    customer?.city ||
+    "-";
+  const state =
+    invoice.stateSnapshot ||
+    invoice.salesOrder?.stateSnapshot ||
+    customer?.state ||
+    "-";
+  const gstin =
+    invoice.gstinSnapshot ||
+    invoice.salesOrder?.gstinSnapshot ||
+    customer?.gstin ||
+    "-";
+  const contactName = invoice.salesOrder?.receivedFromName || "-";
+  const contactPhone =
+    invoice.salesOrder?.receivedFromPhone || customer?.companyPhone || "-";
+  const contactEmail =
+    invoice.salesOrder?.receivedFromEmail || customer?.companyEmail || "-";
+
+  const dispatchEmailDefault =
+    invoice.salesOrder?.receivedFromEmail || customer?.companyEmail || "";
+
+  const addressLines = [
+    customer?.addressLine1,
+    customer?.addressLine2,
+    [customer?.city, customer?.state, customer?.country]
+      .filter(Boolean)
+      .join(", "),
+    customer?.pincode ? `PIN: ${customer.pincode}` : null,
+  ].filter(Boolean);
+
+  const displayAddress = addressLines.length ? addressLines.join("\n") : "-";
+
+  const salesOrderNumber = formatFinancialDocumentNumber(
+    invoice.salesOrder.orderFy,
+    invoice.salesOrder.orderNo,
+  );
+
+  const displayClientHeading =
+    clientName && clientName !== "-" ? clientName : salesOrderNumber;
+
   const printableItems = (invoice.items ?? []).map((item: any) => ({
     id: item.id,
     title: item.title ?? "Item",
@@ -109,7 +158,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                   invoice.invoiceNo,
                 )}
               </CardTitle>
-              <p className="text-muted-foreground">{clientName}</p>
+              <p className="text-muted-foreground">{displayClientHeading}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -177,18 +226,13 @@ export default function InvoiceDetailView({ invoice }: Props) {
 
           <div>
             <div className="text-xs text-muted-foreground">Sales Order</div>
-            <div className="font-medium">
-              {formatFinancialDocumentNumber(
-                invoice.salesOrder.orderFy,
-                invoice.salesOrder.orderNo,
-              )}
-            </div>
+            <div className="font-medium">{salesOrderNumber}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">PO Number</div>
             <div className="font-medium">
-              {invoice.poNumber || invoice.salesOrder.poNumber || "—"}
+              {invoice.poNumber || invoice.salesOrder.poNumber || "-"}
             </div>
           </div>
         </CardContent>
@@ -200,25 +244,43 @@ export default function InvoiceDetailView({ invoice }: Props) {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div>
+            <div className="text-xs text-muted-foreground">Company Name</div>
+            <div className="font-medium">{companyName}</div>
+          </div>
+
+          <div>
             <div className="text-xs text-muted-foreground">Client Name</div>
-            <div className="font-medium">
-              {invoice.clientNameSnapshot || "—"}
-            </div>
+            <div className="font-medium">{clientName}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">Contact Name</div>
+            <div className="font-medium">{contactName}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">Contact Phone</div>
+            <div className="font-medium">{contactPhone}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">Contact Email</div>
+            <div className="font-medium break-all">{contactEmail}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">City</div>
-            <div className="font-medium">{invoice.citySnapshot || "—"}</div>
+            <div className="font-medium">{city}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">State</div>
-            <div className="font-medium">{invoice.stateSnapshot || "—"}</div>
+            <div className="font-medium">{state}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">GSTIN</div>
-            <div className="font-medium">{invoice.gstinSnapshot || "—"}</div>
+            <div className="font-medium">{gstin}</div>
           </div>
 
           <div>
@@ -226,55 +288,67 @@ export default function InvoiceDetailView({ invoice }: Props) {
             <div className="font-medium">{fmtDate(invoice.poDate)}</div>
           </div>
 
-          <div>
+          <div className="md:col-span-3">
+            <div className="text-xs text-muted-foreground">Billing Address</div>
+            <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
+              {displayAddress}
+            </div>
+          </div>
+
+          <div className="md:col-span-3">
             <div className="text-xs text-muted-foreground">Remarks</div>
-            <div className="font-medium">{invoice.remarks || "—"}</div>
+            <div className="font-medium">{invoice.remarks || "-"}</div>
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
           <CardTitle>Dispatch Details</CardTitle>
+          <InvoiceDispatchDetailsEmailDialog
+            invoiceId={invoice.id}
+            defaultEmail={dispatchEmailDefault}
+            disabled={invoice.status !== "FINALIZED"}
+          />
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div>
             <div className="text-xs text-muted-foreground">
               Transporter Name
             </div>
-            <div className="font-medium">{invoice.transporterName || "—"}</div>
+            <div className="font-medium">{invoice.transporterName || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">
               Dispatch Through
             </div>
-            <div className="font-medium">{invoice.dispatchThrough || "—"}</div>
+            <div className="font-medium">{invoice.dispatchThrough || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Vehicle Number</div>
-            <div className="font-medium">{invoice.vehicleNumber || "—"}</div>
+            <div className="font-medium">{invoice.vehicleNumber || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Driver Name</div>
-            <div className="font-medium">{invoice.driverName || "—"}</div>
+            <div className="font-medium">{invoice.driverName || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Driver Phone</div>
-            <div className="font-medium">{invoice.driverPhone || "—"}</div>
+            <div className="font-medium">{invoice.driverPhone || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">LR Number</div>
-            <div className="font-medium">{invoice.lrNumber || "—"}</div>
+            <div className="font-medium">{invoice.lrNumber || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">E-Way Bill</div>
-            <div className="font-medium">{invoice.ewayBill || "—"}</div>
+            <div className="font-medium">{invoice.ewayBill || "-"}</div>
           </div>
         </CardContent>
       </Card>
@@ -308,7 +382,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                           item.serialNumber,
                         ]
                           .filter(Boolean)
-                          .join(" • ") || "—"}
+                          .join(" â€¢ ") || "-"}
                       </div>
                     </div>
 
@@ -350,7 +424,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
 
                     <div>
                       <div className="text-xs text-muted-foreground">Unit</div>
-                      <div className="font-medium">{item.unit || "—"}</div>
+                      <div className="font-medium">{item.unit || "-"}</div>
                     </div>
 
                     <div>
@@ -366,7 +440,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                       <div className="text-xs text-muted-foreground">
                         HSN Code
                       </div>
-                      <div className="font-medium">{item.hsnCode || "—"}</div>
+                      <div className="font-medium">{item.hsnCode || "-"}</div>
                     </div>
 
                     <div>
@@ -374,7 +448,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                         Type Number
                       </div>
                       <div className="font-medium">
-                        {item.typeNumber || "—"}
+                        {item.typeNumber || "-"}
                       </div>
                     </div>
 
@@ -383,7 +457,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                         CIMFR Number
                       </div>
                       <div className="font-medium">
-                        {item.cimfrNumber || "—"}
+                        {item.cimfrNumber || "-"}
                       </div>
                     </div>
 
@@ -392,7 +466,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                         Serial Number
                       </div>
                       <div className="font-medium">
-                        {item.serialNumber || "—"}
+                        {item.serialNumber || "-"}
                       </div>
                     </div>
                   </div>
@@ -409,7 +483,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                               Box: {box.boxNumber || `#${boxIndex + 1}`}
                             </div>
                             <div className="mt-1 text-sm text-muted-foreground">
-                              Qty: {box.quantity ?? "—"}
+                              Qty: {box.quantity ?? "-"}
                             </div>
                             {box.notes ? (
                               <div className="mt-1 text-sm text-muted-foreground">
@@ -460,6 +534,8 @@ export default function InvoiceDetailView({ invoice }: Props) {
         </CardContent>
       </Card>
 
+      <InvoicePaymentReminderCard invoice={invoice} />
+
       <Card>
         <CardHeader>
           <CardTitle>Packaging</CardTitle>
@@ -471,25 +547,31 @@ export default function InvoiceDetailView({ invoice }: Props) {
             </div>
           ) : (
             invoice.packages.map((pkg: any, index: number) => (
-              <div key={pkg.id ?? index} className="rounded-xl border p-4 space-y-2">
+              <div
+                key={pkg.id ?? index}
+                className="rounded-xl border p-4 space-y-2">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                  <div className="font-medium">Package #{pkg.packageNo || index + 1}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Type: {pkg.packageType || "—"}
+                  <div className="font-medium">
+                    Package #{pkg.packageNo || index + 1}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Label: {pkg.label || "—"}
+                    Type: {pkg.packageType || "-"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Gross: {pkg.grossWeight ?? "—"}
+                    Label: {pkg.label || "-"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Net: {pkg.netWeight ?? "—"}
+                    Gross: {pkg.grossWeight ?? "-"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Net: {pkg.netWeight ?? "-"}
                   </div>
                 </div>
 
                 {pkg.remarks ? (
-                  <div className="text-sm text-muted-foreground">{pkg.remarks}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {pkg.remarks}
+                  </div>
                 ) : null}
 
                 {Array.isArray(pkg.items) && pkg.items.length > 0 ? (
@@ -504,7 +586,9 @@ export default function InvoiceDetailView({ invoice }: Props) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">No items in this package.</div>
+                  <div className="text-sm text-muted-foreground">
+                    No items in this package.
+                  </div>
                 )}
               </div>
             ))

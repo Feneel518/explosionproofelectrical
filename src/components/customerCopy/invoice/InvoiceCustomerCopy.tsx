@@ -41,7 +41,14 @@ type InvoiceView = {
   companyNameSnapshot?: string | null;
   citySnapshot?: string | null;
   stateSnapshot?: string | null;
+  countrySnapshot?: string | null;
+  pincodeSnapshot?: string | null;
   gstinSnapshot?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  contactNameSnapshot?: string | null;
+  contactPhoneSnapshot?: string | null;
+  contactEmailSnapshot?: string | null;
   transporterName?: string | null;
   vehicleNumber?: string | null;
   driverName?: string | null;
@@ -154,13 +161,31 @@ const InvoiceCustomerCopy: FC<InvoiceCustomerCopyProps> = ({ invoice }) => {
                           <div className="">
                             {invoice.clientNameSnapshot || "—"}
                           </div>
-                          <div className="text-xs">
-                            {[invoice.citySnapshot, invoice.stateSnapshot]
+                          <div className="text-xs whitespace-pre-wrap">
+                            {[
+                              invoice.addressLine1,
+                              invoice.addressLine2,
+                              [
+                                invoice.citySnapshot,
+                                invoice.stateSnapshot,
+                                invoice.countrySnapshot,
+                              ]
+                                .filter(Boolean)
+                                .join(", "),
+                              invoice.pincodeSnapshot
+                                ? `PIN: ${invoice.pincodeSnapshot}`
+                                : null,
+                            ]
                               .filter(Boolean)
-                              .join(", ") || "—"}
+                              .join("\n") || "—"}
                           </div>
                           <div className="text-xs">
                             GSTIN: {invoice.gstinSnapshot || "—"}
+                          </div>
+                          <div className="text-xs">
+                            Contact: {invoice.contactNameSnapshot || "—"} |{" "}
+                            {invoice.contactPhoneSnapshot || "—"} |{" "}
+                            {invoice.contactEmailSnapshot || "—"}
                           </div>
                         </div>
 

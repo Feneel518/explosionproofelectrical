@@ -5,6 +5,7 @@ import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear
 import { prisma } from "@/lib/prisma/db";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
 import { revalidatePath } from "next/cache";
+import { addDays } from "date-fns";
 
 export const createDraftQuotationAction = async () => {
   const session = await requireAuth();
@@ -27,7 +28,14 @@ export const createDraftQuotationAction = async () => {
   });
 
   const emptyDraft: QuotationDraftData = {
-    header: {},
+    header: {
+      gst: "CGST_SGST_18",
+      packingCharges: "INCLUDED",
+      paymentTerms: "ADVANCE",
+      transportationPayment: "TO_PAY",
+      deliveryDate: "4 weeks",
+      nextFollowupAt: addDays(new Date(), 7).toISOString(),
+    },
     items: [],
   };
 

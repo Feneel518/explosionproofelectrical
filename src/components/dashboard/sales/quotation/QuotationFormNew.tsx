@@ -27,7 +27,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuotationDraftAutosave } from "@/hooks/use-auto-save-draft";
 import { CustomerSelectItem } from "@/lib/actions/dashboard/global/listCustomersForSelect";
+import { getCustomerForSelectById } from "@/lib/actions/dashboard/global/getCustomerForSelectById";
 import { finalizeQuotationAction } from "@/lib/actions/dashboard/sales/quotation/finalizeQuotationAction";
+import {
+  CustomerLastVariantPrice,
+  getCustomerLastVariantPricesAction,
+} from "@/lib/actions/dashboard/sales/quotation/getCustomerLastVariantPricesAction";
 import {
   gstOptions,
   packingCharges,
@@ -56,7 +61,6 @@ import { useFieldArray, useForm } from "react-hook-form";
 import CustomerForm from "../../customer/CustomerForm";
 import { CustomerCombobox } from "../../global/CustomerCombobox";
 import { ResponsiveModal } from "../../global/ResponsiveModal";
-import { FollowUpDatePicker } from "../../global/FollowUpDatePicker";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -107,10 +111,24 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
 
   const [openCreateCustomer, setOpenCreateCustomer] = React.useState(false);
   const [openFollowup, setOpenFollowup] = React.useState(false);
+  const [isApplyingCustomerDefaults, setIsApplyingCustomerDefaults] =
+    React.useState(false);
+  const [isLoadingLastPrices, setIsLoadingLastPrices] = React.useState(false);
+  const [lastPriceByVariantId, setLastPriceByVariantId] = React.useState<
+    Record<string, CustomerLastVariantPrice>
+  >({});
 
   const [initialVersion, setInitialVersion] = React.useState<number>(
     initialDraftVersion ?? 0,
   );
+
+  const customerDefaultsById = React.useMemo(() => {
+    const map = new Map<string, CustomerSelectItem>();
+    for (const customer of customers ?? []) {
+      if (customer?.id) map.set(customer.id, customer);
+    }
+    return map;
+  }, [customers]);
 
   const form = useForm<QuotationDraftData>({
     resolver: zodResolver(QuotationSchema) as any,
@@ -118,9 +136,9 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
       ...initialDraft,
       header: {
         ...initialDraft.header,
-        nextFollowupAt: draftToDate(
-          (initialDraft as any).header?.nextFollowupAt,
-        ),
+        nextFollowupAt:
+          draftToDate((initialDraft as any).header?.nextFollowupAt) ??
+          addDays(new Date(), 7),
       },
     } as QuotationDraftData,
     mode: "onChange",
@@ -179,6 +197,118 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
 
     return () => sub.unsubscribe();
   }, [form, autosave, quotationId]);
+
+  const applyCustomerDefaults = React.useCallback(
+    async (customerId: string) => {
+      setIsApplyingCustomerDefaults(true);
+      try {
+        const fromList = customerDefaultsById.get(customerId) ?? null;
+        const customer = fromList ?? (await getCustomerForSelectById(customerId));
+        if (!customer) return;
+
+        form.setValue("header.clientName", customer.companyName ?? "", {
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+        form.setValue(
+          "header.receivedFromEmail",
+          customer.companyEmail ?? form.getValues("header.receivedFromEmail") ?? "",
+          { shouldDirty: true, shouldTouch: true },
+        );
+        form.setValue(
+          "header.receivedFromPhone",
+          customer.companyPhone ?? form.getValues("header.receivedFromPhone") ?? "",
+          { shouldDirty: true, shouldTouch: true },
+        );
+        form.setValue(
+          "header.gst",
+          customer.defaultQuotationGst ?? "CGST_SGST_18",
+          { shouldDirty: true, shouldTouch: true },
+        );
+        form.setValue(
+          "header.packingCharges",
+          customer.defaultQuotationPackingCharges ?? "INCLUDED",
+          { shouldDirty: true, shouldTouch: true },
+        );
+        form.setValue(
+          "header.transportationPayment",
+          customer.defaultQuotationTransportationPayment ?? "TO_PAY",
+          { shouldDirty: true, shouldTouch: true },
+        );
+        form.setValue(
+          "header.paymentTerms",
+          customer.defaultQuotationPaymentTerms ?? "ADVANCE",
+          { shouldDirty: true, shouldTouch: true },
+        );
+        if (customer.defaultQuotationDeliveryDate) {
+          form.setValue("header.deliveryDate", customer.defaultQuotationDeliveryDate, {
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+        }
+      } finally {
+        setIsApplyingCustomerDefaults(false);
+      }
+    },
+    [customerDefaultsById, form],
+  );
+
+  const watchedCustomerId = form.watch("header.customerId");
+  const watchedItems = form.watch("items");
+  const watchedVariantIds = useMemo(() => {
+    const variants = (watchedItems ?? [])
+      .map((item) => item.variantId)
+      .filter((id): id is string => Boolean(id));
+    return Array.from(new Set(variants));
+  }, [watchedItems]);
+  const watchedVariantIdsKey = useMemo(
+    () => watchedVariantIds.join("|"),
+    [watchedVariantIds],
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadLastPrices() {
+      const variantIds = watchedVariantIdsKey
+        ? watchedVariantIdsKey.split("|").filter(Boolean)
+        : [];
+
+      if (!watchedCustomerId || variantIds.length === 0) {
+        if (!cancelled) {
+          setLastPriceByVariantId({});
+          setIsLoadingLastPrices(false);
+        }
+        return;
+      }
+
+      setIsLoadingLastPrices(true);
+
+      try {
+        const res = await getCustomerLastVariantPricesAction({
+          customerId: watchedCustomerId,
+          variantIds,
+        });
+
+        if (!res.ok || cancelled) return;
+
+        const next: Record<string, CustomerLastVariantPrice> = {};
+        for (const row of res.prices) {
+          next[row.variantId] = row;
+        }
+
+        if (!cancelled) setLastPriceByVariantId(next);
+      } finally {
+        if (!cancelled) setIsLoadingLastPrices(false);
+      }
+    }
+
+    loadLastPrices();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [watchedCustomerId, watchedVariantIdsKey]);
 
   const saveIndicator = (() => {
     if (!quotationId) return <Badge variant="secondary">Creating draft…</Badge>;
@@ -349,6 +479,17 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
     }
   }
 
+  async function handleCustomerChange(customerId: string | null) {
+    form.setValue("header.customerId", customerId, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+
+    if (!customerId) return;
+
+    await applyCustomerDefaults(customerId);
+  }
+
   return (
     <div className="space-y-4">
       {/* Modal to create customer */}
@@ -359,10 +500,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
         <CustomerForm
           mode="create"
           onCreated={(customer) => {
-            form.setValue("header.customerId", customer.id, {
-              shouldDirty: true,
-              shouldTouch: true,
-            });
+            void handleCustomerChange(customer.id);
             setOpenCreateCustomer(false);
           }}></CustomerForm>
       </ResponsiveModal>
@@ -433,16 +571,18 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                         <FormLabel>Customer</FormLabel>
                         <CustomerCombobox
                           value={form.watch("header.customerId")}
-                          onChange={(id) =>
-                            form.setValue("header.customerId", id, {
-                              shouldDirty: true,
-                              shouldTouch: true,
-                            })
-                          }
+                          onChange={(id) => {
+                            void handleCustomerChange(id);
+                          }}
                           onCreateCustomer={() => {
                             setOpenCreateCustomer(true);
                           }}
                         />
+                        {isApplyingCustomerDefaults ? (
+                          <p className="text-xs text-muted-foreground">
+                            Applying customer default terms...
+                          </p>
+                        ) : null}
                       </div>
 
                       <FormField
@@ -549,8 +689,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormLabel>GST</FormLabel>
                             <FormControl>
                               <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}>
+                                value={field.value ?? undefined}
+                                onValueChange={field.onChange}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select GST" />
@@ -579,8 +719,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormLabel>Packing Charges</FormLabel>
                             <FormControl>
                               <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}>
+                                value={field.value ?? undefined}
+                                onValueChange={field.onChange}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select Packing Charges" />
@@ -609,8 +749,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormLabel>Transportation Payment</FormLabel>
                             <FormControl>
                               <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}>
+                                value={field.value ?? undefined}
+                                onValueChange={field.onChange}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select Transportation Payment" />
@@ -641,8 +781,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormLabel>Payment Terms</FormLabel>
                             <FormControl>
                               <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}>
+                                value={field.value ?? undefined}
+                                onValueChange={field.onChange}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select Payment Terms" />
@@ -703,6 +843,12 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                         name="header.nextFollowupAt"
                         render={({ field }) => (
                           <FormItem className="flex flex-col  gap-2">
+                            {(() => {
+                              const selectedFollowupDate = draftToDate(
+                                field.value as any,
+                              );
+                              return (
+                                <>
                             <FormLabel>Next follow-up date</FormLabel>
 
                             <Popover
@@ -718,8 +864,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                                       !field.value && "text-muted-foreground",
                                     )}>
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {field.value
-                                      ? format(field.value, "PPP")
+                                    {selectedFollowupDate
+                                      ? format(selectedFollowupDate, "PPP")
                                       : "Pick a date"}
                                   </Button>
                                 </FormControl>
@@ -730,9 +876,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                                 align="start">
                                 <Calendar
                                   mode="single"
-                                  selected={
-                                    field.value ?? addDays(new Date(), 7)
-                                  }
+                                  selected={selectedFollowupDate ?? addDays(new Date(), 7)}
                                   onSelect={(date) => {
                                     field.onChange(date ?? null);
                                     setOpenFollowup(false);
@@ -768,6 +912,9 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             </Popover>
 
                             <FormMessage />
+                                </>
+                              );
+                            })()}
                           </FormItem>
                         )}
                       />
@@ -842,6 +989,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                           key={field.id}
                           form={form!}
                           index={index}
+                          isLoadingLastPrices={isLoadingLastPrices}
+                          lastPriceByVariantId={lastPriceByVariantId}
                           onRemove={() => removeItem(index)}
                           onDuplicate={() => duplicateItem(index)}
                           onMoveUp={() => moveItemUp(index)}
@@ -896,6 +1045,8 @@ export default QuotationFormNew;
 interface QuotationItemRowProps {
   form: ReturnType<typeof useForm<QuotationDraftData>>;
   index: number;
+  lastPriceByVariantId: Record<string, CustomerLastVariantPrice>;
+  isLoadingLastPrices: boolean;
   onRemove: () => void;
   onDuplicate: () => void;
   onMoveUp: () => void;
@@ -906,6 +1057,8 @@ interface QuotationItemRowProps {
 const QuotationItemRow: FC<QuotationItemRowProps> = ({
   form,
   index,
+  lastPriceByVariantId,
+  isLoadingLastPrices,
   onRemove,
   onDuplicate,
   onMoveUp,
@@ -914,6 +1067,7 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
 }) => {
   const qty = form.watch(`items.${index}.qty`);
   const unitPrice = form.watch(`items.${index}.unitPrice`);
+  const variantId = form.watch(`items.${index}.variantId`);
   const lineTotal = Number(qty || 0) * Number(unitPrice || 0);
   const title = form.watch(`items.${index}.title`);
   const sku = form.watch(`items.${index}.sku`);
@@ -947,6 +1101,19 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
     return `Item #${index + 1}`;
   }, [title, sku, index]);
 
+  const lastPriceInfo =
+    variantId && lastPriceByVariantId[variantId]
+      ? lastPriceByVariantId[variantId]
+      : null;
+
+  const formattedLastPriceDate = lastPriceInfo?.sourceDate
+    ? new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(lastPriceInfo.sourceDate))
+    : null;
+
   return (
     <Card className="overflow-hidden rounded-2xl border border-white">
       <Accordion type="single" collapsible defaultValue={`item-${index}`}>
@@ -968,6 +1135,17 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     {Number(unitPrice || 0).toFixed(2)} · Total: ₹
                     {lineTotal.toFixed(2)}
                   </p>
+                  {lastPriceInfo ? (
+                    <p className="mt-1 text-xs text-emerald-700">
+                      Last {lastPriceInfo.source === "INVOICE" ? "invoiced" : "ordered"}: Rs.
+                      {Number(lastPriceInfo.unitPrice || 0).toFixed(2)} ({lastPriceInfo.sourceNo}
+                      {formattedLastPriceDate ? ` on ${formattedLastPriceDate}` : ""})
+                    </p>
+                  ) : variantId && isLoadingLastPrices ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Loading last customer price...
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </AccordionTrigger>
@@ -1465,6 +1643,16 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                           placeholder="0.00"
                         />
                       </FormControl>
+                      {lastPriceInfo ? (
+                        <p className="text-xs text-emerald-700">
+                          Last customer price: Rs.
+                          {Number(lastPriceInfo.unitPrice || 0).toFixed(2)} ({lastPriceInfo.sourceNo})
+                        </p>
+                      ) : variantId && isLoadingLastPrices ? (
+                        <p className="text-xs text-muted-foreground">
+                          Loading price history...
+                        </p>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}

@@ -1,0 +1,133 @@
+﻿"use server";
+
+import { requireAuth } from "@/lib/check/requireAuth";
+import { prisma } from "@/lib/prisma/db";
+
+export type CustomerLastVariantPrice = {
+  variantId: string;
+  unitPrice: number;
+  source: "INVOICE" | "SALES_ORDER";
+  sourceId: string;
+  sourceNo: string;
+  sourceDate: string | null;
+};
+
+export async function getCustomerLastVariantPricesAction({
+  customerId,
+  variantIds,
+}: {
+  customerId: string;
+  variantIds: string[];
+}) {
+  await requireAuth();
+
+  if (!customerId) {
+    return { ok: true as const, prices: [] as CustomerLastVariantPrice[] };
+  }
+
+  const uniqueVariantIds = Array.from(new Set((variantIds ?? []).filter(Boolean)));
+  if (uniqueVariantIds.length === 0) {
+    return { ok: true as const, prices: [] as CustomerLastVariantPrice[] };
+  }
+
+  const invoiceRows = await prisma.invoiceItem.findMany({
+    where: {
+      variantId: { in: uniqueVariantIds },
+      invoice: {
+        customerId,
+        status: "FINALIZED",
+      },
+    },
+    select: {
+      variantId: true,
+      unitPrice: true,
+      invoice: {
+        select: {
+          id: true,
+          invoiceNo: true,
+          invoiceFy: true,
+          invoiceDate: true,
+        },
+      },
+      createdAt: true,
+    },
+    orderBy: [{ invoice: { invoiceDate: "desc" } }, { createdAt: "desc" }],
+    take: Math.max(20, uniqueVariantIds.length * 8),
+  });
+
+  const byVariant = new Map<string, CustomerLastVariantPrice>();
+
+  for (const row of invoiceRows) {
+    if (!row.variantId || byVariant.has(row.variantId)) continue;
+
+    byVariant.set(row.variantId, {
+      variantId: row.variantId,
+      unitPrice: Number(row.unitPrice || 0),
+      source: "INVOICE",
+      sourceId: row.invoice.id,
+      sourceNo: `${row.invoice.invoiceFy}-${String(row.invoice.invoiceNo).padStart(3, "0")}`,
+      sourceDate: row.invoice.invoiceDate
+        ? row.invoice.invoiceDate.toISOString()
+        : null,
+    });
+  }
+
+  const missingVariantIds = uniqueVariantIds.filter((id) => !byVariant.has(id));
+
+  if (missingVariantIds.length > 0) {
+    const salesOrderRows = await prisma.salesOrderItem.findMany({
+      where: {
+        variantId: { in: missingVariantIds },
+        salesOrder: {
+          customerId,
+          status: {
+            in: [
+              "CONFIRMED",
+              "IN_PRODUCTION",
+              "PARTIALLY_DISPATCHED",
+              "DISPATCHED",
+              "PARTIALLY_INVOICED",
+              "INVOICED",
+              "COMPLETED",
+            ],
+          },
+        },
+      },
+      select: {
+        variantId: true,
+        unitPrice: true,
+        salesOrder: {
+          select: {
+            id: true,
+            orderNo: true,
+            orderFy: true,
+            orderDate: true,
+          },
+        },
+        createdAt: true,
+      },
+      orderBy: [{ salesOrder: { orderDate: "desc" } }, { createdAt: "desc" }],
+      take: Math.max(20, missingVariantIds.length * 8),
+    });
+
+    for (const row of salesOrderRows) {
+      if (!row.variantId || byVariant.has(row.variantId)) continue;
+
+      byVariant.set(row.variantId, {
+        variantId: row.variantId,
+        unitPrice: Number(row.unitPrice || 0),
+        source: "SALES_ORDER",
+        sourceId: row.salesOrder.id,
+        sourceNo: `${row.salesOrder.orderFy}-${String(row.salesOrder.orderNo).padStart(3, "0")}`,
+        sourceDate: row.salesOrder.orderDate
+          ? row.salesOrder.orderDate.toISOString()
+          : null,
+      });
+    }
+  }
+
+  return {
+    ok: true as const,
+    prices: Array.from(byVariant.values()),
+  };
+}

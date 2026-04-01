@@ -9,6 +9,11 @@ export type CustomerSearchItem = {
   companyEmail: string | null;
   companyPhone: string | null;
   city: string | null;
+  defaultQuotationGst: string;
+  defaultQuotationPackingCharges: string;
+  defaultQuotationTransportationPayment: string;
+  defaultQuotationPaymentTerms: string;
+  defaultQuotationDeliveryDate: string | null;
 };
 
 export type CustomerSearchResponse = {
@@ -56,6 +61,11 @@ export const searchCustomersForSelectAction = async ({
       gstin: true,
       city: true,
       state: true,
+      defaultQuotationGst: true,
+      defaultQuotationPackingCharges: true,
+      defaultQuotationTransportationPayment: true,
+      defaultQuotationPaymentTerms: true,
+      defaultQuotationDeliveryDate: true,
     },
     orderBy: [{ companyName: "asc" }, { id: "asc" }],
     take: take + 1,

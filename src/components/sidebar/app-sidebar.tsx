@@ -48,12 +48,20 @@ const data = {
           url: "/dashboard/customers",
         },
         {
+          title: "Suppliers",
+          url: "/dashboard/suppliers",
+        },
+        {
           title: "Categories",
           url: "/dashboard/categories",
         },
         {
           title: "Products",
           url: "/dashboard/products",
+        },
+        {
+          title: "Raw Materials",
+          url: "/dashboard/raw-materials",
         },
       ],
     },
@@ -81,67 +89,45 @@ const data = {
       ],
     },
     {
-      title: "Documentation",
+      title: "Purchase",
       url: "#",
-      icon: BookOpen,
+      icon: GalleryVerticalEnd,
       items: [
         {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "GRN",
+          url: "/dashboard/purchase/grn",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "Manufacturing",
       url: "#",
-      icon: Settings2,
+      icon: AudioWaveform,
       items: [
         {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Material Issues",
+          url: "/dashboard/manufacturing/material-issues",
         },
       ],
     },
-  ],
-  projects: [
     {
-      name: "Design Engineering",
+      title: "Inventory",
       url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      icon: Command,
+      items: [
+        {
+          title: "Stock Summary",
+          url: "/dashboard/inventory/stock",
+        },
+        {
+          title: "Stock Movements",
+          url: "/dashboard/inventory/movements",
+        },
+        {
+          title: "Stock Adjustments",
+          url: "/dashboard/inventory/adjustments",
+        },
+      ],
     },
   ],
 };
@@ -163,7 +149,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

@@ -17,6 +17,11 @@ export async function getCustomerForSelectById(
       companyEmail: true,
       companyPhone: true,
       city: true,
+      defaultQuotationGst: true,
+      defaultQuotationPackingCharges: true,
+      defaultQuotationTransportationPayment: true,
+      defaultQuotationPaymentTerms: true,
+      defaultQuotationDeliveryDate: true,
     },
   });
 

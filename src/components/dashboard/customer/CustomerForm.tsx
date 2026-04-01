@@ -42,6 +42,12 @@ import { createCustomerAction } from "@/lib/actions/dashboard/customers/CreateCu
 import { updateCustomerAction } from "@/lib/actions/dashboard/customers/UpdateCustomer";
 import { Spinner } from "@/components/ui/spinner";
 import LoadingButton from "../global/LoadingButton";
+import {
+  gstOptions,
+  packingCharges,
+  paymentTerms,
+  transportationPayment,
+} from "@/lib/constants/quotationData";
 
 export default function CustomerForm({
   mode,
@@ -83,6 +89,13 @@ export default function CustomerForm({
       country: initial?.country ?? "",
       pincode: initial?.pincode ?? "",
       gstin: initial?.gstin ?? "",
+      defaultQuotationGst: initial?.defaultQuotationGst ?? "CGST_SGST_18",
+      defaultQuotationPackingCharges:
+        initial?.defaultQuotationPackingCharges ?? "INCLUDED",
+      defaultQuotationTransportationPayment:
+        initial?.defaultQuotationTransportationPayment ?? "TO_PAY",
+      defaultQuotationPaymentTerms: initial?.defaultQuotationPaymentTerms ?? "ADVANCE",
+      defaultQuotationDeliveryDate: initial?.defaultQuotationDeliveryDate ?? "",
       status: initial?.status ?? "ACTIVE",
     },
   });
@@ -211,6 +224,134 @@ export default function CustomerForm({
                 </FormItem>
               )}
             />
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <div className="text-sm font-medium">Default Quotation Terms</div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="defaultQuotationGst"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default GST</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select GST" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {gstOptions.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="defaultQuotationPackingCharges"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default Packing Charges</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select packing" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {packingCharges.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="defaultQuotationTransportationPayment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default Transportation</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select transportation" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {transportationPayment.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="defaultQuotationPaymentTerms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default Payment Terms</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select payment terms" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {paymentTerms.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="defaultQuotationDeliveryDate"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Default Delivery Text</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. 4 weeks from PO"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      This will prefill quotation delivery date when customer is selected.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
 
           <Separator />

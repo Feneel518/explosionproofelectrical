@@ -104,6 +104,8 @@ type InvoiceEditData = {
     };
     items?: Array<{
       salesOrderItemId: string;
+      productId?: string | null;
+      variantId?: string | null;
       selected?: boolean;
       title?: string | null;
       sku?: string | null;
@@ -136,6 +138,8 @@ const mediaSchema = z.object({
 
 const itemSchema = z.object({
   salesOrderItemId: z.string(),
+  productId: z.string().nullable().optional(),
+  variantId: z.string().nullable().optional(),
   selected: z.boolean().default(false),
 
   title: z.string(),
@@ -521,6 +525,8 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
       return {
         salesOrderItemId: item.id,
+        productId: existing?.productId ?? item.productId ?? null,
+        variantId: existing?.variantId ?? item.variantId ?? null,
         selected:
           typeof existing?.selected === "boolean"
             ? existing.selected

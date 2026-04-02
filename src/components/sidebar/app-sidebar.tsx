@@ -111,12 +111,20 @@ const data = {
           url: "/dashboard/manufacturing/material-issues",
         },
         {
+          title: "BOM",
+          url: "/dashboard/manufacturing/bom",
+        },
+        {
           title: "Casting Jobs",
           url: "/dashboard/manufacturing/casting-jobs",
         },
         {
           title: "Worker Ledger",
           url: "/dashboard/manufacturing/worker-ledger",
+        },
+        {
+          title: "Production Planning",
+          url: "/dashboard/manufacturing/planning",
         },
       ],
     },

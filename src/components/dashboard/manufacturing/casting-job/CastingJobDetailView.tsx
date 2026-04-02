@@ -236,6 +236,10 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
         <Card>
           <CardHeader>
             <CardTitle>Post Receipt</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Posting receipt adds stock only to the selected casting output. Issued aluminum
+              is not auto-restocked.
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3 md:grid-cols-3">

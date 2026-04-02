@@ -229,6 +229,33 @@ export default async function Page({
     castingJobMetaList.map((row) => [row.id, row]),
   );
 
+  const invoiceIds = Array.from(
+    new Set(
+      items
+        .filter((row) => row.referenceType === "INVOICE")
+        .map((row) => row.referenceId),
+    ),
+  );
+
+  const invoiceMetaList =
+    invoiceIds.length > 0
+      ? await prisma.invoice.findMany({
+          where: {
+            id: {
+              in: invoiceIds,
+            },
+          },
+          select: {
+            id: true,
+            invoiceNo: true,
+            invoiceFy: true,
+            clientNameSnapshot: true,
+          },
+        })
+      : [];
+
+  const invoiceMetaById = new Map(invoiceMetaList.map((row) => [row.id, row]));
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
@@ -322,6 +349,12 @@ export default async function Page({
                             href={`/dashboard/manufacturing/casting-jobs/${row.referenceId}`}>
                             {row.referenceNo || row.referenceId}
                           </Link>
+                        ) : row.referenceType === "INVOICE" ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/sales/invoices/${row.referenceId}`}>
+                            {row.referenceNo || row.referenceId}
+                          </Link>
                         ) : row.referenceType === "MANUAL_ADJUSTMENT" &&
                           stockAdjustmentMetaById.has(row.referenceId) ? (
                           <Link
@@ -354,6 +387,11 @@ export default async function Page({
                             stockAdjustmentMetaById.get(row.referenceId)
                               ?.adjustedByNameSnapshot ||
                             "-"}
+                        </div>
+                      ) : row.referenceType === "INVOICE" &&
+                        invoiceMetaById.has(row.referenceId) ? (
+                        <div className="text-xs text-muted-foreground">
+                          Invoice • {invoiceMetaById.get(row.referenceId)?.clientNameSnapshot || "-"}
                         </div>
                       ) : null}
                     </TableCell>

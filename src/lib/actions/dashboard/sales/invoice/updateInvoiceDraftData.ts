@@ -12,6 +12,8 @@ type DraftMedia = {
 
 type DraftItem = {
   salesOrderItemId: string;
+  productId?: string | null;
+  variantId?: string | null;
   selected?: boolean;
   title: string;
   sku?: string | null;

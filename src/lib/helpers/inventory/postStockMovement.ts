@@ -36,6 +36,36 @@ export async function postStockMovement(
   tx: Prisma.TransactionClient,
   input: PostStockMovementInput,
 ) {
+  if (input.referenceType === "CASTING_JOB") {
+    const castHasRawMaterial = Boolean(input.rawMaterialId);
+    const castHasCastingMaster = Boolean(input.castingMasterId);
+    const castHasVariant = Boolean(input.productVariantId);
+
+    if (castHasVariant) {
+      throw new Error(
+        "Casting job stock movement cannot target finished product variants.",
+      );
+    }
+
+    if (castHasRawMaterial) {
+      if (input.movementType !== "OUT") {
+        throw new Error(
+          "Casting job raw material movement can only be OUT. Aluminum return is not auto-restocked.",
+        );
+      }
+    } else if (castHasCastingMaster) {
+      if (input.movementType !== "IN") {
+        throw new Error(
+          "Casting job casting movement can only be IN on receipt.",
+        );
+      }
+    } else {
+      throw new Error(
+        "Casting job stock movement must target either raw material or casting.",
+      );
+    }
+  }
+
   const qty = Math.trunc(Number(input.qty || 0));
   if (!Number.isFinite(qty) || qty <= 0) {
     throw new Error("Stock movement quantity must be greater than 0.");

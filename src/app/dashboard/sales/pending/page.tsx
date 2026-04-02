@@ -5,6 +5,7 @@ import { SalesOrderStatus } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 function getClientName(row: {
+  customerId: string | null;
   customer: { companyName: string } | null;
   clientNameSnapshot: string | null;
   clientName: string | null;
@@ -15,6 +16,10 @@ function getClientName(row: {
     row.clientName ||
     "Unknown Client"
   );
+}
+
+function normalizeKey(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 export default async function Page() {
@@ -35,6 +40,7 @@ export default async function Page() {
       deliveryDate: true,
       status: true,
       totalPendingQty: true,
+      customerId: true,
       clientName: true,
       clientNameSnapshot: true,
       customer: {
@@ -63,6 +69,7 @@ export default async function Page() {
           },
           variant: {
             select: {
+              id: true,
               variant: true,
               product: {
                 select: {
@@ -85,16 +92,20 @@ export default async function Page() {
     deliveryDate: row.deliveryDate,
     status: row.status,
     clientName: getClientName(row),
+    clientKey: row.customerId || `client:${normalizeKey(getClientName(row))}`,
     totalPendingQty: row.totalPendingQty,
     items: row.items.map((item) => {
       const productName =
         item.product?.name || item.variant?.product?.name || item.title;
       const variantLabel = item.variant?.variant || "";
+      const productLabel = variantLabel ? `${productName} - ${variantLabel}` : productName;
+      const productKey = item.variant?.id || `title:${normalizeKey(productLabel)}`;
 
       return {
         id: item.id,
         title: item.title,
-        productLabel: variantLabel ? `${productName} - ${variantLabel}` : productName,
+        productLabel,
+        productKey,
         pendingQty: item.pendingQty,
         orderedQty: item.qty,
         dispatchedQty: item.dispatchedQty,
@@ -105,4 +116,3 @@ export default async function Page() {
 
   return <PendingOrdersBoard generatedAt={new Date().toISOString()} orders={normalized} />;
 }
-

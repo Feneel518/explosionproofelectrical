@@ -234,6 +234,31 @@ export default async function Page() {
     movementCastingJobMeta.map((row) => [row.id, row]),
   );
 
+  const movementInvoiceIds = Array.from(
+    new Set(
+      latestMovements
+        .filter((row) => row.referenceType === "INVOICE")
+        .map((row) => row.referenceId),
+    ),
+  );
+
+  const movementInvoiceMeta =
+    movementInvoiceIds.length > 0
+      ? await prisma.invoice.findMany({
+          where: { id: { in: movementInvoiceIds } },
+          select: {
+            id: true,
+            invoiceNo: true,
+            invoiceFy: true,
+            clientNameSnapshot: true,
+          },
+        })
+      : [];
+
+  const invoiceMetaById = new Map(
+    movementInvoiceMeta.map((row) => [row.id, row]),
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -415,6 +440,12 @@ export default async function Page() {
                                 href={`/dashboard/manufacturing/casting-jobs/${latestMovement.referenceId}`}>
                                 {latestMovement.referenceNo || latestMovement.referenceId}
                               </Link>
+                            ) : latestMovement.referenceType === "INVOICE" ? (
+                              <Link
+                                className="hover:underline"
+                                href={`/dashboard/sales/invoices/${latestMovement.referenceId}`}>
+                                {latestMovement.referenceNo || latestMovement.referenceId}
+                              </Link>
                             ) : latestMovement.referenceType === "MANUAL_ADJUSTMENT" &&
                               adjustmentMetaById.has(latestMovement.referenceId) ? (
                               <Link
@@ -448,6 +479,13 @@ export default async function Page() {
                                 adjustmentMetaById.get(latestMovement.referenceId)
                                   ?.adjustedByNameSnapshot ||
                                 "-"}
+                            </div>
+                          ) : latestMovement.referenceType === "INVOICE" &&
+                            invoiceMetaById.has(latestMovement.referenceId) ? (
+                            <div className="text-xs text-muted-foreground">
+                              Invoice •{" "}
+                              {invoiceMetaById.get(latestMovement.referenceId)
+                                ?.clientNameSnapshot || "-"}
                             </div>
                           ) : null}
                         </>

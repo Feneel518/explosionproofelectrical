@@ -27,6 +27,7 @@ type PendingOrderItem = {
   id: string;
   title: string;
   productLabel: string;
+  productKey: string;
   pendingQty: number;
   orderedQty: number;
   dispatchedQty: number;
@@ -41,6 +42,7 @@ type PendingOrder = {
   deliveryDate: string | null;
   status: string;
   clientName: string;
+  clientKey: string;
   totalPendingQty: number;
   items: PendingOrderItem[];
 };
@@ -80,29 +82,50 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
   const [search, setSearch] = React.useState("");
 
   const clientOptions = React.useMemo(() => {
-    return Array.from(
-      new Set(orders.map((row) => row.clientName).filter(Boolean)),
-    ).sort((a, b) => a.localeCompare(b));
+    const map = new Map<string, string>();
+    for (const row of orders) {
+      if (!row.clientKey) continue;
+      if (!map.has(row.clientKey)) {
+        map.set(row.clientKey, row.clientName || "Unknown Client");
+      }
+    }
+    return Array.from(map.entries())
+      .map(([key, label]) => ({ key, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [orders]);
 
   const productOptions = React.useMemo(() => {
-    return Array.from(
-      new Set(
-        orders
-          .flatMap((row) => row.items.map((item) => item.productLabel))
-          .filter(Boolean),
-      ),
-    ).sort((a, b) => a.localeCompare(b));
+    const map = new Map<string, string>();
+    for (const row of orders) {
+      for (const item of row.items) {
+        if (!item.productKey) continue;
+        if (!map.has(item.productKey)) {
+          map.set(item.productKey, item.productLabel || item.title || "Product");
+        }
+      }
+    }
+    return Array.from(map.entries())
+      .map(([key, label]) => ({ key, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [orders]);
+
+  const clientLabelByKey = React.useMemo(
+    () => new Map(clientOptions.map((row) => [row.key, row.label])),
+    [clientOptions],
+  );
+  const productLabelByKey = React.useMemo(
+    () => new Map(productOptions.map((row) => [row.key, row.label])),
+    [productOptions],
+  );
 
   const filteredOrders = React.useMemo(() => {
     const needle = search.trim().toLowerCase();
 
     return orders.filter((row) => {
-      if (clientFilter !== "ALL" && row.clientName !== clientFilter) return false;
+      if (clientFilter !== "ALL" && row.clientKey !== clientFilter) return false;
       if (
         productFilter !== "ALL" &&
-        !row.items.some((item) => item.productLabel === productFilter)
+        !row.items.some((item) => item.productKey === productFilter)
       ) {
         return false;
       }
@@ -205,12 +228,16 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
   const printFilterText = React.useMemo(() => {
     const chunks: string[] = [];
 
-    if (clientFilter !== "ALL") chunks.push(`Client: ${clientFilter}`);
-    if (productFilter !== "ALL") chunks.push(`Product: ${productFilter}`);
+    if (clientFilter !== "ALL") {
+      chunks.push(`Client: ${clientLabelByKey.get(clientFilter) || clientFilter}`);
+    }
+    if (productFilter !== "ALL") {
+      chunks.push(`Product: ${productLabelByKey.get(productFilter) || productFilter}`);
+    }
     if (search.trim()) chunks.push(`Search: ${search.trim()}`);
 
     return chunks.length > 0 ? chunks.join(" | ") : "All Data";
-  }, [clientFilter, productFilter, search]);
+  }, [clientFilter, productFilter, search, clientLabelByKey, productLabelByKey]);
 
   const generatedAtLabel = new Intl.DateTimeFormat("en-IN", {
     day: "2-digit",
@@ -268,9 +295,9 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All Clients</SelectItem>
-              {clientOptions.map((clientName) => (
-                <SelectItem key={clientName} value={clientName}>
-                  {clientName}
+              {clientOptions.map((client) => (
+                <SelectItem key={client.key} value={client.key}>
+                  {client.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -283,8 +310,8 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
             <SelectContent>
               <SelectItem value="ALL">All Products</SelectItem>
               {productOptions.map((product) => (
-                <SelectItem key={product} value={product}>
-                  {product}
+                <SelectItem key={product.key} value={product.key}>
+                  {product.label}
                 </SelectItem>
               ))}
             </SelectContent>

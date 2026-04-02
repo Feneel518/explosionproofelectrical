@@ -34,6 +34,11 @@ enum CastingMasterStatus {
   INACTIVE
 }
 
+enum BomComponentType {
+  RAW_MATERIAL
+  CASTING
+}
+
 enum CategoryStatus {
   ACTIVE
   INACTIVE
@@ -345,6 +350,7 @@ model RawMaterial {
   grnItems           GoodsReceiptNoteItem[]
   materialIssueItems MaterialIssueItem[]
   castingInputItems  CastingJobItem[] @relation("CastingInputRawMaterial")
+  bomItems           VariantBomItem[]
   stockAdjustmentItems StockAdjustmentItem[]
   stockBalance       StockBalance?
   stockLedgerEntries StockLedger[]
@@ -383,6 +389,7 @@ model CastingMaster {
   updatedById String?
 
   castingJobItems    CastingJobItem[]
+  bomItems           VariantBomItem[]
   stockBalance       StockBalance?
   stockLedgerEntries StockLedger[]
 
@@ -506,6 +513,7 @@ model ProductVariant {
 
   // ✅ Components (ONLY in variant)
   components ProductComponentsOnVariants[]
+  bom        VariantBom?
 
   // General
   status               ProductStatus         @default(ACTIVE)
@@ -1365,6 +1373,52 @@ model InvoicePackageItem {
   @@map("invoice_package_items")
 }
 
+model VariantBom {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variantId String         @unique
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  isActive Boolean @default(true)
+  notes    String?
+
+  createdById String?
+  updatedById String?
+
+  items VariantBomItem[]
+
+  @@index([isActive])
+  @@map("variant_boms")
+}
+
+model VariantBomItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bomId String
+  bom   VariantBom @relation(fields: [bomId], references: [id], onDelete: Cascade)
+
+  componentType BomComponentType
+
+  rawMaterialId String?
+  rawMaterial   RawMaterial? @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  castingMasterId String?
+  castingMaster   CastingMaster? @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
+
+  qtyPerUnit Int @default(1)
+  remarks    String?
+  sortOrder  Int @default(0)
+
+  @@index([bomId, sortOrder])
+  @@index([rawMaterialId])
+  @@index([castingMasterId])
+  @@map("variant_bom_items")
+}
+
 enum GrnStatus {
   DRAFT
   FINALIZED
@@ -1436,6 +1490,7 @@ enum StockReferenceType {
   GRN
   MATERIAL_ISSUE
   CASTING_JOB
+  INVOICE
   MANUAL_ADJUSTMENT
 }
 

@@ -256,6 +256,37 @@ export default async function Page({
 
   const invoiceMetaById = new Map(invoiceMetaList.map((row) => [row.id, row]));
 
+  const deliveryChallanIds = Array.from(
+    new Set(
+      items
+        .filter((row) => row.referenceType === "DELIVERY_CHALLAN")
+        .map((row) => row.referenceId),
+    ),
+  );
+
+  const deliveryChallanMetaList =
+    deliveryChallanIds.length > 0
+      ? await prisma.deliveryChallan.findMany({
+          where: {
+            id: {
+              in: deliveryChallanIds,
+            },
+          },
+          select: {
+            id: true,
+            customer: {
+              select: {
+                companyName: true,
+              },
+            },
+          },
+        })
+      : [];
+
+  const deliveryChallanMetaById = new Map(
+    deliveryChallanMetaList.map((row) => [row.id, row]),
+  );
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
@@ -355,6 +386,12 @@ export default async function Page({
                             href={`/dashboard/sales/invoices/${row.referenceId}`}>
                             {row.referenceNo || row.referenceId}
                           </Link>
+                        ) : row.referenceType === "DELIVERY_CHALLAN" ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/sales/delivery-challans/${row.referenceId}`}>
+                            {row.referenceNo || row.referenceId}
+                          </Link>
                         ) : row.referenceType === "MANUAL_ADJUSTMENT" &&
                           stockAdjustmentMetaById.has(row.referenceId) ? (
                           <Link
@@ -392,6 +429,13 @@ export default async function Page({
                         invoiceMetaById.has(row.referenceId) ? (
                         <div className="text-xs text-muted-foreground">
                           Invoice • {invoiceMetaById.get(row.referenceId)?.clientNameSnapshot || "-"}
+                        </div>
+                      ) : row.referenceType === "DELIVERY_CHALLAN" &&
+                        deliveryChallanMetaById.has(row.referenceId) ? (
+                        <div className="text-xs text-muted-foreground">
+                          Delivery Challan •{" "}
+                          {deliveryChallanMetaById.get(row.referenceId)?.customer
+                            ?.companyName || "-"}
                         </div>
                       ) : null}
                     </TableCell>

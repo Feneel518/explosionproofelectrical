@@ -259,12 +259,39 @@ export default async function Page() {
     movementInvoiceMeta.map((row) => [row.id, row]),
   );
 
+  const movementDeliveryChallanIds = Array.from(
+    new Set(
+      latestMovements
+        .filter((row) => row.referenceType === "DELIVERY_CHALLAN")
+        .map((row) => row.referenceId),
+    ),
+  );
+
+  const movementDeliveryChallanMeta =
+    movementDeliveryChallanIds.length > 0
+      ? await prisma.deliveryChallan.findMany({
+          where: { id: { in: movementDeliveryChallanIds } },
+          select: {
+            id: true,
+            customer: {
+              select: {
+                companyName: true,
+              },
+            },
+          },
+        })
+      : [];
+
+  const deliveryChallanMetaById = new Map(
+    movementDeliveryChallanMeta.map((row) => [row.id, row]),
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Stock Summary</h1>
         <p className="text-sm text-muted-foreground">
-          Live stock from ledger postings (GRN inward and material issue outward).
+          Live stock from ledger postings across GRN, dispatch, return, issue, and adjustment documents.
         </p>
       </div>
 
@@ -446,6 +473,13 @@ export default async function Page() {
                                 href={`/dashboard/sales/invoices/${latestMovement.referenceId}`}>
                                 {latestMovement.referenceNo || latestMovement.referenceId}
                               </Link>
+                            ) : latestMovement.referenceType ===
+                                "DELIVERY_CHALLAN" ? (
+                              <Link
+                                className="hover:underline"
+                                href={`/dashboard/sales/delivery-challans/${latestMovement.referenceId}`}>
+                                {latestMovement.referenceNo || latestMovement.referenceId}
+                              </Link>
                             ) : latestMovement.referenceType === "MANUAL_ADJUSTMENT" &&
                               adjustmentMetaById.has(latestMovement.referenceId) ? (
                               <Link
@@ -486,6 +520,14 @@ export default async function Page() {
                               Invoice •{" "}
                               {invoiceMetaById.get(latestMovement.referenceId)
                                 ?.clientNameSnapshot || "-"}
+                            </div>
+                          ) : latestMovement.referenceType ===
+                              "DELIVERY_CHALLAN" &&
+                            deliveryChallanMetaById.has(latestMovement.referenceId) ? (
+                            <div className="text-xs text-muted-foreground">
+                              Delivery Challan •{" "}
+                              {deliveryChallanMetaById.get(latestMovement.referenceId)
+                                ?.customer?.companyName || "-"}
                             </div>
                           ) : null}
                         </>

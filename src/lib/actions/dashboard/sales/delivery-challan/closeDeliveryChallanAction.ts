@@ -1,9 +1,11 @@
 "use server";
 
 import { requireAuth } from "@/lib/check/requireAuth";
+import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
-import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+
+const RESTOCK_ON_CLOSE_TYPES = new Set(["RETURNABLE", "SAMPLE", "JOB_WORK"]);
 
 export const closeDeliveryChallanAction = async (
   challanId: string,
@@ -20,9 +22,13 @@ export const closeDeliveryChallanAction = async (
     select: {
       id: true,
       status: true,
+      type: true,
+      challanCode: true,
       items: {
         select: {
           id: true,
+          productVariantId: true,
+          title: true,
           qty: true,
           closedQty: true,
           pendingQty: true,
@@ -46,33 +52,71 @@ export const closeDeliveryChallanAction = async (
     };
   }
 
-  let allClosed = true;
-  const updates: Prisma.PrismaPromise<any>[] = [];
+  const requestedById = new Map(
+    items.map((item) => [item.id, Number(item.closedQty || 0)]),
+  );
 
-  for (const item of items) {
-    const original = challan.items.find((i) => i.id === item.id);
-    if (!original) continue;
+  const nextRows = challan.items.map((original) => {
+    const requestedClosedQty = requestedById.has(original.id)
+      ? (requestedById.get(original.id) ?? 0)
+      : Number(original.closedQty || 0);
 
-    const nextClosedQty = Math.max(0, Math.min(item.closedQty, original.qty));
-    const nextPendingQty = Math.max(0, original.qty - nextClosedQty);
+    const safeRequestedClosedQty = Number.isFinite(requestedClosedQty)
+      ? requestedClosedQty
+      : Number(original.closedQty || 0);
 
-    if (nextPendingQty > 0) {
-      allClosed = false;
+    const nextClosedQty = Math.max(
+      0,
+      Math.min(safeRequestedClosedQty, Number(original.qty || 0)),
+    );
+    const nextPendingQty = Math.max(0, Number(original.qty || 0) - nextClosedQty);
+    const returnedQtyDelta = Math.max(
+      0,
+      nextClosedQty - Number(original.closedQty || 0),
+    );
+
+    return {
+      ...original,
+      nextClosedQty,
+      nextPendingQty,
+      returnedQtyDelta,
+    };
+  });
+
+  const allClosed = nextRows.every((item) => item.nextPendingQty <= 0);
+  const shouldRestockReturns = RESTOCK_ON_CLOSE_TYPES.has(challan.type);
+
+  await prisma.$transaction(async (tx) => {
+    for (const row of nextRows) {
+      await tx.deliveryChallanItem.update({
+        where: { id: row.id },
+        data: {
+          closedQty: row.nextClosedQty,
+          pendingQty: row.nextPendingQty,
+        },
+      });
+
+      if (
+        shouldRestockReturns &&
+        row.returnedQtyDelta > 0 &&
+        row.productVariantId
+      ) {
+        await postStockMovement(tx, {
+          productVariantId: row.productVariantId,
+          movementType: "RETURN_IN",
+          referenceType: "DELIVERY_CHALLAN",
+          referenceId: challanId,
+          referenceNo: challan.challanCode,
+          qty: row.returnedQtyDelta,
+          movementDate: new Date(),
+          actorName: session.user.email ?? null,
+          remarks: `Return received via delivery challan ${challan.challanCode} (${row.title})`,
+          createdById: session.user.id,
+        });
+      }
     }
 
-    updates.push(
-      prisma.deliveryChallanItem.update({
-        where: { id: item.id },
-        data: {
-          closedQty: nextClosedQty,
-          pendingQty: nextPendingQty,
-        },
-      }),
-    );
-  }
-
-  updates.push(
-    prisma.deliveryChallan.update({
+    await tx.deliveryChallan.update({
       where: { id: challanId },
       data: {
         status: allClosed ? "CLOSED" : "PARTIALLY_CLOSED",
@@ -82,13 +126,13 @@ export const closeDeliveryChallanAction = async (
           connect: { id: session.user.id },
         },
       },
-    }),
-  );
-
-  await prisma.$transaction(updates);
+    });
+  });
 
   revalidatePath("/dashboard/sales/delivery-challans");
   revalidatePath(`/dashboard/sales/delivery-challans/${challanId}`);
+  revalidatePath("/dashboard/inventory/stock");
+  revalidatePath("/dashboard/inventory/movements");
 
   return {
     ok: true as const,

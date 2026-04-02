@@ -214,11 +214,29 @@ const page: FC = async () => {
               label="Direct Sale Issues"
               value={`${overview.manufacturing.materialIssue.directSale} issue(s)`}
             />
+            <StatRow
+              label="Casting Jobs In Progress"
+              value={`${overview.manufacturing.castingJob.inProgress + overview.manufacturing.castingJob.partialReceived} job(s)`}
+              isAlert={
+                overview.manufacturing.castingJob.inProgress +
+                  overview.manufacturing.castingJob.partialReceived >
+                0
+              }
+            />
+            <StatRow
+              label="Casting Pending Weight"
+              value={`${overview.manufacturing.castingJob.pendingWeightKg.toFixed(3)} kg`}
+              isAlert={overview.manufacturing.castingJob.pendingWeightKg > 0}
+            />
             <div className="flex flex-wrap gap-2 pt-1">
               <ActionLink href="/dashboard/purchase/grn" title="GRN" />
               <ActionLink
                 href="/dashboard/manufacturing/material-issues"
                 title="Material Issues"
+              />
+              <ActionLink
+                href="/dashboard/manufacturing/casting-jobs"
+                title="Casting Jobs"
               />
             </div>
           </CardContent>

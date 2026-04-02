@@ -29,6 +29,11 @@ enum RawMaterialStatus {
   INACTIVE
 }
 
+enum CastingMasterStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum CategoryStatus {
   ACTIVE
   INACTIVE
@@ -293,6 +298,7 @@ model Supplier {
   updatedBy   User?   @relation("SupplierUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   rawMaterials      RawMaterial[]
   goodsReceiptNotes GoodsReceiptNote[]
+  castingJobs       CastingJob[]
 
   @@index([companyName])
   @@index([companyPhone])
@@ -338,6 +344,7 @@ model RawMaterial {
 
   grnItems           GoodsReceiptNoteItem[]
   materialIssueItems MaterialIssueItem[]
+  castingInputItems  CastingJobItem[] @relation("CastingInputRawMaterial")
   stockAdjustmentItems StockAdjustmentItem[]
   stockBalance       StockBalance?
   stockLedgerEntries StockLedger[]
@@ -347,6 +354,42 @@ model RawMaterial {
   @@index([status])
   @@index([deletedAt])
   @@index([preferredSupplierId])
+}
+
+model CastingMaster {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingItemName String
+  castingCode     String? @unique
+  drawingNumber   String?
+  hsnCode         String?
+  unit            String  @default("Nos")
+  standardWeightKg Decimal? @db.Decimal(12, 3)
+  description     String?
+  reorderLevel    Int?
+  openingStockQty      Int      @default(0)
+  openingStockUnitCost Decimal? @db.Decimal(12, 2)
+  openingStockAt       DateTime?
+
+  status CastingMasterStatus @default(ACTIVE)
+
+  deletedAt   DateTime?
+  deletedById String?
+
+  createdById String?
+
+  updatedById String?
+
+  castingJobItems    CastingJobItem[]
+  stockBalance       StockBalance?
+  stockLedgerEntries StockLedger[]
+
+  @@index([castingItemName])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("casting_masters")
 }
 
 // Category
@@ -1359,6 +1402,20 @@ enum MaterialIssueType {
   DIRECT_SALE
 }
 
+enum CastingJobStatus {
+  DRAFT
+  IN_PROGRESS
+  PARTIAL_RECEIVED
+  CLOSED
+  CANCELLED
+}
+
+enum CastingJobWorkerType {
+  IN_HOUSE
+  JOB_WORK
+  CONTRACT
+}
+
 enum StockAdjustmentStatus {
   DRAFT
   FINALIZED
@@ -1378,6 +1435,7 @@ enum StockMovementType {
 enum StockReferenceType {
   GRN
   MATERIAL_ISSUE
+  CASTING_JOB
   MANUAL_ADJUSTMENT
 }
 
@@ -1558,6 +1616,136 @@ model MaterialIssueItem {
   @@map("material_issue_items")
 }
 
+model CastingJob {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobNo Int
+  jobFy String
+
+  status     CastingJobStatus     @default(DRAFT)
+  workerType CastingJobWorkerType @default(IN_HOUSE)
+
+  workerNameSnapshot String
+  supplierId         String?
+  supplier           Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  issueDate          DateTime  @default(now())
+  expectedReturnDate DateTime?
+  remarks            String?
+
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  finalizedAt   DateTime?
+  finalizedById String?
+  closedAt      DateTime?
+  closedById    String?
+  createdById   String?
+  updatedById   String?
+
+  totalIssuedQty       Int     @default(0)
+  totalIssuedWeightKg  Decimal @default(0) @db.Decimal(14, 3)
+  totalReceivedQty     Int     @default(0)
+  totalReceivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  totalPendingWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  yieldPercent         Decimal? @db.Decimal(7, 3)
+
+  items    CastingJobItem[]
+  receipts CastingJobReceipt[]
+
+  @@unique([jobFy, jobNo])
+  @@index([status])
+  @@index([workerType])
+  @@index([jobFy])
+  @@index([issueDate])
+  @@index([supplierId])
+  @@index([workerNameSnapshot])
+  @@map("casting_jobs")
+}
+
+model CastingJobItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingJobId String
+  castingJob   CastingJob @relation(fields: [castingJobId], references: [id], onDelete: Cascade)
+
+  inputRawMaterialId String
+  inputRawMaterial   RawMaterial @relation("CastingInputRawMaterial", fields: [inputRawMaterialId], references: [id], onDelete: Restrict)
+
+  outputCastingId String
+  outputCasting   CastingMaster @relation(fields: [outputCastingId], references: [id], onDelete: Restrict)
+
+  inputTitle  String
+  outputTitle String
+  inputUnit   String?
+  outputUnit  String?
+
+  issuedQty      Int     @default(0)
+  issuedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+
+  expectedOutputQty      Int?
+  expectedOutputWeightKg Decimal? @db.Decimal(14, 3)
+
+  receivedQty      Int     @default(0)
+  receivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  pendingWeightKg  Decimal @default(0) @db.Decimal(14, 3)
+
+  sortOrder Int @default(0)
+
+  receiptItems CastingJobReceiptItem[]
+
+  @@index([castingJobId, sortOrder])
+  @@index([inputRawMaterialId])
+  @@index([outputCastingId])
+  @@map("casting_job_items")
+}
+
+model CastingJobReceipt {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingJobId String
+  castingJob   CastingJob @relation(fields: [castingJobId], references: [id], onDelete: Cascade)
+
+  receiptNo Int
+  receivedAt DateTime @default(now())
+
+  receivedByNameSnapshot String?
+  remarks                String?
+
+  items CastingJobReceiptItem[]
+
+  @@unique([castingJobId, receiptNo])
+  @@index([castingJobId, receivedAt])
+  @@map("casting_job_receipts")
+}
+
+model CastingJobReceiptItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingJobReceiptId String
+  castingJobReceipt   CastingJobReceipt @relation(fields: [castingJobReceiptId], references: [id], onDelete: Cascade)
+
+  castingJobItemId String
+  castingJobItem   CastingJobItem @relation(fields: [castingJobItemId], references: [id], onDelete: Cascade)
+
+  receivedQty      Int     @default(0)
+  receivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+
+  sortOrder Int @default(0)
+
+  @@index([castingJobReceiptId, sortOrder])
+  @@index([castingJobItemId])
+  @@map("casting_job_receipt_items")
+}
+
 model StockAdjustment {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -1633,6 +1821,8 @@ model StockBalance {
   productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
   rawMaterialId    String?         @unique
   rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+  castingMasterId  String?         @unique
+  castingMaster    CastingMaster?  @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
 
   qtyOnHand   Int @default(0)
   qtyReserved Int @default(0)
@@ -1644,6 +1834,7 @@ model StockBalance {
   @@index([qtyAvailable])
   @@index([productVariantId])
   @@index([rawMaterialId])
+  @@index([castingMasterId])
   @@map("stock_balances")
 }
 
@@ -1663,6 +1854,8 @@ model StockLedger {
   productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
   rawMaterialId    String?
   rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+  castingMasterId  String?
+  castingMaster    CastingMaster?  @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
 
   qtyIn        Int @default(0)
   qtyOut       Int @default(0)
@@ -1677,6 +1870,7 @@ model StockLedger {
 
   @@index([productVariantId, movementDate])
   @@index([rawMaterialId, movementDate])
+  @@index([castingMasterId, movementDate])
   @@index([referenceType, referenceId])
   @@index([movementType, movementDate])
   @@map("stock_ledger")

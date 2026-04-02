@@ -20,6 +20,7 @@ export const STOCK_REFERENCE_TYPES = [
   "ALL",
   "GRN",
   "MATERIAL_ISSUE",
+  "CASTING_JOB",
   "MANUAL_ADJUSTMENT",
 ] as const;
 

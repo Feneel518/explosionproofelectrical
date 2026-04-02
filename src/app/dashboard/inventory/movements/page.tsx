@@ -111,6 +111,7 @@ export default async function Page({
       include: {
         rawMaterial: {
           select: {
+            id: true,
             companyItemName: true,
             supplierItemName: true,
             itemCode: true,
@@ -126,6 +127,16 @@ export default async function Page({
             product: {
               select: { name: true },
             },
+          },
+        },
+        castingMaster: {
+          select: {
+            id: true,
+            castingItemName: true,
+            castingCode: true,
+            drawingNumber: true,
+            hsnCode: true,
+            unit: true,
           },
         },
       },
@@ -189,6 +200,35 @@ export default async function Page({
     stockAdjustmentMetaList.map((row) => [row.id, row]),
   );
 
+  const castingJobIds = Array.from(
+    new Set(
+      items
+        .filter((row) => row.referenceType === "CASTING_JOB")
+        .map((row) => row.referenceId),
+    ),
+  );
+
+  const castingJobMetaList =
+    castingJobIds.length > 0
+      ? await prisma.castingJob.findMany({
+          where: {
+            id: {
+              in: castingJobIds,
+            },
+          },
+          select: {
+            id: true,
+            workerType: true,
+            workerNameSnapshot: true,
+            status: true,
+          },
+        })
+      : [];
+
+  const castingJobMetaById = new Map(
+    castingJobMetaList.map((row) => [row.id, row]),
+  );
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
@@ -226,20 +266,32 @@ export default async function Page({
             ) : (
               items.map((row) => {
                 const isRawMaterial = Boolean(row.rawMaterial);
+                const isCasting = Boolean(row.castingMaster);
 
                 const itemTitle = isRawMaterial
                   ? row.rawMaterial?.companyItemName || "-"
-                  : [row.productVariant?.product.name, row.productVariant?.variant]
-                      .filter(Boolean)
-                      .join(" - ") || "-";
+                  : isCasting
+                    ? row.castingMaster?.castingItemName || "-"
+                    : [row.productVariant?.product.name, row.productVariant?.variant]
+                        .filter(Boolean)
+                        .join(" - ") || "-";
 
                 const itemMeta = isRawMaterial
                   ? [row.rawMaterial?.itemCode, row.rawMaterial?.hsnCode, row.rawMaterial?.unit]
                       .filter(Boolean)
                       .join(" • ")
-                  : [row.productVariant?.sku, row.productVariant?.typeNumber]
-                      .filter(Boolean)
-                      .join(" • ");
+                  : isCasting
+                    ? [
+                        row.castingMaster?.castingCode,
+                        row.castingMaster?.drawingNumber,
+                        row.castingMaster?.hsnCode,
+                        row.castingMaster?.unit,
+                      ]
+                        .filter(Boolean)
+                        .join(" • ")
+                    : [row.productVariant?.sku, row.productVariant?.typeNumber]
+                        .filter(Boolean)
+                        .join(" • ");
 
                 return (
                   <TableRow key={row.id}>
@@ -264,6 +316,12 @@ export default async function Page({
                             href={`/dashboard/manufacturing/material-issues/${row.referenceId}`}>
                             {row.referenceNo || row.referenceId}
                           </Link>
+                        ) : row.referenceType === "CASTING_JOB" ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/manufacturing/casting-jobs/${row.referenceId}`}>
+                            {row.referenceNo || row.referenceId}
+                          </Link>
                         ) : row.referenceType === "MANUAL_ADJUSTMENT" &&
                           stockAdjustmentMetaById.has(row.referenceId) ? (
                           <Link
@@ -281,6 +339,13 @@ export default async function Page({
                             ? `Direct Sale • ${issueMetaById.get(row.referenceId)?.directSaleCustomerNameSnapshot || issueMetaById.get(row.referenceId)?.issuedToNameSnapshot || "-"}`
                             : `Internal Use • ${issueMetaById.get(row.referenceId)?.issuedToNameSnapshot || "-"}`}
                         </div>
+                      ) : row.referenceType === "CASTING_JOB" &&
+                        castingJobMetaById.has(row.referenceId) ? (
+                        <div className="text-xs text-muted-foreground">
+                          Casting Job •{" "}
+                          {castingJobMetaById.get(row.referenceId)?.workerNameSnapshot || "-"}{" "}
+                          ({castingJobMetaById.get(row.referenceId)?.workerType || "-"})
+                        </div>
                       ) : row.referenceType === "MANUAL_ADJUSTMENT" &&
                         stockAdjustmentMetaById.has(row.referenceId) ? (
                         <div className="text-xs text-muted-foreground">
@@ -293,10 +358,33 @@ export default async function Page({
                       ) : null}
                     </TableCell>
                     <TableCell>
-                      <div>{itemTitle}</div>
+                      <div>
+                        {isRawMaterial ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/raw-materials/${row.rawMaterial?.id}`}
+                          >
+                            {itemTitle}
+                          </Link>
+                        ) : isCasting ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/casting-masters/${row.castingMaster?.id}`}
+                          >
+                            {itemTitle}
+                          </Link>
+                        ) : (
+                          itemTitle
+                        )}
+                      </div>
                       {isRawMaterial && row.rawMaterial?.supplierItemName ? (
                         <div className="text-xs text-muted-foreground">
                           Supplier: {row.rawMaterial.supplierItemName}
+                        </div>
+                      ) : null}
+                      {isCasting ? (
+                        <div className="text-xs text-muted-foreground">
+                          Casting Master
                         </div>
                       ) : null}
                       <div className="text-xs text-muted-foreground">{itemMeta || "-"}</div>

@@ -59,6 +59,16 @@ export default async function Page() {
             },
           },
         },
+        castingMaster: {
+          select: {
+            id: true,
+            castingItemName: true,
+            castingCode: true,
+            drawingNumber: true,
+            hsnCode: true,
+            unit: true,
+          },
+        },
       },
       take: 500,
     }),
@@ -71,12 +81,16 @@ export default async function Page() {
   ).length;
   const rawMaterialCount = balances.filter((row) => Boolean(row.rawMaterial)).length;
   const finishedGoodCount = balances.filter((row) => Boolean(row.productVariant)).length;
+  const castingCount = balances.filter((row) => Boolean(row.castingMaster)).length;
 
   const rawMaterialIds = balances
     .map((row) => row.rawMaterial?.id ?? null)
     .filter((id): id is string => Boolean(id));
   const variantIds = balances
     .map((row) => row.productVariant?.id ?? null)
+    .filter((id): id is string => Boolean(id));
+  const castingIds = balances
+    .map((row) => row.castingMaster?.id ?? null)
     .filter((id): id is string => Boolean(id));
 
   const movementWhereOr: Array<Record<string, unknown>> = [];
@@ -85,6 +99,9 @@ export default async function Page() {
   }
   if (variantIds.length > 0) {
     movementWhereOr.push({ productVariantId: { in: variantIds } });
+  }
+  if (castingIds.length > 0) {
+    movementWhereOr.push({ castingMasterId: { in: castingIds } });
   }
 
   const latestMovements =
@@ -102,6 +119,7 @@ export default async function Page() {
             referenceNo: true,
             rawMaterialId: true,
             productVariantId: true,
+            castingMasterId: true,
             qtyIn: true,
             qtyOut: true,
           },
@@ -127,6 +145,8 @@ export default async function Page() {
       ? `RM:${movement.rawMaterialId}`
       : movement.productVariantId
         ? `PV:${movement.productVariantId}`
+        : movement.castingMasterId
+          ? `CM:${movement.castingMasterId}`
         : null;
 
     if (!key || latestByItemKey.has(key)) continue;
@@ -189,6 +209,31 @@ export default async function Page() {
     movementAdjustmentMeta.map((row) => [row.id, row]),
   );
 
+  const movementCastingJobIds = Array.from(
+    new Set(
+      latestMovements
+        .filter((row) => row.referenceType === "CASTING_JOB")
+        .map((row) => row.referenceId),
+    ),
+  );
+
+  const movementCastingJobMeta =
+    movementCastingJobIds.length > 0
+      ? await prisma.castingJob.findMany({
+          where: { id: { in: movementCastingJobIds } },
+          select: {
+            id: true,
+            workerType: true,
+            workerNameSnapshot: true,
+            status: true,
+          },
+        })
+      : [];
+
+  const castingJobMetaById = new Map(
+    movementCastingJobMeta.map((row) => [row.id, row]),
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -198,7 +243,7 @@ export default async function Page() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-6">
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Tracked Items</div>
           <div className="text-2xl font-semibold">{balances.length}</div>
@@ -210,6 +255,10 @@ export default async function Page() {
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Finished Goods</div>
           <div className="text-2xl font-semibold">{finishedGoodCount}</div>
+        </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">Castings</div>
+          <div className="text-2xl font-semibold">{castingCount}</div>
         </div>
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Total On Hand</div>
@@ -250,24 +299,39 @@ export default async function Page() {
               balances.map((row) => {
                 const isLow = row.qtyAvailable <= threshold;
                 const isRawMaterial = Boolean(row.rawMaterial);
+                const isCasting = Boolean(row.castingMaster);
+                const isFinishedGood = Boolean(row.productVariant);
 
                 const title = isRawMaterial
                   ? row.rawMaterial?.companyItemName || "-"
-                  : [row.productVariant?.product.name, row.productVariant?.variant]
-                      .filter(Boolean)
-                      .join(" - ") || "-";
+                  : isCasting
+                    ? row.castingMaster?.castingItemName || "-"
+                    : [row.productVariant?.product.name, row.productVariant?.variant]
+                        .filter(Boolean)
+                        .join(" - ") || "-";
 
                 const meta = isRawMaterial
                   ? [row.rawMaterial?.itemCode, row.rawMaterial?.hsnCode, row.rawMaterial?.unit]
                       .filter(Boolean)
                       .join(" • ")
-                  : [row.productVariant?.sku, row.productVariant?.typeNumber]
-                      .filter(Boolean)
-                      .join(" • ");
+                  : isCasting
+                    ? [
+                        row.castingMaster?.castingCode,
+                        row.castingMaster?.drawingNumber,
+                        row.castingMaster?.hsnCode,
+                        row.castingMaster?.unit,
+                      ]
+                        .filter(Boolean)
+                        .join(" • ")
+                    : [row.productVariant?.sku, row.productVariant?.typeNumber]
+                        .filter(Boolean)
+                        .join(" • ");
 
                 const itemKey = isRawMaterial
                   ? `RM:${row.rawMaterial?.id ?? ""}`
-                  : `PV:${row.productVariant?.id ?? ""}`;
+                  : isCasting
+                    ? `CM:${row.castingMaster?.id ?? ""}`
+                    : `PV:${row.productVariant?.id ?? ""}`;
 
                 const latestMovement = latestByItemKey.get(itemKey);
                 const movementIssue =
@@ -278,11 +342,35 @@ export default async function Page() {
                 return (
                   <TableRow key={row.id}>
                     <TableCell>
-                      <div>{title}</div>
+                      <div>
+                        {isRawMaterial && row.rawMaterial?.id ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/raw-materials/${row.rawMaterial.id}`}
+                          >
+                            {title}
+                          </Link>
+                        ) : isCasting && row.castingMaster?.id ? (
+                          <Link
+                            className="hover:underline"
+                            href={`/dashboard/casting-masters/${row.castingMaster.id}`}
+                          >
+                            {title}
+                          </Link>
+                        ) : (
+                          title
+                        )}
+                      </div>
                       {isRawMaterial && row.rawMaterial?.supplierItemName ? (
                         <div className="text-xs text-muted-foreground">
                           Supplier: {row.rawMaterial.supplierItemName}
                         </div>
+                      ) : null}
+                      {isCasting ? (
+                        <div className="text-xs text-muted-foreground">Casting Master</div>
+                      ) : null}
+                      {isFinishedGood ? (
+                        <div className="text-xs text-muted-foreground">Finished Good</div>
                       ) : null}
                     </TableCell>
                     <TableCell>{meta || "-"}</TableCell>
@@ -321,6 +409,12 @@ export default async function Page() {
                                 href={`/dashboard/manufacturing/material-issues/${latestMovement.referenceId}`}>
                                 {latestMovement.referenceNo || latestMovement.referenceId}
                               </Link>
+                            ) : latestMovement.referenceType === "CASTING_JOB" ? (
+                              <Link
+                                className="hover:underline"
+                                href={`/dashboard/manufacturing/casting-jobs/${latestMovement.referenceId}`}>
+                                {latestMovement.referenceNo || latestMovement.referenceId}
+                              </Link>
                             ) : latestMovement.referenceType === "MANUAL_ADJUSTMENT" &&
                               adjustmentMetaById.has(latestMovement.referenceId) ? (
                               <Link
@@ -338,6 +432,13 @@ export default async function Page() {
                               {movementIssue.issueType === "DIRECT_SALE"
                                 ? `Direct Sale • ${movementIssue.directSaleCustomerNameSnapshot || movementIssue.issuedToNameSnapshot || "-"}`
                                 : `Internal Use • ${movementIssue.issuedToNameSnapshot || "-"}`}
+                            </div>
+                          ) : latestMovement.referenceType === "CASTING_JOB" &&
+                            castingJobMetaById.has(latestMovement.referenceId) ? (
+                            <div className="text-xs text-muted-foreground">
+                              Casting Job •{" "}
+                              {castingJobMetaById.get(latestMovement.referenceId)?.workerNameSnapshot || "-"}{" "}
+                              ({castingJobMetaById.get(latestMovement.referenceId)?.workerType || "-"})
                             </div>
                           ) : latestMovement.referenceType === "MANUAL_ADJUSTMENT" &&
                             adjustmentMetaById.has(latestMovement.referenceId) ? (

@@ -3,6 +3,7 @@
 type PostStockMovementInput = {
   productVariantId?: string | null;
   rawMaterialId?: string | null;
+  castingMasterId?: string | null;
   movementType: StockMovementType;
   referenceType: StockReferenceType;
   referenceId: string;
@@ -42,12 +43,20 @@ export async function postStockMovement(
 
   const hasRawMaterial = Boolean(input.rawMaterialId);
   const hasVariant = Boolean(input.productVariantId);
+  const hasCastingMaster = Boolean(input.castingMasterId);
 
-  if (!hasRawMaterial && !hasVariant) {
-    throw new Error("Stock movement must include raw material or product variant.");
+  const linkedCount = [hasRawMaterial, hasVariant, hasCastingMaster].filter(Boolean)
+    .length;
+
+  if (linkedCount === 0) {
+    throw new Error(
+      "Stock movement must include raw material, casting master, or product variant.",
+    );
   }
-  if (hasRawMaterial && hasVariant) {
-    throw new Error("Stock movement cannot include both raw material and product variant.");
+  if (linkedCount > 1) {
+    throw new Error(
+      "Stock movement cannot include more than one stock entity at a time.",
+    );
   }
 
   const settings = await tx.inventorySetting.findUnique({
@@ -60,7 +69,9 @@ export async function postStockMovement(
   const existingBalance = await tx.stockBalance.findFirst({
     where: hasRawMaterial
       ? { rawMaterialId: input.rawMaterialId! }
-      : { productVariantId: input.productVariantId! },
+      : hasCastingMaster
+        ? { castingMasterId: input.castingMasterId! }
+        : { productVariantId: input.productVariantId! },
     select: {
       id: true,
       qtyOnHand: true,
@@ -93,6 +104,7 @@ export async function postStockMovement(
       data: {
         productVariantId: input.productVariantId ?? null,
         rawMaterialId: input.rawMaterialId ?? null,
+        castingMasterId: input.castingMasterId ?? null,
         qtyOnHand: nextOnHand,
         qtyReserved: 0,
         qtyAvailable: nextOnHand,
@@ -117,6 +129,7 @@ export async function postStockMovement(
       referenceNo: input.referenceNo ?? null,
       productVariantId: input.productVariantId ?? null,
       rawMaterialId: input.rawMaterialId ?? null,
+      castingMasterId: input.castingMasterId ?? null,
       qtyIn,
       qtyOut,
       balanceAfter: nextOnHand,

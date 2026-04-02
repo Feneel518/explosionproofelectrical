@@ -88,7 +88,7 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
           </div>
 
           {hasCountData ? (
-            <ChartContainer config={countConfig} className="h-[320px] w-full">
+            <ChartContainer config={countConfig} className="h-80 w-full">
               <AreaChart data={counts} margin={{ left: 8, right: 8, top: 8 }}>
                 <defs>
                   <linearGradient
@@ -186,7 +186,7 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
               </AreaChart>
             </ChartContainer>
           ) : (
-            <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
+            <div className="flex h-80 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
               No quotation/order/invoice entries in current month yet.
             </div>
           )}
@@ -216,7 +216,7 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
           </div>
 
           {hasValueData ? (
-            <ChartContainer config={valueConfig} className="h-[320px] w-full">
+            <ChartContainer config={valueConfig} className="h-80 w-full">
               <AreaChart data={values} margin={{ left: 8, right: 8, top: 8 }}>
                 <defs>
                   <linearGradient
@@ -308,7 +308,7 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
               </AreaChart>
             </ChartContainer>
           ) : (
-            <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
+            <div className="flex h-80 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
               No order/invoice value entries in current month yet.
             </div>
           )}

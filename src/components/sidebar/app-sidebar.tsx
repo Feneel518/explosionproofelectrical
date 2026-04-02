@@ -57,6 +57,10 @@ const data = {
           title: "Raw Materials",
           url: "/dashboard/raw-materials",
         },
+        {
+          title: "Casting Masters",
+          url: "/dashboard/casting-masters",
+        },
       ],
     },
     {
@@ -105,6 +109,14 @@ const data = {
         {
           title: "Material Issues",
           url: "/dashboard/manufacturing/material-issues",
+        },
+        {
+          title: "Casting Jobs",
+          url: "/dashboard/manufacturing/casting-jobs",
+        },
+        {
+          title: "Worker Ledger",
+          url: "/dashboard/manufacturing/worker-ledger",
         },
       ],
     },

@@ -71,6 +71,14 @@ export type DashboardOverviewData = {
       qtyIssuedThisMonth: number;
       qtyReturnedThisMonth: number;
     };
+    castingJob: {
+      total: number;
+      inProgress: number;
+      partialReceived: number;
+      closed: number;
+      pendingWeightKg: number;
+      receivedWeightKgThisMonth: number;
+    };
   };
   inventory: {
     stock: {
@@ -140,6 +148,12 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
     materialIssueDirectSale,
     materialIssuedThisMonthAgg,
     materialReturnedThisMonthAgg,
+    castingJobTotal,
+    castingJobInProgress,
+    castingJobPartialReceived,
+    castingJobClosed,
+    castingJobPendingWeightAgg,
+    castingJobReceiptWeightThisMonthAgg,
 
     inventorySetting,
     stockTrackedItems,
@@ -290,6 +304,29 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
       _sum: { qtyReturned: true },
     }),
 
+    prisma.castingJob.count(),
+    prisma.castingJob.count({
+      where: { status: "IN_PROGRESS" },
+    }),
+    prisma.castingJob.count({
+      where: { status: "PARTIAL_RECEIVED" },
+    }),
+    prisma.castingJob.count({
+      where: { status: "CLOSED" },
+    }),
+    prisma.castingJob.aggregate({
+      where: { status: { in: ["IN_PROGRESS", "PARTIAL_RECEIVED"] } },
+      _sum: { totalPendingWeightKg: true },
+    }),
+    prisma.castingJobReceiptItem.aggregate({
+      where: {
+        castingJobReceipt: {
+          receivedAt: { gte: startOfMonth },
+        },
+      },
+      _sum: { receivedWeightKg: true },
+    }),
+
     prisma.inventorySetting.findUnique({
       where: { id: "default" },
       select: { lowStockThreshold: true },
@@ -390,6 +427,16 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         qtyIssuedThisMonth: materialIssuedThisMonthAgg._sum.qtyIssued ?? 0,
         qtyReturnedThisMonth: materialReturnedThisMonthAgg._sum.qtyReturned ?? 0,
       },
+      castingJob: {
+        total: castingJobTotal,
+        inProgress: castingJobInProgress,
+        partialReceived: castingJobPartialReceived,
+        closed: castingJobClosed,
+        pendingWeightKg: toNumber(castingJobPendingWeightAgg._sum.totalPendingWeightKg),
+        receivedWeightKgThisMonth: toNumber(
+          castingJobReceiptWeightThisMonthAgg._sum.receivedWeightKg,
+        ),
+      },
     },
     inventory: {
       stock: {
@@ -409,4 +456,3 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
     },
   };
 }
-

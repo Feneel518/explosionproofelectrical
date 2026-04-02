@@ -181,7 +181,7 @@ function BreakdownCard({
             ) : (
               rows.map((row) => (
                 <TableRow key={row.label}>
-                  <TableCell className="break-words">{row.label}</TableCell>
+                  <TableCell className="text-wrap">{row.label}</TableCell>
                   <TableCell className="text-right">{row.count}</TableCell>
                   <TableCell className="text-right">
                     {row.percentage.toFixed(1)}%

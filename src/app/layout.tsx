@@ -41,7 +41,6 @@ export default function RootLayout({
             {children}
           </TooltipProvider>
         </NuqsAdapter>
-        {/* <MagneticLightCursor /> */}
         <Toaster richColors />
       </body>
     </html>

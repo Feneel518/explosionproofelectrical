@@ -351,24 +351,22 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
       }
 
       // force-save latest form state first
-      await autosave.triggerSave();
-      // if your autosave hook exposes status, block on error/conflict
-      if (autosave.status === "conflict") {
-        console.log("Draft conflict");
-        return;
-      }
-
-      if (autosave.status === "error") {
-        console.log("Draft save failed");
+      const saveRes = await autosave.flushSave();
+      if (!saveRes.ok) {
+        if ((saveRes as any).code === "VERSION_CONFLICT") {
+          toast.error(
+            "This quotation was updated by another user. Refresh and continue from latest draft.",
+          );
+        } else {
+          toast.error("Could not save latest draft before finalizing.");
+        }
         return;
       }
 
       const res = await finalizeQuotationAction(quotationId);
 
-    
-
       if (!res.ok) {
-        console.log("Finalize failed:", res);
+        toast.error(res.message || "Finalize failed");
         return;
       }
 
@@ -473,7 +471,18 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
   async function handleManualSave() {
     try {
       setIsSaving(true);
-      await autosave.triggerSave();
+      const res = await autosave.flushSave();
+      if (!res.ok) {
+        if ((res as any).code === "VERSION_CONFLICT") {
+          toast.error(
+            "Draft conflict detected. Please refresh to load latest quotation changes.",
+          );
+        } else {
+          toast.error("Manual save failed.");
+        }
+        return;
+      }
+      toast.success("Draft saved");
     } finally {
       setIsSaving(false);
     }

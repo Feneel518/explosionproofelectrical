@@ -1,19 +1,12 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -31,26 +24,26 @@ type Props = {
 const countConfig = {
   quotations: {
     label: "Quotations",
-    color: "#f97316",
+    color: "#fb923c",
   },
   orders: {
     label: "Orders",
-    color: "#fb923c",
+    color: "#f97316",
   },
   invoices: {
     label: "Invoices",
-    color: "#fdba74",
+    color: "#ea580c",
   },
 } satisfies ChartConfig;
 
 const valueConfig = {
   orderValue: {
     label: "Order Value",
-    color: "#ea580c",
+    color: "#f59e0b",
   },
   invoiceValue: {
     label: "Invoice Value",
-    color: "#f97316",
+    color: "#ea580c",
   },
 } satisfies ChartConfig;
 
@@ -67,30 +60,79 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
   const totalInvoices = counts.reduce((sum, row) => sum + row.invoices, 0);
 
   const totalOrderValue = values.reduce((sum, row) => sum + row.orderValue, 0);
-  const totalInvoiceValue = values.reduce((sum, row) => sum + row.invoiceValue, 0);
+  const totalInvoiceValue = values.reduce(
+    (sum, row) => sum + row.invoiceValue,
+    0,
+  );
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <Card className="py-4">
+      <Card className=" py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-base">Current Month: Daily Documents</CardTitle>
+          <CardTitle className="text-base">
+            Current Month: Daily Documentskhe
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-4">
           <div className="mb-3 grid grid-cols-3 gap-2 text-xs">
-            <div className="rounded-md border px-2 py-1">
-              Quotations: <span className="font-semibold">{totalQuotations}</span>
+            <div className="rounded-md border  px-2 py-1">
+              Quotations:{" "}
+              <span className="font-semibold">{totalQuotations}</span>
             </div>
-            <div className="rounded-md border px-2 py-1">
+            <div className="rounded-md border  px-2 py-1">
               Orders: <span className="font-semibold">{totalOrders}</span>
             </div>
-            <div className="rounded-md border px-2 py-1">
+            <div className="rounded-md border  px-2 py-1">
               Invoices: <span className="font-semibold">{totalInvoices}</span>
             </div>
           </div>
 
           {hasCountData ? (
             <ChartContainer config={countConfig} className="h-[320px] w-full">
-              <LineChart data={counts} margin={{ left: 8, right: 8, top: 8 }}>
+              <AreaChart data={counts} margin={{ left: 8, right: 8, top: 8 }}>
+                <defs>
+                  <linearGradient
+                    id="fillQuotations"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-quotations)"
+                      stopOpacity={0.45}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-quotations)"
+                      stopOpacity={0.04}
+                    />
+                  </linearGradient>
+                  <linearGradient id="fillOrders" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-orders)"
+                      stopOpacity={0.4}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-orders)"
+                      stopOpacity={0.03}
+                    />
+                  </linearGradient>
+                  <linearGradient id="fillInvoices" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-invoices)"
+                      stopOpacity={0.42}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-invoices)"
+                      stopOpacity={0.03}
+                    />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} strokeDasharray="4 4" />
                 <XAxis dataKey="day" tickLine={false} axisLine={false} />
                 <YAxis allowDecimals={false} width={28} />
@@ -100,36 +142,48 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
                       indicator="dot"
                       formatter={(value, key) => (
                         <div className="flex min-w-[140px] items-center justify-between gap-4">
-                          <span className="text-muted-foreground">{String(key)}</span>
+                          <span className="text-muted-foreground">
+                            {String(key)}
+                          </span>
                           <span className="font-medium">{Number(value)}</span>
                         </div>
                       )}
                     />
                   }
                 />
-                <Legend />
-                <Line
-                  type="monotone"
+                <ChartLegend
+                  content={
+                    <ChartLegendContent className="flex-wrap gap-3 text-xs" />
+                  }
+                />
+                <Area
+                  type="natural"
                   dataKey="quotations"
+                  fill="url(#fillQuotations)"
                   stroke="var(--color-quotations)"
-                  strokeWidth={2.5}
-                  dot={false}
+                  strokeWidth={2.2}
+                  fillOpacity={1}
+                  activeDot={{ r: 4 }}
                 />
-                <Line
-                  type="monotone"
+                <Area
+                  type="natural"
                   dataKey="orders"
+                  fill="url(#fillOrders)"
                   stroke="var(--color-orders)"
-                  strokeWidth={2.5}
-                  dot={false}
+                  strokeWidth={2.2}
+                  fillOpacity={1}
+                  activeDot={{ r: 4 }}
                 />
-                <Line
-                  type="monotone"
+                <Area
+                  type="natural"
                   dataKey="invoices"
+                  fill="url(#fillInvoices)"
                   stroke="var(--color-invoices)"
-                  strokeWidth={2.5}
-                  dot={false}
+                  strokeWidth={2.2}
+                  fillOpacity={1}
+                  activeDot={{ r: 4 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           ) : (
             <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
@@ -141,15 +195,19 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
 
       <Card className="py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-base">Current Month: Daily Value (INR)</CardTitle>
+          <CardTitle className="text-base">
+            Current Month: Daily Value (INR)
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-4">
           <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-md border px-2 py-1">
+            <div className="rounded-md border  px-2 py-1">
               Order Value:{" "}
-              <span className="font-semibold">{formatCurrencyINR(totalOrderValue)}</span>
+              <span className="font-semibold">
+                {formatCurrencyINR(totalOrderValue)}
+              </span>
             </div>
-            <div className="rounded-md border px-2 py-1">
+            <div className="rounded-md border  px-2 py-1">
               Invoice Value:{" "}
               <span className="font-semibold">
                 {formatCurrencyINR(totalInvoiceValue)}
@@ -159,7 +217,43 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
 
           {hasValueData ? (
             <ChartContainer config={valueConfig} className="h-[320px] w-full">
-              <BarChart data={values} margin={{ left: 8, right: 8, top: 8 }}>
+              <AreaChart data={values} margin={{ left: 8, right: 8, top: 8 }}>
+                <defs>
+                  <linearGradient
+                    id="fillOrderValue"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-orderValue)"
+                      stopOpacity={0.5}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-orderValue)"
+                      stopOpacity={0.05}
+                    />
+                  </linearGradient>
+                  <linearGradient
+                    id="fillInvoiceValue"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-invoiceValue)"
+                      stopOpacity={0.45}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-invoiceValue)"
+                      stopOpacity={0.04}
+                    />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} strokeDasharray="4 4" />
                 <XAxis dataKey="day" tickLine={false} axisLine={false} />
                 <YAxis
@@ -177,7 +271,9 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
                       indicator="dot"
                       formatter={(value, key) => (
                         <div className="flex min-w-[180px] items-center justify-between gap-4">
-                          <span className="text-muted-foreground">{String(key)}</span>
+                          <span className="text-muted-foreground">
+                            {String(key)}
+                          </span>
                           <span className="font-medium">
                             {formatCurrencyINR(Number(value))}
                           </span>
@@ -186,18 +282,30 @@ export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
                     />
                   }
                 />
-                <Legend />
-                <Bar
+                <ChartLegend
+                  content={
+                    <ChartLegendContent className="flex-wrap gap-3 text-xs" />
+                  }
+                />
+                <Area
+                  type="natural"
                   dataKey="orderValue"
-                  fill="var(--color-orderValue)"
-                  radius={[6, 6, 0, 0]}
+                  fill="url(#fillOrderValue)"
+                  stroke="var(--color-orderValue)"
+                  strokeWidth={2.2}
+                  fillOpacity={1}
+                  activeDot={{ r: 4 }}
                 />
-                <Bar
+                <Area
+                  type="natural"
                   dataKey="invoiceValue"
-                  fill="var(--color-invoiceValue)"
-                  radius={[6, 6, 0, 0]}
+                  fill="url(#fillInvoiceValue)"
+                  stroke="var(--color-invoiceValue)"
+                  strokeWidth={2.2}
+                  fillOpacity={1}
+                  activeDot={{ r: 4 }}
                 />
-              </BarChart>
+              </AreaChart>
             </ChartContainer>
           ) : (
             <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">

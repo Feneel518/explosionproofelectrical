@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   AudioWaveform,
   Bot,
+  ChartColumnIncreasing,
   Command,
   GalleryVerticalEnd,
   SquareTerminal,
@@ -21,14 +22,14 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+export type AppSidebarUser = {
+  name: string;
+  email: string;
+  avatar?: string | null;
+  role?: string | null;
+};
 
+const data = {
   navMain: [
     {
       title: "Master",
@@ -126,10 +127,26 @@ const data = {
         },
       ],
     },
+    {
+      title: "Website",
+      url: "#",
+      icon: ChartColumnIncreasing,
+      items: [
+        {
+          title: "Visitor Analytics",
+          url: "/dashboard/website-analytics",
+        },
+      ],
+    },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  user,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  user: AppSidebarUser;
+}) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="border-b">
@@ -148,7 +165,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

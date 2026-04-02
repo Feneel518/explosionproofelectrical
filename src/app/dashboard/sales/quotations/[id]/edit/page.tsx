@@ -12,6 +12,8 @@ interface pageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 const page: FC<pageProps> = async ({ params }) => {
   const { id } = await params;
   const res = await getQuotationDraftAction(id);

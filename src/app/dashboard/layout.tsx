@@ -15,10 +15,20 @@ interface layoutProps {
 }
 
 const layout: FC<layoutProps> = async ({ children }) => {
-  await requireAuth();
+  const { user } = await requireAuth();
+  const sidebarUser = {
+    name: user.name || "Dashboard User",
+    email: user.email || "unknown@example.com",
+    avatar: user.image || null,
+    role:
+      typeof (user as { role?: unknown }).role === "string"
+        ? ((user as { role?: string }).role ?? null)
+        : null,
+  };
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar user={sidebarUser} />
       <SidebarInset>
         <header className="flex h-14 lg:h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
           <QuotationFollowupReminderToast />

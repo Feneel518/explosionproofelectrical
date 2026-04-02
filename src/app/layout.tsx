@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import MagneticLightCursor from "@/lib/actions/frontend/MagneticLightCursor";
+import FrontendVisitTracker from "@/components/analytics/FrontendVisitTracker";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -35,7 +36,10 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${garamond.variable} antialiased font-sans no-scrollbar`}>
         <NuqsAdapter>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <FrontendVisitTracker />
+            {children}
+          </TooltipProvider>
         </NuqsAdapter>
         {/* <MagneticLightCursor /> */}
         <Toaster richColors />

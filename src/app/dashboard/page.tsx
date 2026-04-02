@@ -6,11 +6,13 @@ import { requireAuth } from "@/lib/check/requireAuth";
 import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 import { getDashboardOverviewAction } from "@/lib/actions/dashboard/getDashboardOverviewAction";
 import { getDashboardMonthlyTrendsAction } from "@/lib/actions/dashboard/getDashboardMonthlyTrendsAction";
+import { getWebsiteVisitorAnalyticsAction } from "@/lib/actions/dashboard/getWebsiteVisitorAnalyticsAction";
 import {
   ArrowRight,
   Boxes,
   ClipboardList,
   FileWarning,
+  Globe2,
   HandCoins,
   LayoutDashboard,
   PackageSearch,
@@ -21,9 +23,10 @@ import MonthlySalesOverviewCharts from "@/components/dashboard/overview/MonthlyS
 
 const page: FC = async () => {
   await requireAuth();
-  const [overview, monthlyTrends] = await Promise.all([
+  const [overview, monthlyTrends, websiteAnalytics] = await Promise.all([
     getDashboardOverviewAction(),
     getDashboardMonthlyTrendsAction(),
+    getWebsiteVisitorAnalyticsAction(30),
   ]);
 
   const generatedAt = new Intl.DateTimeFormat("en-IN", {
@@ -66,6 +69,14 @@ const page: FC = async () => {
       icon: Boxes,
       href: "/dashboard/inventory/stock",
       alert: overview.inventory.stock.lowStockItems > 0,
+    },
+    {
+      title: "Website Visitors (30d)",
+      value: websiteAnalytics.totals.uniqueVisitors,
+      subtitle: `${websiteAnalytics.totals.pageViews} page views / ${websiteAnalytics.totals.countries} countries`,
+      icon: Globe2,
+      href: "/dashboard/website-analytics",
+      alert: false,
     },
   ] as const;
 

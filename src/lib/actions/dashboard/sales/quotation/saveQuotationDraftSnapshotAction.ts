@@ -19,8 +19,6 @@ export const saveQuotationDraftSnapshotAction = async ({
     select: { id: true, status: true, draftVersion: true },
   });
 
-  console.log(draft);
-
   if (!q) return { ok: false as const, message: "Quotation not found" };
   if (q.status !== "DRAFT")
     return { ok: false as const, message: "Cannot autosave non-draft" };

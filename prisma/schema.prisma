@@ -1381,6 +1381,25 @@ enum StockReferenceType {
   MANUAL_ADJUSTMENT
 }
 
+enum WebsiteVisitSourceType {
+  DIRECT
+  ORGANIC_SEARCH
+  SOCIAL
+  EMAIL
+  REFERRAL
+  ADS
+  INTERNAL
+  UNKNOWN
+}
+
+enum WebsiteVisitDeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+  BOT
+  OTHER
+}
+
 model GoodsReceiptNote {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -1661,6 +1680,53 @@ model StockLedger {
   @@index([referenceType, referenceId])
   @@index([movementType, movementDate])
   @@map("stock_ledger")
+}
+
+model WebsiteVisit {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visitedAt DateTime @default(now())
+
+  visitorId String
+  sessionId String
+
+  isFrontend     Boolean @default(true)
+  isSessionEntry Boolean @default(false)
+
+  path        String
+  queryString String?
+  pageTitle   String?
+
+  referrer   String?
+  sourceHost String?
+  sourceType WebsiteVisitSourceType @default(UNKNOWN)
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  country       String?
+  countryRegion String?
+  city          String?
+
+  deviceType WebsiteVisitDeviceType @default(OTHER)
+  browser    String?
+  os         String?
+  userAgent  String?
+  ipHash     String?
+
+  @@index([visitedAt])
+  @@index([visitorId, visitedAt])
+  @@index([sessionId, visitedAt])
+  @@index([sourceType, visitedAt])
+  @@index([sourceHost, visitedAt])
+  @@index([country, visitedAt])
+  @@index([path, visitedAt])
+  @@index([isFrontend, visitedAt])
+  @@index([isSessionEntry, visitedAt])
+  @@map("website_visits")
 }
 
 model InventorySetting {

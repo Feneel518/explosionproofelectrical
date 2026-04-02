@@ -6,6 +6,7 @@ import {
 import { prisma } from "@/lib/prisma/db";
 import { suppliersSearchParamsCache } from "@/lib/searchParams/dashboard/suppliers/suppliersSearchParams";
 import { FC } from "react";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface pageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -42,6 +43,8 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     prisma.supplier.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
@@ -54,7 +57,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       </div>
 
       <SuppliersTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}

@@ -16,10 +16,11 @@ import {
   formatDocumentSerial,
   formatFinancialDocumentNumber,
 } from "@/lib/helpers/globalHelpers/financialYear";
+import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
 
 interface WorkOrderCopyProps {
-  order: GetSalesOrderByIdData;
-  items: GetSalesOrderByIdData["items"];
+  order: ClientSafe<GetSalesOrderByIdData>;
+  items: ClientSafe<GetSalesOrderByIdData>["items"];
 }
 
 const WorkOrderCopy: FC<WorkOrderCopyProps> = ({ order, items }) => {

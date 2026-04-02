@@ -3,21 +3,14 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
   Bot,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
   SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
-import { NavProjects } from "@/components/sidebar/nav-projects";
 import { NavUser } from "@/components/sidebar/nav-user";
-import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -81,6 +74,10 @@ const data = {
         {
           title: "Sales Orders",
           url: "/dashboard/sales/orders",
+        },
+        {
+          title: "Pending Orders",
+          url: "/dashboard/sales/pending",
         },
         {
           title: "Invoicing",

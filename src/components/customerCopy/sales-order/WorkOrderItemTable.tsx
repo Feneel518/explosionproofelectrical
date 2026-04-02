@@ -10,9 +10,10 @@ import {
 import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import Image from "next/image";
 import { FC } from "react";
+import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
 
 interface WorkOrderItemTableProps {
-  items: GetSalesOrderByIdData["items"];
+  items: ClientSafe<GetSalesOrderByIdData>["items"];
   pageItemsStartIndex: number;
 }
 

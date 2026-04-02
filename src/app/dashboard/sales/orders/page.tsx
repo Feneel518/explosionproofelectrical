@@ -7,8 +7,10 @@ import {
 import { prisma } from "@/lib/prisma/db";
 import { orderSearchParamsCache } from "@/lib/searchParams/dashboard/sales/order/OrderSearchParams";
 import { ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FC } from "react";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -26,7 +28,7 @@ const page: FC<PageProps> = async ({ searchParams }) => {
   const [items, total] = await Promise.all([
     prisma.salesOrder.findMany({
       where,
-      orderBy: orderBy as any,
+      orderBy,
       skip: (pageParams - 1) * pageSizeParams,
       take: pageSizeParams,
       select: {
@@ -78,6 +80,8 @@ const page: FC<PageProps> = async ({ searchParams }) => {
     prisma.salesOrder.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -89,15 +93,23 @@ const page: FC<PageProps> = async ({ searchParams }) => {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/sales/orders/analytics"
-          className={buttonVariants()}>
-          Analytics <ArrowRight />
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/dashboard/sales/pending"
+            className={cn(buttonVariants({ variant: "outline" }))}>
+            Pending Board <ArrowRight />
+          </Link>
+
+          <Link
+            href="/dashboard/sales/orders/analytics"
+            className={buttonVariants()}>
+            Analytics <ArrowRight />
+          </Link>
+        </div>
       </div>
 
       <OrderTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}

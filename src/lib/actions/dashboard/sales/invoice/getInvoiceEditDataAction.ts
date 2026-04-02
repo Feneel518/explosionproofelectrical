@@ -4,6 +4,7 @@ import { Prisma, ProductMediaKind } from "@prisma/client";
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import type { InvoiceDraftData } from "@/lib/types/Invoicetable";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 function normalizeInvoiceDraftData(
   value: Prisma.JsonValue,
@@ -143,7 +144,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
 
     return {
       ok: true as const,
-      invoice: {
+      invoice: serializeForClient({
         ...invoice,
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
@@ -151,7 +152,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
         lrCopy,
         draftData,
         pendingItems,
-      },
+      }),
     };
   } catch (error) {
     console.error("getInvoiceEditDataAction", error);

@@ -9,6 +9,7 @@ import { quotationSearchParamsCache } from "@/lib/searchParams/dashboard/sales/q
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { FC } from "react";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface pageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -65,6 +66,8 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     prisma.quotation.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -83,7 +86,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       </div>
 
       <QuotationTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}

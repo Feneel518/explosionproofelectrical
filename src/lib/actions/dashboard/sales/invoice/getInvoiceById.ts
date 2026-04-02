@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { Prisma } from "@prisma/client";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 type ProductMediaKind = string;
 
@@ -320,7 +321,7 @@ export async function getInvoiceByIdAction(invoiceId: string) {
 
     return {
       ok: true as const,
-      invoice: {
+      invoice: serializeForClient({
         ...invoice,
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
@@ -330,7 +331,7 @@ export async function getInvoiceByIdAction(invoiceId: string) {
         packages,
         pendingItems,
         draftData,
-      },
+      }),
     };
   } catch (error) {
     console.error("getInvoiceByIdAction", error);

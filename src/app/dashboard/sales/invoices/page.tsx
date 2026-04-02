@@ -7,6 +7,7 @@ import {
 } from "@/lib/helpers/RepoHelpers/invoiceRepo";
 import InvoiceTable from "@/components/dashboard/sales/invoice/InvoiceTable";
 import { invoiceListSelect } from "@/lib/types/Invoicetable";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -32,6 +33,8 @@ const page: FC<PageProps> = async ({ searchParams }) => {
     prisma.invoice.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -44,7 +47,7 @@ const page: FC<PageProps> = async ({ searchParams }) => {
       </div>
 
       <InvoiceTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}

@@ -22,9 +22,10 @@ import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
 import WorkOrderCopyModal from "@/components/customerCopy/sales-order/WorkOrderCopyDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
 
 interface SalesOrderDetailsPageProps {
-  order: GetSalesOrderByIdData;
+  order: ClientSafe<GetSalesOrderByIdData>;
 }
 
 function formatDate(value?: Date | string | null) {

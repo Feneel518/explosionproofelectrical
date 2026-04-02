@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 export async function getGrnByIdAction(id: string) {
   await requireAuth();
@@ -19,9 +20,5 @@ export async function getGrnByIdAction(id: string) {
     return { ok: false as const, message: "GRN not found." };
   }
 
-  // Ensure only plain JSON-serializable data is sent to Client Components.
-  // Prisma Decimal instances are not supported across the RSC boundary.
-  const plainGrn = JSON.parse(JSON.stringify(grn));
-
-  return { ok: true as const, grn: plainGrn };
+  return { ok: true as const, grn: serializeForClient(grn) };
 }

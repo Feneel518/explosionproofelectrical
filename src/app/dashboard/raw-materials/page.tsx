@@ -7,6 +7,7 @@ import {
 } from "@/lib/helpers/RepoHelpers/RawMaterialRepo";
 import { prisma } from "@/lib/prisma/db";
 import { rawMaterialsSearchParamsCache } from "@/lib/searchParams/dashboard/raw-materials/rawMaterialsSearchParams";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -48,6 +49,8 @@ const Page: FC<PageProps> = async ({ searchParams }) => {
     prisma.rawMaterial.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
@@ -60,7 +63,7 @@ const Page: FC<PageProps> = async ({ searchParams }) => {
       </div>
 
       <RawMaterialsTable
-        items={items as any}
+        items={safeItems as any}
         total={total}
         page={page}
         pageSize={pageSize}

@@ -26,9 +26,10 @@ import InvoiceToolbar from "./InvoiceToolbar";
 import { InvoiceListItem } from "@/lib/types/Invoicetable";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { getPaymentReminderState } from "@/lib/helpers/globalHelpers/invoicePaymentReminder";
+import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
 
 interface InvoiceTableProps {
-  items: InvoiceListItem[];
+  items: ClientSafe<InvoiceListItem>[];
   total: number;
   page: number;
   pageSize: number;

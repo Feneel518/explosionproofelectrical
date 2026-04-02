@@ -6,6 +6,7 @@ import {
 import { prisma } from "@/lib/prisma/db";
 import { ProductsSearchParamsCache } from "@/lib/searchParams/dashboard/products/productsSearchParams";
 import { FC } from "react";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface pageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -55,6 +56,9 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       name: true,
     },
   });
+
+  const safeItems = serializeForClient(items);
+  const safeCategories = serializeForClient(categories);
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
@@ -67,12 +71,12 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       </div>
 
       <ProductsTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}
         qp={sp}
-        categories={categories}
+        categories={safeCategories}
       />
     </div>
   );

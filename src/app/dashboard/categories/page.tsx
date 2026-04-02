@@ -9,6 +9,7 @@ import {
   catgeorySearchParamsCache,
 } from "@/lib/searchParams/dashboard/categories/categoriesSearchParams";
 import { FC } from "react";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface pageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -40,6 +41,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     }),
     prisma.category.count({ where }),
   ]);
+  const safeItems = serializeForClient(items);
   return (
     <div className="space-y-6 ">
       <div className="flex items-start justify-between gap-4">
@@ -55,7 +57,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       </div>
 
       <CategoriesTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}

@@ -10,6 +10,7 @@ import { deliveryChallanSearchParamsCache } from "@/lib/searchParams/dashboard/s
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { FC } from "react";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -84,6 +85,8 @@ const page: FC<PageProps> = async ({ searchParams }) => {
     prisma.deliveryChallan.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -106,7 +109,7 @@ const page: FC<PageProps> = async ({ searchParams }) => {
       </div>
 
       <DeliveryChallanTable
-        items={items}
+        items={safeItems}
         total={total}
         page={pageParams}
         pageSize={pageSizeParams}

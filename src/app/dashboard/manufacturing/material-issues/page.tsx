@@ -7,6 +7,7 @@ import {
   buildMaterialIssueOrderBy,
   buildMaterialIssueWhere,
 } from "@/lib/helpers/RepoHelpers/materialIssueRepo";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,8 @@ const Page: FC<PageProps> = async ({ searchParams }) => {
     prisma.materialIssue.count({ where }),
   ]);
 
+  const safeItems = serializeForClient(items);
+
   return (
     <div className="space-y-6">
       <div>
@@ -60,7 +63,7 @@ const Page: FC<PageProps> = async ({ searchParams }) => {
         </p>
       </div>
       <MaterialIssueTable
-        items={items as any}
+        items={safeItems as any}
         total={total}
         page={page}
         pageSize={pageSize}

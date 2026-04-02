@@ -44,6 +44,12 @@ const Footer: FC<FooterProps> = ({}) => {
           </div>
         </div>
       </div>
+      <div className="border-t border-white px-4 py-3 text-center text-xs text-white/80 md:text-sm">
+        Plot No. 920, GIDC Phase 4, Vapi, Gujarat, India |{" "}
+        <a className="underline underline-offset-4" href="mailto:info@explosionproofelectrical.com">
+          info@explosionproofelectrical.com
+        </a>
+      </div>
     </div>
   );
 };

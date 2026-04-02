@@ -10,9 +10,9 @@ const bebas = Bebas_Neue({
 export default function Banner() {
   return (
     <section className="relative mt-10 md:mt-20">
-      <h1 className={cn("text-4xl md:text-7xl", bebas.className)}>WELCOME TO</h1>
+      <p className={cn("text-4xl md:text-7xl", bebas.className)}>WELCOME TO</p>
       <h1 className={cn("text-5xl md:text-7xl", bebas.className)}>
-        EXPLOSION PROOF ELECTRICAL CONTROL
+        Explosion Proof Electrical Control
       </h1>
 
       <div className="mt-8 h-1 w-24 border-grow-x md:mt-14" />

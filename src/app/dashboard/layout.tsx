@@ -8,11 +8,20 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { requireAuth } from "@/lib/check/requireAuth";
+import type { Metadata } from "next";
 import { FC } from "react";
 
 interface layoutProps {
   children: React.ReactNode;
 }
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const layout: FC<layoutProps> = async ({ children }) => {
   const { user } = await requireAuth();

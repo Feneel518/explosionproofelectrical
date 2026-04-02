@@ -25,7 +25,7 @@ const Navbar = async () => {
             src={"/asset/shortLogo.png"}
             height={80}
             width={80}
-            alt=""
+            alt="ExEC Logo"
           />
         </div>
         <div className="flex-1 flex flex-col h-full">

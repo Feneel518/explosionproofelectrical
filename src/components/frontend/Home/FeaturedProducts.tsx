@@ -242,17 +242,17 @@ const FeaturedProducts: FC<FeaturedProductsProps> = ({ products }) => {
 
   return (
     <div className="mt-2 md:mt-24 relative ">
-      <h1
+      <h2
         className={`${bebas.className} text-7xl max-md:text-5xl text-center my-10 `}>
         GETTING IT RIGHT SINCE 1996
-      </h1>
+      </h2>
       {/* sectio */}
       <div className=" flex  md:mt-24 border-white border-b border-t mb-10 max-lg:flex-col">
         <div className=" flex-1 ">
-          <h1
+          <h3
             className={`${bebas.className} text-center mt-6 md:mt-10 text-4xl`}>
             FEATURED PRODUCTS
-          </h1>
+          </h3>
           <div className="h-1 w-12 bg-white rounded-lg relative left-2/4 -translate-x-2/4 mt-2 mb-4"></div>
           <div className="flex items-center justify-center max-lg:border-white max-lg:border-b ">
             <Carousel
@@ -297,9 +297,9 @@ const FeaturedProducts: FC<FeaturedProductsProps> = ({ products }) => {
               className={` ${bebas.className} flex-1 flex flex-col border-white border-none `}>
               <div
                 className={` flex flex-col flex-1 items-center justify-center border-white border-b`}>
-                <h1 className="text-2xl tracking-[4px] relative top-4 max-lg:top-3 lg:text-4xl">
+                <p className="text-2xl tracking-[4px] relative top-4 max-lg:top-3 lg:text-4xl">
                   IT'S A
-                </h1>
+                </p>
                 <Image
                   className="max-lg:w-[200px]"
                   src={"/asset/arrow.png"}
@@ -307,12 +307,12 @@ const FeaturedProducts: FC<FeaturedProductsProps> = ({ products }) => {
                   width={200}
                   height={200}
                 />
-                <h1 className="text-2xl tracking-[4px] relative bottom-2 lg:text-4xl">
+                <p className="text-2xl tracking-[4px] relative bottom-2 lg:text-4xl">
                   THING
-                </h1>
+                </p>
               </div>
               <div className="flex-1 flex flex-col items-center justify-center max-sm:mt-4">
-                <h1 className="text-6xl">CIMFR / PESO</h1>
+                <h4 className="text-6xl">CIMFR / PESO</h4>
                 <h4 className=" tracking-[20px] text-2xl left-2.5  relative -top-3">
                   CERTIFIED
                 </h4>
@@ -329,7 +329,7 @@ const FeaturedProducts: FC<FeaturedProductsProps> = ({ products }) => {
             </div>
           </div>
           <div className="flex-1 p-4 flex flex-col space-y-4 lg:space-y-4 mt-4">
-            <h1 className={` ${bebas.className} text-3xl`}>WHY CHOOSE US?</h1>
+            <h3 className={` ${bebas.className} text-3xl`}>WHY CHOOSE US?</h3>
             <p className="text-xs  font-thin lg:text-lg">
               <span className="font-bold">Expertise:</span> Our team has years
               of experience in the flameproof and explosion-proof industry, and

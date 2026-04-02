@@ -33,9 +33,9 @@ export default function MobileNavigationBar({ showDashboardLink }: Props) {
           />
         </Link>
 
-        <h1 className="mx-2 line-clamp-2 text-center text-xs tracking-wider sm:text-sm">
+        <p className="mx-2 line-clamp-2 text-center text-xs tracking-wider sm:text-sm">
           Explosion Proof Electrical Control
-        </h1>
+        </p>
 
         <button
           type="button"

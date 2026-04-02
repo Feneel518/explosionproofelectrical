@@ -1,9 +1,18 @@
 import { GalleryVerticalEnd } from "lucide-react";
+import type { Metadata } from "next";
 import { FC } from "react";
 
 interface layoutProps {
   children: React.ReactNode;
 }
+
+export const metadata: Metadata = {
+  title: "Authentication",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const layout: FC<layoutProps> = ({ children }) => {
   return (

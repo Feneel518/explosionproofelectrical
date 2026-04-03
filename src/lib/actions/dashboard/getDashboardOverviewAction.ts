@@ -352,7 +352,7 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
 
   for (const invoice of pendingPaymentInvoices) {
     const state = getPaymentReminderState({
-      paymentTerms: invoice.salesOrder.paymentTerms,
+      paymentTerms: invoice.salesOrder?.paymentTerms ?? null,
       invoiceDate: invoice.invoiceDate,
       dispatchDate: invoice.dispatchDate,
       paymentReceived: false,

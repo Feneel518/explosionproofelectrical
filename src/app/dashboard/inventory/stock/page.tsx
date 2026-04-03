@@ -104,14 +104,77 @@ export default async function Page() {
     movementWhereOr.push({ castingMasterId: { in: castingIds } });
   }
 
+  const [rawMaterialConsumption, variantConsumption, castingConsumption] =
+    await Promise.all([
+      rawMaterialIds.length > 0
+        ? prisma.stockLedger.groupBy({
+            by: ["rawMaterialId"],
+            where: {
+              rawMaterialId: { in: rawMaterialIds },
+            },
+            _sum: {
+              qtyOut: true,
+            },
+          })
+        : Promise.resolve([]),
+      variantIds.length > 0
+        ? prisma.stockLedger.groupBy({
+            by: ["productVariantId"],
+            where: {
+              productVariantId: { in: variantIds },
+            },
+            _sum: {
+              qtyOut: true,
+            },
+          })
+        : Promise.resolve([]),
+      castingIds.length > 0
+        ? prisma.stockLedger.groupBy({
+            by: ["castingMasterId"],
+            where: {
+              castingMasterId: { in: castingIds },
+            },
+            _sum: {
+              qtyOut: true,
+            },
+          })
+        : Promise.resolve([]),
+    ]);
+
+  const consumedByRawMaterialId = new Map(
+    rawMaterialConsumption
+      .filter((row): row is { rawMaterialId: string; _sum: { qtyOut: number | null } } =>
+        Boolean(row.rawMaterialId),
+      )
+      .map((row) => [row.rawMaterialId, row._sum.qtyOut ?? 0] as const),
+  );
+
+  const consumedByVariantId = new Map(
+    variantConsumption
+      .filter(
+        (row): row is { productVariantId: string; _sum: { qtyOut: number | null } } =>
+          Boolean(row.productVariantId),
+      )
+      .map((row) => [row.productVariantId, row._sum.qtyOut ?? 0] as const),
+  );
+
+  const consumedByCastingId = new Map(
+    castingConsumption
+      .filter((row): row is { castingMasterId: string; _sum: { qtyOut: number | null } } =>
+        Boolean(row.castingMasterId),
+      )
+      .map((row) => [row.castingMasterId, row._sum.qtyOut ?? 0] as const),
+  );
+
   const latestMovements =
     movementWhereOr.length > 0
       ? await prisma.stockLedger.findMany({
           where: {
             OR: movementWhereOr,
           },
-          orderBy: [{ movementDate: "desc" }, { createdAt: "desc" }],
+          orderBy: [{ createdAt: "desc" }, { movementDate: "desc" }],
           select: {
+            createdAt: true,
             movementDate: true,
             movementType: true,
             referenceType: true,
@@ -130,6 +193,7 @@ export default async function Page() {
   const latestByItemKey = new Map<
     string,
     {
+      postedAt: Date;
       movementDate: Date;
       movementType: string;
       referenceType: string;
@@ -152,6 +216,7 @@ export default async function Page() {
     if (!key || latestByItemKey.has(key)) continue;
 
     latestByItemKey.set(key, {
+      postedAt: movement.createdAt,
       movementDate: movement.movementDate,
       movementType: movement.movementType,
       referenceType: movement.referenceType,
@@ -331,7 +396,7 @@ export default async function Page() {
               <TableHead className="text-white">Item</TableHead>
               <TableHead className="text-white">Code / HSN / Unit</TableHead>
               <TableHead className="text-white">On Hand</TableHead>
-              <TableHead className="text-white">Reserved</TableHead>
+              <TableHead className="text-white">Consumed</TableHead>
               <TableHead className="text-white">Available</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Last Movement</TableHead>
@@ -390,6 +455,11 @@ export default async function Page() {
                   latestMovement?.referenceType === "MATERIAL_ISSUE"
                     ? issueMetaById.get(latestMovement.referenceId)
                     : null;
+                const consumedQty = isRawMaterial
+                  ? consumedByRawMaterialId.get(row.rawMaterial?.id ?? "") ?? 0
+                  : isCasting
+                    ? consumedByCastingId.get(row.castingMaster?.id ?? "") ?? 0
+                    : consumedByVariantId.get(row.productVariant?.id ?? "") ?? 0;
 
                 return (
                   <TableRow key={row.id}>
@@ -427,7 +497,7 @@ export default async function Page() {
                     </TableCell>
                     <TableCell>{meta || "-"}</TableCell>
                     <TableCell>{formatNumber(row.qtyOnHand)}</TableCell>
-                    <TableCell>{formatNumber(row.qtyReserved)}</TableCell>
+                    <TableCell>{formatNumber(consumedQty)}</TableCell>
                     <TableCell>{formatNumber(row.qtyAvailable)}</TableCell>
                     <TableCell>
                       {isLow ? (
@@ -437,7 +507,7 @@ export default async function Page() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {latestMovement ? formatDateTime(latestMovement.movementDate) : "-"}
+                      {latestMovement ? formatDateTime(latestMovement.postedAt) : "-"}
                       {latestMovement ? (
                         <div className="text-xs text-muted-foreground">
                           {latestMovement.movementType} • IN {latestMovement.qtyIn} / OUT{" "}

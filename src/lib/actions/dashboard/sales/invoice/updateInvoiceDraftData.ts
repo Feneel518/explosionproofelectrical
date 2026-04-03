@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { ProductMediaKind } from "@prisma/client";
+import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
 
 type DraftMedia = {
   kind: ProductMediaKind;
@@ -12,12 +13,15 @@ type DraftMedia = {
 
 type DraftItem = {
   salesOrderItemId: string;
+  isManual?: boolean;
   productId?: string | null;
   variantId?: string | null;
   selected?: boolean;
   title: string;
   sku?: string | null;
   typeNumber?: string | null;
+  description?: string | null;
+  hsnCode?: string | null;
   unit?: string | null;
   orderedQty: number;
   alreadyInvoiced: number;
@@ -51,6 +55,11 @@ type DraftPackage = {
 };
 
 type DraftHeader = {
+  customerId?: string | null;
+  clientNameSnapshot?: string | null;
+  citySnapshot?: string | null;
+  stateSnapshot?: string | null;
+  gstinSnapshot?: string | null;
   invoiceNo: number;
   invoiceDate: string;
   dispatchDate?: string | null;
@@ -73,6 +82,12 @@ type DraftHeader = {
   grandTotal: number;
 };
 
+function normalizeIdOrNull(value?: string | null) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+}
+
 export type UpdateInvoiceDraftPayload = {
   header: DraftHeader;
   items: DraftItem[];
@@ -86,13 +101,15 @@ export async function updateInvoiceDraftAction(
   await requireAuth();
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      const invoice = await tx.invoice.findUnique({
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const invoice = await tx.invoice.findUnique({
         where: { id: invoiceId },
         select: {
           id: true,
           invoiceFy: true,
           status: true,
+          customerId: true,
         },
       });
 
@@ -123,37 +140,47 @@ export async function updateInvoiceDraftAction(
         };
       }
 
-      await tx.invoice.update({
-        where: { id: invoiceId },
-        data: {
-          invoiceNo: payload.header.invoiceNo,
-          invoiceDate: new Date(payload.header.invoiceDate),
-          dispatchDate: payload.header.dispatchDate
-            ? new Date(payload.header.dispatchDate)
-            : null,
+        await tx.invoice.update({
+          where: { id: invoiceId },
+          data: {
+            customerId:
+              normalizeIdOrNull(payload.header.customerId) ??
+              invoice.customerId ??
+              null,
+            invoiceNo: payload.header.invoiceNo,
+            invoiceDate: new Date(payload.header.invoiceDate),
+            dispatchDate: payload.header.dispatchDate
+              ? new Date(payload.header.dispatchDate)
+              : null,
 
-          poNumber: payload.header.poNumber || null,
-          transporterName: payload.header.transporterName || null,
-          vehicleNumber: payload.header.vehicleNumber || null,
-          driverName: payload.header.driverName || null,
-          driverPhone: payload.header.driverPhone || null,
-          dispatchThrough: payload.header.dispatchThrough || null,
-          lrNumber: payload.header.lrNumber || null,
-          ewayBill: payload.header.ewayBill || null,
-          remarks: payload.header.remarks || null,
+            poNumber: payload.header.poNumber || null,
+            clientNameSnapshot: payload.header.clientNameSnapshot || null,
+            citySnapshot: payload.header.citySnapshot || null,
+            stateSnapshot: payload.header.stateSnapshot || null,
+            gstinSnapshot: payload.header.gstinSnapshot || null,
+            transporterName: payload.header.transporterName || null,
+            vehicleNumber: payload.header.vehicleNumber || null,
+            driverName: payload.header.driverName || null,
+            driverPhone: payload.header.driverPhone || null,
+            dispatchThrough: payload.header.dispatchThrough || null,
+            lrNumber: payload.header.lrNumber || null,
+            ewayBill: payload.header.ewayBill || null,
+            remarks: payload.header.remarks || null,
 
-          subtotal: payload.header.subtotal,
-          taxableTotal: payload.header.taxableTotal,
-          gstTotal: payload.header.gstTotal,
-          grandTotal: payload.header.grandTotal,
+            subtotal: payload.header.subtotal,
+            taxableTotal: payload.header.taxableTotal,
+            gstTotal: payload.header.gstTotal,
+            grandTotal: payload.header.grandTotal,
 
-          draftData: payload,
-          draftVersion: { increment: 1 },
-        },
-      });
+            draftData: payload,
+            draftVersion: { increment: 1 },
+          },
+        });
 
-      return { ok: true as const };
-    });
+        return { ok: true as const };
+      },
+      INVOICE_TRANSACTION_OPTIONS,
+    );
 
     return result;
   } catch (error) {

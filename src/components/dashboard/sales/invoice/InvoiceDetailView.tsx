@@ -67,7 +67,7 @@ function getPackingRows(packing: unknown): Array<{
 export default function InvoiceDetailView({ invoice }: Props) {
   const router = useRouter();
 
-  const customer = invoice.salesOrder?.customer;
+  const customer = invoice.salesOrder?.customer || invoice.customer;
   const companyName = customer?.companyName || "-";
   const clientName =
     invoice.clientNameSnapshot ||
@@ -111,10 +111,12 @@ export default function InvoiceDetailView({ invoice }: Props) {
 
   const displayAddress = addressLines.length ? addressLines.join("\n") : "-";
 
-  const salesOrderNumber = formatFinancialDocumentNumber(
-    invoice.salesOrder.orderFy,
-    invoice.salesOrder.orderNo,
-  );
+  const salesOrderNumber = invoice.salesOrder
+    ? formatFinancialDocumentNumber(
+        invoice.salesOrder.orderFy,
+        invoice.salesOrder.orderNo,
+      )
+    : "-";
 
   const displayClientHeading =
     clientName && clientName !== "-" ? clientName : salesOrderNumber;
@@ -232,7 +234,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
           <div>
             <div className="text-xs text-muted-foreground">PO Number</div>
             <div className="font-medium">
-              {invoice.poNumber || invoice.salesOrder.poNumber || "-"}
+              {invoice.poNumber || invoice.salesOrder?.poNumber || "-"}
             </div>
           </div>
         </CardContent>

@@ -112,6 +112,21 @@ export async function getInvoiceByIdAction(invoiceId: string) {
 
         salesOrderId: true,
         draftData: true,
+        customer: {
+          select: {
+            id: true,
+            companyName: true,
+            addressLine1: true,
+            addressLine2: true,
+            city: true,
+            state: true,
+            country: true,
+            pincode: true,
+            gstin: true,
+            companyPhone: true,
+            companyEmail: true,
+          },
+        },
 
         lrCopy: {
           select: {
@@ -247,25 +262,26 @@ export async function getInvoiceByIdAction(invoiceId: string) {
       return { ok: false as const, message: "Invoice not found" };
     }
 
-    const pendingItems = invoice.salesOrder.items
-      .map((item) => {
-        const qty = Number(item.qty ?? 0);
-        const invoicedQty = Number(item.invoicedQty ?? 0);
-        const dispatchedQty = Number(item.dispatchedQty ?? 0);
-        const pendingQty = Number(item.pendingQty ?? 0);
-        const remainingQty = Math.max(qty - invoicedQty, 0);
+    const pendingItems =
+      invoice.salesOrder?.items
+        ?.map((item) => {
+          const qty = Number(item.qty ?? 0);
+          const invoicedQty = Number(item.invoicedQty ?? 0);
+          const dispatchedQty = Number(item.dispatchedQty ?? 0);
+          const pendingQty = Number(item.pendingQty ?? 0);
+          const remainingQty = Math.max(qty - invoicedQty, 0);
 
-        return {
-          ...item,
-          qty,
-          invoicedQty,
-          dispatchedQty,
-          pendingQty,
-          unitPrice: Number(item.unitPrice ?? 0),
-          remainingQty,
-        };
-      })
-      .filter((item) => item.remainingQty > 0);
+          return {
+            ...item,
+            qty,
+            invoicedQty,
+            dispatchedQty,
+            pendingQty,
+            unitPrice: Number(item.unitPrice ?? 0),
+            remainingQty,
+          };
+        })
+        .filter((item) => item.remainingQty > 0) ?? [];
 
     const lrCopy: MediaItem[] = invoice.lrCopy
       .filter((item) => item.kind && item.url)

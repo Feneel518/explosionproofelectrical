@@ -144,7 +144,7 @@ export type InvoiceCreateSalesOrder = Prisma.SalesOrderGetPayload<{
 
 export type InvoiceDraftData = {
   header: {
-    salesOrderId: string;
+    salesOrderId: string | null;
     customerId: string | null;
 
     invoiceDate: string | null;
@@ -183,6 +183,7 @@ export type InvoiceDraftData = {
   items: {
     id: string;
     salesOrderItemId: string;
+    isManual?: boolean;
     productId: string | null;
     variantId: string | null;
 

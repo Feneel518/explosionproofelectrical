@@ -77,6 +77,12 @@ export async function sendInvoiceDispatchDetailsEmailAction(
         ewayBill: true,
         remarks: true,
         clientNameSnapshot: true,
+        customer: {
+          select: {
+            companyName: true,
+            companyEmail: true,
+          },
+        },
         lrCopy: {
           select: {
             id: true,
@@ -130,17 +136,20 @@ export async function sendInvoiceDispatchDetailsEmailAction(
       invoice.invoiceFy,
       invoice.invoiceNo,
     );
-    const salesOrderNumber = formatFinancialDocumentNumber(
-      invoice.salesOrder.orderFy,
-      invoice.salesOrder.orderNo,
-    );
+    const salesOrderNumber = invoice.salesOrder
+      ? formatFinancialDocumentNumber(
+          invoice.salesOrder.orderFy,
+          invoice.salesOrder.orderNo,
+        )
+      : "N/A";
 
     const clientName =
       invoice.clientNameSnapshot ||
-      invoice.salesOrder.customer?.companyName ||
+      invoice.salesOrder?.customer?.companyName ||
+      invoice.customer?.companyName ||
       "Customer";
     const contactName =
-      invoice.salesOrder.receivedFromName?.trim() || clientName;
+      invoice.salesOrder?.receivedFromName?.trim() || clientName;
 
     const packageCount = Number(invoice.packages?.length ?? 0);
     const itemsRows = invoice.items

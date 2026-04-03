@@ -1225,8 +1225,8 @@ model Invoice {
 
   invoiceDate DateTime @default(now())
 
-  salesOrderId String
-  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  salesOrderId String?
+  salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
@@ -1289,8 +1289,8 @@ model InvoiceItem {
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  salesOrderItemId String
-  salesOrderItem   SalesOrderItem @relation(fields: [salesOrderItemId], references: [id], onDelete: Restrict)
+  salesOrderItemId String?
+  salesOrderItem   SalesOrderItem? @relation(fields: [salesOrderItemId], references: [id], onDelete: Restrict)
 
   productId String?
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)

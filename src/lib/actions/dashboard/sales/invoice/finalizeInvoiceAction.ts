@@ -6,6 +6,7 @@ import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { ProductMediaKind } from "@prisma/client";
+import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
 
 import { revalidatePath } from "next/cache";
 
@@ -32,6 +33,7 @@ export const finalizeInvoiceAction = async (id: string) => {
         invoiceNo: true,
         invoiceFy: true,
         salesOrderId: true,
+        customerId: true,
         draftData: true,
       },
     });
@@ -54,6 +56,8 @@ export const finalizeInvoiceAction = async (id: string) => {
       return { ok: false as const, message: "Add at least one invoice item" };
     }
 
+    const isOrderLinked = Boolean(invoice.salesOrderId);
+
     const preparedItems = draft.items.map((it, index) => {
       const qty = toNumber(it.qty, 0);
       const unitPrice = toNumber(it.unitPrice, 0);
@@ -62,6 +66,7 @@ export const finalizeInvoiceAction = async (id: string) => {
       return {
         draftItemId: it.id,
         salesOrderItemId: it.salesOrderItemId,
+        isManual: Boolean(it.isManual),
         productId: it.productId ?? null,
         variantId: it.variantId ?? null,
         title: it.title?.trim() ?? "",
@@ -97,45 +102,70 @@ export const finalizeInvoiceAction = async (id: string) => {
       };
     }
 
-    await prisma.$transaction(async (tx) => {
-      const liveOrderItems = await tx.salesOrderItem.findMany({
-        where: { salesOrderId: invoice.salesOrderId },
-        select: {
-          id: true,
-          productId: true,
-          variantId: true,
-          qty: true,
-          invoicedQty: true,
-          dispatchedQty: true,
-        },
-      });
+    await prisma.$transaction(
+      async (tx) => {
+        const liveMap = new Map<
+          string,
+          {
+            id: string;
+            productId: string | null;
+            variantId: string | null;
+            qty: number;
+            invoicedQty: number;
+            dispatchedQty: number;
+          }
+        >();
 
-      const liveMap = new Map(liveOrderItems.map((item) => [item.id, item]));
+        if (isOrderLinked && invoice.salesOrderId) {
+          const liveOrderItems = await tx.salesOrderItem.findMany({
+            where: { salesOrderId: invoice.salesOrderId },
+            select: {
+              id: true,
+              productId: true,
+              variantId: true,
+              qty: true,
+              invoicedQty: true,
+              dispatchedQty: true,
+            },
+          });
 
-      for (const item of preparedItems) {
-        const live = liveMap.get(item.salesOrderItemId);
-
-        if (!live) {
-          throw new Error(
-            `Sales order item not found: ${item.salesOrderItemId}`,
-          );
+          for (const liveOrderItem of liveOrderItems) {
+            liveMap.set(liveOrderItem.id, liveOrderItem);
+          }
         }
 
-        const remaining = Math.max(live.qty - live.invoicedQty, 0);
+        for (const item of preparedItems) {
+          if (!item.salesOrderItemId) {
+            item.salesOrderItemId = item.draftItemId || crypto.randomUUID();
+          }
 
-        if (item.qty > remaining) {
-          throw new Error(
-            `Invoice qty exceeds remaining quantity for ${item.title}`,
-          );
-        }
+          if (!isOrderLinked || item.isManual) {
+            continue;
+          }
 
-        if (!item.productId && live.productId) {
-          item.productId = live.productId;
+          const live = liveMap.get(item.salesOrderItemId);
+
+          if (!live) {
+            throw new Error(
+              `Sales order item not found: ${item.salesOrderItemId}`,
+            );
+          }
+
+          const remaining = Math.max(live.qty - live.invoicedQty, 0);
+
+          if (item.qty > remaining) {
+            throw new Error(
+              `Invoice qty exceeds remaining quantity for ${item.title}`,
+            );
+          }
+
+          if (!item.productId && live.productId) {
+            item.productId = live.productId;
+          }
+          if (!item.variantId && live.variantId) {
+            item.variantId = live.variantId;
+          }
         }
-        if (!item.variantId && live.variantId) {
-          item.variantId = live.variantId;
-        }
-      }
 
       const movementDate =
         toDateOrNull(draft.header.dispatchDate) ??
@@ -272,7 +302,7 @@ export const finalizeInvoiceAction = async (id: string) => {
         data: {
           invoiceDate: toDateOrNull(draft.header.invoiceDate) ?? new Date(),
 
-          customerId: draft.header.customerId ?? null,
+          customerId: draft.header.customerId ?? invoice.customerId ?? null,
           poNumber: draft.header.poNumber ?? null,
           poDate: toDateOrNull(draft.header.poDate),
 
@@ -327,7 +357,8 @@ export const finalizeInvoiceAction = async (id: string) => {
         const createdInvoiceItem = await tx.invoiceItem.create({
           data: {
             invoiceId: id,
-            salesOrderItemId: item.salesOrderItemId,
+            salesOrderItemId:
+              isOrderLinked && !item.isManual ? item.salesOrderItemId : null,
             productId: item.productId,
             variantId: item.variantId,
             title: item.title,
@@ -349,10 +380,12 @@ export const finalizeInvoiceAction = async (id: string) => {
           select: { id: true },
         });
 
-        invoiceItemIdBySalesOrderItemId.set(
-          item.salesOrderItemId,
-          createdInvoiceItem.id,
-        );
+        if (item.salesOrderItemId) {
+          invoiceItemIdBySalesOrderItemId.set(
+            item.salesOrderItemId,
+            createdInvoiceItem.id,
+          );
+        }
         if (item.draftItemId) {
           invoiceItemIdByDraftItemId.set(
             item.draftItemId,
@@ -479,93 +512,103 @@ export const finalizeInvoiceAction = async (id: string) => {
         }
       }
 
-      for (const item of preparedItems) {
-        const live = liveMap.get(item.salesOrderItemId)!;
-        const newInvoicedQty = live.invoicedQty + item.qty;
-        const newDispatchedQty = newInvoicedQty;
-        const newPendingQty = Math.max(live.qty - newInvoicedQty, 0);
+        if (isOrderLinked && invoice.salesOrderId) {
+          for (const item of preparedItems) {
+            if (item.isManual || !item.salesOrderItemId) continue;
 
-        await tx.salesOrderItem.update({
-          where: { id: item.salesOrderItemId },
-          data: {
-            invoicedQty: newInvoicedQty,
-            dispatchedQty: newDispatchedQty,
-            pendingQty: newPendingQty,
-          },
-        });
-      }
+            const live = liveMap.get(item.salesOrderItemId);
+            if (!live) continue;
 
-      const refreshedItems = await tx.salesOrderItem.findMany({
-        where: { salesOrderId: invoice.salesOrderId },
-        select: {
-          qty: true,
-          invoicedQty: true,
-          dispatchedQty: true,
-        },
-      });
+            const newInvoicedQty = live.invoicedQty + item.qty;
+            const newDispatchedQty = newInvoicedQty;
+            const newPendingQty = Math.max(live.qty - newInvoicedQty, 0);
 
-      const totalOrderedQty = refreshedItems.reduce((a, i) => a + i.qty, 0);
-      const totalInvoicedQty = refreshedItems.reduce(
-        (a, i) => a + i.invoicedQty,
-        0,
-      );
-      const totalDispatchedQty = refreshedItems.reduce(
-        (a, i) => a + i.dispatchedQty,
-        0,
-      );
-      const totalPendingQty = refreshedItems.reduce(
-        (a, i) => a + Math.max(i.qty - i.invoicedQty, 0),
-        0,
-      );
+            await tx.salesOrderItem.update({
+              where: { id: item.salesOrderItemId },
+              data: {
+                invoicedQty: newInvoicedQty,
+                dispatchedQty: newDispatchedQty,
+                pendingQty: newPendingQty,
+              },
+            });
+          }
 
-      const isFullyInvoiced =
-        refreshedItems.length > 0 &&
-        refreshedItems.every((i) => i.invoicedQty >= i.qty);
+          const refreshedItems = await tx.salesOrderItem.findMany({
+            where: { salesOrderId: invoice.salesOrderId },
+            select: {
+              qty: true,
+              invoicedQty: true,
+              dispatchedQty: true,
+            },
+          });
 
-      const isFullyDispatched =
-        refreshedItems.length > 0 &&
-        refreshedItems.every((i) => i.dispatchedQty >= i.qty);
+          const totalOrderedQty = refreshedItems.reduce((a, i) => a + i.qty, 0);
+          const totalInvoicedQty = refreshedItems.reduce(
+            (a, i) => a + i.invoicedQty,
+            0,
+          );
+          const totalDispatchedQty = refreshedItems.reduce(
+            (a, i) => a + i.dispatchedQty,
+            0,
+          );
+          const totalPendingQty = refreshedItems.reduce(
+            (a, i) => a + Math.max(i.qty - i.invoicedQty, 0),
+            0,
+          );
 
-      let status:
-        | "CONFIRMED"
-        | "PARTIALLY_DISPATCHED"
-        | "DISPATCHED"
-        | "PARTIALLY_INVOICED"
-        | "INVOICED"
-        | "COMPLETED" = "CONFIRMED";
+          const isFullyInvoiced =
+            refreshedItems.length > 0 &&
+            refreshedItems.every((i) => i.invoicedQty >= i.qty);
 
-      if (isFullyInvoiced && isFullyDispatched) {
-        status = "COMPLETED";
-      } else if (isFullyInvoiced) {
-        status = "INVOICED";
-      } else if (totalInvoicedQty > 0) {
-        status = "PARTIALLY_INVOICED";
-      } else if (isFullyDispatched) {
-        status = "DISPATCHED";
-      } else if (totalDispatchedQty > 0) {
-        status = "PARTIALLY_DISPATCHED";
-      }
+          const isFullyDispatched =
+            refreshedItems.length > 0 &&
+            refreshedItems.every((i) => i.dispatchedQty >= i.qty);
 
-      await tx.salesOrder.update({
-        where: { id: invoice.salesOrderId },
-        data: {
-          totalOrderedQty,
-          totalDispatchedQty,
-          totalInvoicedQty,
-          totalPendingQty,
-          isFullyInvoiced,
-          isFullyDispatched,
-          firstInvoicedAt: totalInvoicedQty > 0 ? new Date() : undefined,
-          fullyInvoicedAt: isFullyInvoiced ? new Date() : null,
-          status,
-          updatedById: session.user.id,
-        },
-      });
-    });
+          let status:
+            | "CONFIRMED"
+            | "PARTIALLY_DISPATCHED"
+            | "DISPATCHED"
+            | "PARTIALLY_INVOICED"
+            | "INVOICED"
+            | "COMPLETED" = "CONFIRMED";
+
+          if (isFullyInvoiced && isFullyDispatched) {
+            status = "COMPLETED";
+          } else if (isFullyInvoiced) {
+            status = "INVOICED";
+          } else if (totalInvoicedQty > 0) {
+            status = "PARTIALLY_INVOICED";
+          } else if (isFullyDispatched) {
+            status = "DISPATCHED";
+          } else if (totalDispatchedQty > 0) {
+            status = "PARTIALLY_DISPATCHED";
+          }
+
+          await tx.salesOrder.update({
+            where: { id: invoice.salesOrderId },
+            data: {
+              totalOrderedQty,
+              totalDispatchedQty,
+              totalInvoicedQty,
+              totalPendingQty,
+              isFullyInvoiced,
+              isFullyDispatched,
+              firstInvoicedAt: totalInvoicedQty > 0 ? new Date() : undefined,
+              fullyInvoicedAt: isFullyInvoiced ? new Date() : null,
+              status,
+              updatedById: session.user.id,
+            },
+          });
+        }
+      },
+      INVOICE_TRANSACTION_OPTIONS,
+    );
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${id}`);
-    revalidatePath(`/dashboard/sales/orders/${invoice.salesOrderId}`);
+    if (invoice.salesOrderId) {
+      revalidatePath(`/dashboard/sales/orders/${invoice.salesOrderId}`);
+    }
     revalidatePath("/dashboard/inventory/stock");
     revalidatePath("/dashboard/inventory/movements");
 

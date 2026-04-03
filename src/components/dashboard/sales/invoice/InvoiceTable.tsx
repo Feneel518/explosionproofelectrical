@@ -121,6 +121,8 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
     if (next !== page) setState({ page: next });
   };
 
+  console.log(items);
+
   return (
     <div className="space-y-4">
       <InvoiceToolbar qp={qp} />

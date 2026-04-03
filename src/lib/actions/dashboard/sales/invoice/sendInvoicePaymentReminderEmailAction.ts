@@ -54,6 +54,12 @@ export async function sendInvoicePaymentReminderEmailAction(invoiceId: string) {
         grandTotal: true,
         clientNameSnapshot: true,
         paymentReceived: true,
+        customer: {
+          select: {
+            companyName: true,
+            companyEmail: true,
+          },
+        },
         salesOrder: {
           select: {
             paymentTerms: true,
@@ -89,8 +95,9 @@ export async function sendInvoicePaymentReminderEmailAction(invoiceId: string) {
     }
 
     const recipientEmail =
-      invoice.salesOrder.customer?.companyEmail?.trim() ||
-      invoice.salesOrder.receivedFromEmail?.trim() ||
+      invoice.salesOrder?.customer?.companyEmail?.trim() ||
+      invoice.customer?.companyEmail?.trim() ||
+      invoice.salesOrder?.receivedFromEmail?.trim() ||
       "";
 
     if (!recipientEmail) {
@@ -105,7 +112,7 @@ export async function sendInvoicePaymentReminderEmailAction(invoiceId: string) {
       invoice.invoiceNo,
     );
 
-    const paymentTerms = invoice.salesOrder.paymentTerms;
+    const paymentTerms = invoice.salesOrder?.paymentTerms ?? null;
     const paymentTermsLabel = getPaymentTermsLabel(paymentTerms);
 
     const dueDate = getPaymentDueDateFromTerms({
@@ -117,9 +124,10 @@ export async function sendInvoicePaymentReminderEmailAction(invoiceId: string) {
     const subject = `Payment Reminder - Invoice ${invoiceNumber}`;
     const customerName =
       invoice.clientNameSnapshot ||
-      invoice.salesOrder.customer?.companyName ||
+      invoice.salesOrder?.customer?.companyName ||
+      invoice.customer?.companyName ||
       "Customer";
-    const contactPerson = invoice.salesOrder.receivedFromName || customerName;
+    const contactPerson = invoice.salesOrder?.receivedFromName || customerName;
 
     const html = renderThemedEmailLayout({
       title: "Payment Reminder",

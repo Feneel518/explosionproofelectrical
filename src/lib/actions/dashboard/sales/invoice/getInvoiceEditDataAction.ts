@@ -63,6 +63,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
         remarks: true,
         ewayBill: true,
         salesOrderId: true,
+        customerId: true,
         subtotal: true,
         gstTotal: true,
         grandTotal: true,
@@ -111,8 +112,8 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
       return { ok: false as const, message: "Invoice not found" };
     }
 
-    const pendingItems = invoice.salesOrder.items
-      .map((item) => {
+    const pendingItems = invoice.salesOrder?.items
+      ?.map((item) => {
         const qty = Number(item.qty ?? 0);
         const invoicedQty = Number(item.invoicedQty ?? 0);
         const dispatchedQty = Number(item.dispatchedQty ?? 0);
@@ -129,7 +130,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
           remainingQty,
         };
       })
-      .filter((item) => item.remainingQty > 0);
+      .filter((item) => item.remainingQty > 0) ?? [];
 
     const lrCopy: MediaItem[] = invoice.lrCopy
       .filter((item) => item.kind && item.url)

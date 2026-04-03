@@ -39,7 +39,7 @@ const CreateInvoiceLauncher: React.FC<CreateInvoiceLauncherProps> = ({
           Create Invoice
         </h1>
         <p className="text-sm text-muted-foreground">
-          Select a sales order to start a draft invoice.
+          Start from a sales order or create an offline invoice without order copy.
         </p>
       </div>
 
@@ -49,7 +49,14 @@ const CreateInvoiceLauncher: React.FC<CreateInvoiceLauncherProps> = ({
           <SalesOrderCombobox value={orderId} onChange={setOrderId} />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/dashboard/sales/invoices/new?offline=1")}
+            disabled={loading}>
+            {loading ? "Opening..." : "Create Offline Invoice"}
+          </Button>
           <Button onClick={handleContinue} disabled={!orderId || loading}>
             {loading ? "Opening..." : "Create Draft Invoice"}
           </Button>

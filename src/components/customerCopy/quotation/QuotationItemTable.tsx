@@ -39,7 +39,7 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                 <TableCell className="font-medium">
                   {pageItemsStartIndex + index + 1}
                 </TableCell>
-                <TableCell className="">
+                <TableCell className="max-w-[300px]!">
                   <div className="text-wrap">
                     <strong>"ExEC"</strong>
                     make <strong>{items.title}</strong> suitable for
@@ -285,8 +285,8 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                   )}
                   {items.cableEntry ? (
                     <div className="flex ">
-                      <p className="w-[120px]">CableEntry</p>
-                      <p>:{items.cableEntry}</p>
+                      <p className="min-w-[120px]">CableEntry</p>
+                      <p className="text-wrap">:{items.cableEntry}</p>
                     </div>
                   ) : (
                     items.variant?.cableEntry && (

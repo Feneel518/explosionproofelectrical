@@ -11,6 +11,7 @@ import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 
 interface WorkOrderCopyItem {
   id: string;
+  productName?: string | null;
   itemName?: string | null;
   description?: string | null;
   qty?: number | string | null;
@@ -119,7 +120,8 @@ const WorkOrderCopyModal: FC<WorkOrderCopyModalProps> = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium">
-                      Item {index + 1} - {item.itemName ?? index + 1}
+                      Item {index + 1} - {item.productName} -{" "}
+                      {item.itemName ?? index + 1}
                     </p>
 
                     <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">

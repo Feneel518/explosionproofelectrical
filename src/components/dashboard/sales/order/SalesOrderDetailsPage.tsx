@@ -86,7 +86,10 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
   console.log(order.poFile.length > 0);
 
   const router = useRouter();
-  const orderLabel = formatFinancialDocumentNumber(order.orderFy, order.orderNo);
+  const orderLabel = formatFinancialDocumentNumber(
+    order.orderFy,
+    order.orderNo,
+  );
 
   const clientName =
     order.clientNameSnapshot ||
@@ -156,6 +159,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             orderId={order.id}
             items={order.items.map((item, index) => ({
               id: item.id,
+              productName: item.product?.name,
               itemName: item.variant?.variant,
               description: item.description,
               qty: item.qty,

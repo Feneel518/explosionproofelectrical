@@ -208,6 +208,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                   }
                   toast.success(res.message);
                   router.push(`/dashboard/sales/invoices/${invoice.id}/edit`);
+                  router.refresh();
                 }}>
                 Reopen For Edit
               </Button>

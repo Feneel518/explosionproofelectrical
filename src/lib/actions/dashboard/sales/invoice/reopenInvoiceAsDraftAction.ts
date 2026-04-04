@@ -40,6 +40,23 @@ export async function reopenInvoiceAsDraftAction(invoiceId: string) {
           salesOrderId: invoice.salesOrderId ?? null,
         });
 
+        await tx.invoicePackageItem.deleteMany({
+          where: {
+            invoicePackage: {
+              invoiceId,
+            },
+          },
+        });
+        await tx.invoicePackage.deleteMany({ where: { invoiceId } });
+        await tx.productMedia.deleteMany({
+          where: {
+            invoiceItem: {
+              invoiceId,
+            },
+          },
+        });
+        await tx.invoiceItem.deleteMany({ where: { invoiceId } });
+
         await tx.invoice.update({
           where: { id: invoiceId },
           data: {

@@ -106,75 +106,75 @@ export const finalizeInvoiceAction = async (id: string) => {
       };
     }
 
-    await prisma.$transaction(
-      async (tx) => {
+    await prisma.$transaction(async (tx) => {
         await rollbackInvoiceEffects(tx, {
           invoiceId: invoice.id,
           salesOrderId: invoice.salesOrderId ?? null,
+          rollbackSalesOrder: false,
         });
 
-        const liveMap = new Map<
-          string,
-          {
-            id: string;
-            productId: string | null;
-            variantId: string | null;
-            qty: number;
-            invoicedQty: number;
-            dispatchedQty: number;
-          }
-        >();
+      const liveMap = new Map<
+        string,
+        {
+          id: string;
+          productId: string | null;
+          variantId: string | null;
+          qty: number;
+          invoicedQty: number;
+          dispatchedQty: number;
+        }
+      >();
 
-        if (isOrderLinked && invoice.salesOrderId) {
-          const liveOrderItems = await tx.salesOrderItem.findMany({
-            where: { salesOrderId: invoice.salesOrderId },
-            select: {
-              id: true,
-              productId: true,
-              variantId: true,
-              qty: true,
-              invoicedQty: true,
-              dispatchedQty: true,
-            },
-          });
+      if (isOrderLinked && invoice.salesOrderId) {
+        const liveOrderItems = await tx.salesOrderItem.findMany({
+          where: { salesOrderId: invoice.salesOrderId },
+          select: {
+            id: true,
+            productId: true,
+            variantId: true,
+            qty: true,
+            invoicedQty: true,
+            dispatchedQty: true,
+          },
+        });
 
-          for (const liveOrderItem of liveOrderItems) {
-            liveMap.set(liveOrderItem.id, liveOrderItem);
-          }
+        for (const liveOrderItem of liveOrderItems) {
+          liveMap.set(liveOrderItem.id, liveOrderItem);
+        }
+      }
+
+      for (const item of preparedItems) {
+        if (!item.salesOrderItemId) {
+          item.salesOrderItemId = item.draftItemId || crypto.randomUUID();
         }
 
-        for (const item of preparedItems) {
-          if (!item.salesOrderItemId) {
-            item.salesOrderItemId = item.draftItemId || crypto.randomUUID();
-          }
-
-          if (!isOrderLinked || item.isManual) {
-            continue;
-          }
-
-          const live = liveMap.get(item.salesOrderItemId);
-
-          if (!live) {
-            throw new Error(
-              `Sales order item not found: ${item.salesOrderItemId}`,
-            );
-          }
-
-          const remaining = Math.max(live.qty - live.invoicedQty, 0);
-
-          if (item.qty > remaining) {
-            throw new Error(
-              `Invoice qty exceeds remaining quantity for ${item.title}`,
-            );
-          }
-
-          if (!item.productId && live.productId) {
-            item.productId = live.productId;
-          }
-          if (!item.variantId && live.variantId) {
-            item.variantId = live.variantId;
-          }
+        if (!isOrderLinked || item.isManual) {
+          continue;
         }
+
+        const live = liveMap.get(item.salesOrderItemId);
+
+        if (!live) {
+          throw new Error(
+            `Sales order item not found: ${item.salesOrderItemId}`,
+          );
+        }
+
+        const remaining = Math.max(live.qty - live.invoicedQty, 0);
+
+        if (item.qty > remaining) {
+          throw new Error(
+            `Invoice qty exceeds remaining quantity for ${item.title}`,
+          );
+        }
+
+        if (!item.productId && live.productId) {
+          item.productId = live.productId;
+        }
+        if (!item.variantId && live.variantId) {
+          item.variantId = live.variantId;
+        }
+      }
 
       const movementDate =
         toDateOrNull(draft.header.dispatchDate) ??
@@ -547,9 +547,7 @@ export const finalizeInvoiceAction = async (id: string) => {
           updatedById: session.user.id,
         });
       }
-      },
-      INVOICE_TRANSACTION_OPTIONS,
-    );
+    }, INVOICE_TRANSACTION_OPTIONS);
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${id}`);

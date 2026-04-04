@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import FrontendVisitTracker from "@/components/analytics/FrontendVisitTracker";
+import NextTopLoader from "nextjs-toploader";
 import {
   SITE_DESCRIPTION,
   SITE_TITLE_DEFAULT,
@@ -50,6 +51,15 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${poppins.variable} ${garamond.variable} antialiased font-sans no-scrollbar`}>
+        <NextTopLoader
+          color="#1f7aec"
+          height={3}
+          showSpinner={false}
+          crawlSpeed={180}
+          easing="ease"
+          speed={220}
+          shadow={false}
+        />
         <NuqsAdapter>
           <TooltipProvider>
             <FrontendVisitTracker />

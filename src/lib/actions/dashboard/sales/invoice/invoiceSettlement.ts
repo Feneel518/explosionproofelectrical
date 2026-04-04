@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 type RollbackInvoiceEffectsArgs = {
   invoiceId: string;
   salesOrderId: string | null;
+  rollbackSalesOrder?: boolean;
 };
 
 type RefreshSalesOrderInvoiceProgressArgs = {
@@ -14,7 +15,7 @@ type RefreshSalesOrderInvoiceProgressArgs = {
 
 export async function rollbackInvoiceEffects(
   tx: Prisma.TransactionClient,
-  { invoiceId, salesOrderId }: RollbackInvoiceEffectsArgs,
+  { invoiceId, salesOrderId, rollbackSalesOrder = true }: RollbackInvoiceEffectsArgs,
 ) {
   const existingInvoiceItems = await tx.invoiceItem.findMany({
     where: { invoiceId },
@@ -24,7 +25,7 @@ export async function rollbackInvoiceEffects(
     },
   });
 
-  if (salesOrderId) {
+  if (rollbackSalesOrder && salesOrderId) {
     const rollbackQtyBySalesOrderItemId = new Map<string, number>();
 
     for (const row of existingInvoiceItems) {

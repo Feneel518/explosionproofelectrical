@@ -34,6 +34,7 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
         </TableHeader>
         <TableBody>
           {quotationItems.map((items, index) => {
+            console.log("items", items);
             return (
               <TableRow key={items.id} className="">
                 <TableCell className="font-medium">
@@ -151,18 +152,20 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                     <div className="flex ">
                       <p className="w-[120px] ">Components</p>
                       <div className="flex flex-col">
-                        {items.ComponentsOfProductInQuotation.map((com, comIndex) => {
-                          return (
-                            <p
-                              key={`${items.id}-custom-component-${comIndex}`}
-                              className="w-[300px]">
-                              :{com.componentsOfQuotation.item}
-                              {com.componentsOfQuotation.unit
-                                ? ` - ${com.componentsOfQuotation.unit}`
-                                : ""}
-                            </p>
-                          );
-                        })}
+                        {items.ComponentsOfProductInQuotation.map(
+                          (com, comIndex) => {
+                            return (
+                              <p
+                                key={`${items.id}-custom-component-${comIndex}`}
+                                className="w-[300px]">
+                                :{com.componentsOfQuotation.item}
+                                {com.componentsOfQuotation.unit
+                                  ? ` - ${com.componentsOfQuotation.unit}`
+                                  : ""}
+                              </p>
+                            );
+                          },
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -349,7 +352,8 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                       <a
                         href={
                           Array.isArray(items.variantDrawingsSnapshot)
-                            ? items.variantDrawingsSnapshot[0]?.url || ""
+                            ? // @ts-ignore
+                              items.variantDrawingsSnapshot[0]?.url || ""
                             : ""
                         }
                         target="_blank"

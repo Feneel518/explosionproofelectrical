@@ -71,7 +71,7 @@ export const SalesOrderVariantDrawingSnapshotSchema = z.object({
  */
 export const SalesOrderComponentSchema = z.object({
   id: z.string().min(1, "Component id is required"),
-  item: z.string().trim().min(1, "Component item is required"),
+  item: nullableTrimmedString.optional(),
   unit: nullableTrimmedString.optional(),
   qty: nullableTrimmedString.optional(),
   sortOrder: z.coerce.number().int().min(0).optional().default(0),

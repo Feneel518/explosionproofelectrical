@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
 import { ProductVariantCombobox } from "@/components/dashboard/global/ProductVariantCombobox";
 import { Button } from "@/components/ui/button";

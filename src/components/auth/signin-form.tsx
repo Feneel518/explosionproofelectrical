@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { cn } from "@/lib/utils";
 import React, { FC } from "react";
@@ -22,7 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "@/lib/auth/authClient";
 import { toast } from "sonner";
 import { Spinner } from "../ui/spinner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { signInEmailAction } from "@/lib/actions/auth/sign-in-email.action";
 
 interface SigninFormProps {}

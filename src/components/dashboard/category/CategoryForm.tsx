@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";

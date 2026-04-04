@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FC } from "react";
 import { ArrowLeft, FileText, Pencil, ReceiptText, Truck } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/order/reopenSalesOrderAsDraftAction";
 import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";

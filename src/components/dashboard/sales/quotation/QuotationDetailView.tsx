@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +6,7 @@ import QuotationFollowupsSection from "./QuotationFollowupsSection";
 import { reopenQuotationAsDraftAction } from "@/lib/actions/dashboard/sales/quotation/reopenQuotationAsDraftAction";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
 import { GetQuotationByIdData } from "@/lib/types/QuotationTypes";
 import Image from "next/image";
@@ -18,7 +18,7 @@ type Props = {
 };
 
 function fmtDate(value?: string | Date | null) {
-  if (!value) return "—";
+  if (!value) return "â€”";
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -27,7 +27,7 @@ function fmtDate(value?: string | Date | null) {
 
 function fmtMoney(value?: number | string | null) {
   const n = Number(value ?? 0);
-  return `₹${n.toFixed(2)}`;
+  return `â‚¹${n.toFixed(2)}`;
 }
 
 function statusVariant(status: string) {
@@ -193,19 +193,19 @@ export default function QuotationDetailView({ quotation }: Props) {
           <div>
             <div className="text-xs text-muted-foreground">Customer</div>
             <div className="font-medium">
-              {quotation.customer?.companyName || "—"}
+              {quotation.customer?.companyName || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Client Name</div>
-            <div className="font-medium">{quotation.clientName || "—"}</div>
+            <div className="font-medium">{quotation.clientName || "â€”"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">GSTIN</div>
             <div className="font-medium">
-              {quotation.customer?.gstin || "—"}
+              {quotation.customer?.gstin || "â€”"}
             </div>
           </div>
 
@@ -214,28 +214,28 @@ export default function QuotationDetailView({ quotation }: Props) {
               Received From Name
             </div>
             <div className="font-medium">
-              {quotation.receivedFromName || "—"}
+              {quotation.receivedFromName || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Phone</div>
             <div className="font-medium">
-              {quotation.receivedFromPhone || "—"}
+              {quotation.receivedFromPhone || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Email</div>
             <div className="font-medium break-all">
-              {quotation.receivedFromEmail || "—"}
+              {quotation.receivedFromEmail || "â€”"}
             </div>
           </div>
 
           <div className="md:col-span-3">
             <div className="text-xs text-muted-foreground">Enquiry Message</div>
             <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
-              {quotation.enquiryMessage || "—"}
+              {quotation.enquiryMessage || "â€”"}
             </div>
           </div>
         </CardContent>
@@ -249,17 +249,17 @@ export default function QuotationDetailView({ quotation }: Props) {
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div>
             <div className="text-xs text-muted-foreground">GST</div>
-            <div className="font-medium">{quotation.gst || "—"}</div>
+            <div className="font-medium">{quotation.gst || "â€”"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Packing Charges</div>
-            <div className="font-medium">{quotation.packingCharges || "—"}</div>
+            <div className="font-medium">{quotation.packingCharges || "â€”"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Payment Terms</div>
-            <div className="font-medium">{quotation.paymentTerms || "—"}</div>
+            <div className="font-medium">{quotation.paymentTerms || "â€”"}</div>
           </div>
 
           <div>
@@ -267,7 +267,7 @@ export default function QuotationDetailView({ quotation }: Props) {
               Transportation Payment
             </div>
             <div className="font-medium">
-              {quotation.transportationPayment || "—"}
+              {quotation.transportationPayment || "â€”"}
             </div>
           </div>
 
@@ -278,13 +278,13 @@ export default function QuotationDetailView({ quotation }: Props) {
                 ? typeof quotation.deliveryDate === "string"
                   ? quotation.deliveryDate
                   : fmtDate(quotation.deliveryDate)
-                : "—"}
+                : "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Discount</div>
-            <div className="font-medium">{quotation.discount || "—"}</div>
+            <div className="font-medium">{quotation.discount || "â€”"}</div>
           </div>
 
           <div className="md:col-span-3">
@@ -292,7 +292,7 @@ export default function QuotationDetailView({ quotation }: Props) {
               Additional Notes
             </div>
             <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
-              {quotation.additionalNotes || "—"}
+              {quotation.additionalNotes || "â€”"}
             </div>
           </div>
         </CardContent>
@@ -323,7 +323,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                       <div className="mt-1 text-sm text-muted-foreground">
                         {[item.sku, item.typeNumber]
                           .filter(Boolean)
-                          .join(" • ") || "—"}
+                          .join(" â€¢ ") || "â€”"}
                       </div>
                     </div>
 
@@ -355,7 +355,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground">Unit</div>
-                      <div className="font-medium">{item.unit || "—"}</div>
+                      <div className="font-medium">{item.unit || "â€”"}</div>
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground">
@@ -370,7 +370,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                         PO Reference
                       </div>
                       <div className="font-medium">
-                        {item.poReference || "—"}
+                        {item.poReference || "â€”"}
                       </div>
                     </div>
                   </div>
@@ -406,7 +406,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                                 {comp.unit ? (
                                   <span className="text-muted-foreground">
                                     {" "}
-                                    • {comp.unit}
+                                    â€¢ {comp.unit}
                                   </span>
                                 ) : null}
                               </div>
@@ -495,7 +495,7 @@ export default function QuotationDetailView({ quotation }: Props) {
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Discount</span>
-              <span className="font-medium">{quotation.discount || "—"}</span>
+              <span className="font-medium">{quotation.discount || "â€”"}</span>
             </div>
 
             <div className="flex items-center justify-between border-t pt-3 text-base">

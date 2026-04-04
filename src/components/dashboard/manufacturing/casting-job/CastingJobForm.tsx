@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { CalendarIcon, Loader2, Plus, Save, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 

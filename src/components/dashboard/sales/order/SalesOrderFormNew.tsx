@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save, Send } from "lucide-react";
 import React, { FC } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
 import { finalizeSalesOrderAction } from "@/lib/actions/dashboard/sales/order/finalizeSalesOrderAction";
@@ -149,11 +149,11 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
 
   const saveIndicator = (() => {
     if (!salesOrderId) {
-      return <Badge variant="secondary">Creating draft…</Badge>;
+      return <Badge variant="secondary">Creating draftâ€¦</Badge>;
     }
 
     if (autosave.status === "saving") {
-      return <Badge variant="secondary">Saving…</Badge>;
+      return <Badge variant="secondary">Savingâ€¦</Badge>;
     }
 
     if (autosave.status === "saved") {

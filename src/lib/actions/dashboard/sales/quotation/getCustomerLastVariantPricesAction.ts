@@ -8,6 +8,7 @@ export type CustomerLastVariantPrice = {
   source: "INVOICE" | "SALES_ORDER";
   sourceId: string;
   sourceNo: string;
+  sourcePoNumber: string | null;
   sourceDate: string | null;
   unitPrice: number;
 };
@@ -61,6 +62,7 @@ export async function getCustomerLastVariantPricesAction({
           invoiceNo: true,
           invoiceFy: true,
           invoiceDate: true,
+          poNumber: true,
         },
       },
       createdAt: true,
@@ -80,6 +82,7 @@ export async function getCustomerLastVariantPricesAction({
       source: "INVOICE",
       sourceId: row.invoice.id,
       sourceNo: `${row.invoice.invoiceFy}-${String(row.invoice.invoiceNo).padStart(3, "0")}`,
+      sourcePoNumber: row.invoice.poNumber ?? null,
       sourceDate: row.invoice.invoiceDate
         ? row.invoice.invoiceDate.toISOString()
         : null,
@@ -114,6 +117,7 @@ export async function getCustomerLastVariantPricesAction({
           orderNo: true,
           orderFy: true,
           orderDate: true,
+          poNumber: true,
         },
       },
       createdAt: true,
@@ -132,6 +136,7 @@ export async function getCustomerLastVariantPricesAction({
       source: "SALES_ORDER",
       sourceId: row.salesOrder.id,
       sourceNo: `${row.salesOrder.orderFy}-${String(row.salesOrder.orderNo).padStart(3, "0")}`,
+      sourcePoNumber: row.salesOrder.poNumber ?? null,
       sourceDate: row.salesOrder.orderDate
         ? row.salesOrder.orderDate.toISOString()
         : null,

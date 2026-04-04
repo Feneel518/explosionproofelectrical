@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import React, { FC, useMemo } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import CustomerForm from "../../customer/CustomerForm";
@@ -360,10 +360,10 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
   }, [loadLastPrices, watchedCustomerId, watchedVariantIdsKey, lastPriceRefreshTick]);
 
   const saveIndicator = (() => {
-    if (!quotationId) return <Badge variant="secondary">Creating draft…</Badge>;
+    if (!quotationId) return <Badge variant="secondary">Creating draftâ€¦</Badge>;
 
     if (autosave.status === "saving")
-      return <Badge variant="secondary">Saving…</Badge>;
+      return <Badge variant="secondary">Savingâ€¦</Badge>;
 
     if (autosave.status === "saved")
       return (
@@ -656,7 +656,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Input
                                 {...field}
-                                value={field.value ?? ""} // ✅ converts null/undefined -> ""
+                                value={field.value ?? ""} // âœ… converts null/undefined -> ""
                                 placeholder="Mr. Feneel"
                               />
                             </FormControl>
@@ -674,7 +674,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Input
                                 {...field}
-                                value={field.value ?? ""} // ✅ converts null/undefined -> ""
+                                value={field.value ?? ""} // âœ… converts null/undefined -> ""
                                 placeholder="feneel@example.com"
                               />
                             </FormControl>
@@ -691,7 +691,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Input
                                 {...field}
-                                value={field.value ?? ""} // ✅ converts null/undefined -> ""
+                                value={field.value ?? ""} // âœ… converts null/undefined -> ""
                                 placeholder="9099064666"
                               />
                             </FormControl>
@@ -874,7 +874,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Input
                                 {...field}
-                                value={field.value ?? ""} // ✅ converts null/undefined -> ""
+                                value={field.value ?? ""} // âœ… converts null/undefined -> ""
                                 placeholder="0%"
                               />
                             </FormControl>
@@ -892,7 +892,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Input
                                 {...field}
-                                value={field.value ?? "4 weeks"} // ✅ converts null/undefined -> ""
+                                value={field.value ?? "4 weeks"} // âœ… converts null/undefined -> ""
                                 placeholder="4 weeks"
                               />
                             </FormControl>
@@ -991,7 +991,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Textarea
                                 {...field}
-                                value={field.value ?? ""} // ✅ converts null/undefined -> ""
+                                value={field.value ?? ""} // âœ… converts null/undefined -> ""
                                 placeholder="Notes that appear in quotation..."
                               />
                             </FormControl>
@@ -1008,7 +1008,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                             <FormControl>
                               <Textarea
                                 {...field}
-                                value={field.value ?? ""} // ✅ converts null/undefined -> ""
+                                value={field.value ?? ""} // âœ… converts null/undefined -> ""
                                 placeholder="Any specific requirements or details about the enquiry..."
                               />
                             </FormControl>
@@ -1082,7 +1082,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                         Subtotal
                       </div>
                       <div className="text-2xl font-bold">
-                        ₹
+                        â‚¹
                         {(form.watch("items") ?? [])
                           .reduce((acc, item) => {
                             return (
@@ -1206,8 +1206,8 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Qty: {Number(qty || 0)} · Unit Price: ₹
-                    {Number(unitPrice || 0).toFixed(2)} · Total: ₹
+                    Qty: {Number(qty || 0)} Â· Unit Price: â‚¹
+                    {Number(unitPrice || 0).toFixed(2)} Â· Total: â‚¹
                     {lineTotal.toFixed(2)}
                   </p>
                   {lastPriceInfo?.lastInvoice || lastPriceInfo?.lastSalesOrder ? (
@@ -1218,6 +1218,9 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                           {Number(lastPriceInfo.lastInvoice.unitPrice || 0).toFixed(2)} (
                           {lastPriceInfo.lastInvoice.sourceNo}
                           {formattedInvoiceDate ? ` on ${formattedInvoiceDate}` : ""})
+                          {lastPriceInfo.lastInvoice.sourcePoNumber
+                            ? ` · PO ${lastPriceInfo.lastInvoice.sourcePoNumber}`
+                            : ""}
                         </p>
                       ) : null}
 
@@ -1230,6 +1233,9 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                             ? ` on ${formattedSalesOrderDate}`
                             : ""}
                           )
+                          {lastPriceInfo.lastSalesOrder.sourcePoNumber
+                            ? ` · PO ${lastPriceInfo.lastSalesOrder.sourcePoNumber}`
+                            : ""}
                         </p>
                       ) : null}
                     </div>
@@ -1750,6 +1756,9 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                                 2,
                               )}{" "}
                               ({lastPriceInfo.lastInvoice.sourceNo})
+                              {lastPriceInfo.lastInvoice.sourcePoNumber
+                                ? ` · PO ${lastPriceInfo.lastInvoice.sourcePoNumber}`
+                                : ""}
                             </p>
                           ) : null}
                           {lastPriceInfo.lastSalesOrder ? (
@@ -1759,6 +1768,9 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                                 lastPriceInfo.lastSalesOrder.unitPrice || 0,
                               ).toFixed(2)}{" "}
                               ({lastPriceInfo.lastSalesOrder.sourceNo})
+                              {lastPriceInfo.lastSalesOrder.sourcePoNumber
+                                ? ` · PO ${lastPriceInfo.lastSalesOrder.sourcePoNumber}`
+                                : ""}
                             </p>
                           ) : null}
                         </div>
@@ -1777,7 +1789,7 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     Line Total
                   </div>
                   <div className="text-lg font-semibold">
-                    ₹{lineTotal.toFixed(2)}
+                    â‚¹{lineTotal.toFixed(2)}
                   </div>
                 </div>
 
@@ -2532,7 +2544,7 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
 
 //       <div className="md:col-span-3 flex flex-col justify-end">
 //         <div className="text-sm text-muted-foreground">Line Total</div>
-//         <div className="text-lg font-semibold">₹{lineTotal.toFixed(2)}</div>
+//         <div className="text-lg font-semibold">â‚¹{lineTotal.toFixed(2)}</div>
 //       </div>
 
 //       <FormField

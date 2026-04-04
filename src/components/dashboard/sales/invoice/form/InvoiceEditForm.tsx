@@ -47,7 +47,7 @@ import { CustomerCombobox } from "@/components/dashboard/global/CustomerCombobox
 import { ProductVariantCombobox } from "@/components/dashboard/global/ProductVariantCombobox";
 import { updateInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/updateInvoiceDraftData";
 import { finalizeInvoiceAction } from "@/lib/actions/dashboard/sales/invoice/finalizeInvoiceAction";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { MediaItem } from "@/lib/actions/dashboard/sales/invoice/getInvoiceEditDataAction";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { getCustomerForSelectById } from "@/lib/actions/dashboard/global/getCustomerForSelectById";

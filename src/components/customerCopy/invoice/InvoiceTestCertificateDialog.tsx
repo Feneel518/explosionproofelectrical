@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { FC, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { FileCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,7 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
                   </div>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {[item.sku, item.typeNumber].filter(Boolean).join(" • ") || "—"}
+                    {[item.sku, item.typeNumber].filter(Boolean).join(" â€¢ ") || "â€”"}
                   </p>
                 </div>
               </label>

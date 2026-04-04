@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { reopenDeliveryChallanAsDraftAction } from "@/lib/actions/dashboard/sales/delivery-challan/reopenDeliveryChallanAsDraftAction";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
 type DeliveryChallanItemView = {
@@ -87,7 +87,7 @@ type Props = {
 };
 
 function fmtDate(value?: string | Date | null) {
-  if (!value) return "—";
+  if (!value) return "â€”";
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -225,20 +225,20 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
           <div>
             <div className="text-xs text-muted-foreground">Customer</div>
             <div className="font-medium">
-              {deliveryChallan.customer?.companyName || "—"}
+              {deliveryChallan.customer?.companyName || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">GSTIN</div>
             <div className="font-medium">
-              {deliveryChallan.customer?.gstin || "—"}
+              {deliveryChallan.customer?.gstin || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">PO Number</div>
-            <div className="font-medium">{deliveryChallan.poNumber || "—"}</div>
+            <div className="font-medium">{deliveryChallan.poNumber || "â€”"}</div>
           </div>
 
           <div>
@@ -248,7 +248,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
             <div className="font-medium">
               {deliveryChallan.quotation
                 ? formatFinancialDocumentNumber(deliveryChallan.quotation.quoteFy, deliveryChallan.quotation.quoteNo)
-                : "—"}
+                : "â€”"}
             </div>
           </div>
 
@@ -286,7 +286,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
                 deliveryChallan.customer?.pincode,
               ]
                 .filter(Boolean)
-                .join("\n") || "—"}
+                .join("\n") || "â€”"}
             </div>
           </div>
         </CardContent>
@@ -303,14 +303,14 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
               Transporter Name
             </div>
             <div className="font-medium">
-              {deliveryChallan.transporterName || "—"}
+              {deliveryChallan.transporterName || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Vehicle Number</div>
             <div className="font-medium">
-              {deliveryChallan.vehicleNumber || "—"}
+              {deliveryChallan.vehicleNumber || "â€”"}
             </div>
           </div>
 
@@ -319,47 +319,47 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
               Dispatch Through
             </div>
             <div className="font-medium">
-              {deliveryChallan.dispatchThrough || "—"}
+              {deliveryChallan.dispatchThrough || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Driver Name</div>
             <div className="font-medium">
-              {deliveryChallan.driverName || "—"}
+              {deliveryChallan.driverName || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Driver Phone</div>
             <div className="font-medium">
-              {deliveryChallan.driverPhone || "—"}
+              {deliveryChallan.driverPhone || "â€”"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">LR Number</div>
-            <div className="font-medium">{deliveryChallan.lrNumber || "—"}</div>
+            <div className="font-medium">{deliveryChallan.lrNumber || "â€”"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Packages</div>
             <div className="font-medium">
-              {deliveryChallan.numberOfPackages ?? "—"}
+              {deliveryChallan.numberOfPackages ?? "â€”"}
             </div>
           </div>
 
           <div className="md:col-span-3">
             <div className="text-xs text-muted-foreground">Remarks</div>
             <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
-              {deliveryChallan.remarks || "—"}
+              {deliveryChallan.remarks || "â€”"}
             </div>
           </div>
 
           <div className="md:col-span-3">
             <div className="text-xs text-muted-foreground">Closure Remarks</div>
             <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
-              {deliveryChallan.closureRemarks || "—"}
+              {deliveryChallan.closureRemarks || "â€”"}
             </div>
           </div>
         </CardContent>
@@ -390,7 +390,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
                       <div className="mt-1 text-sm text-muted-foreground">
                         {[item.sku, item.typeNumber]
                           .filter(Boolean)
-                          .join(" • ") || "—"}
+                          .join(" â€¢ ") || "â€”"}
                       </div>
                     </div>
 
@@ -416,7 +416,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
 
                     <div>
                       <div className="text-xs text-muted-foreground">Unit</div>
-                      <div className="font-medium">{item.unit || "—"}</div>
+                      <div className="font-medium">{item.unit || "â€”"}</div>
                     </div>
 
                     <div>
@@ -437,7 +437,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
                       <div className="text-xs text-muted-foreground">
                         HSN Code
                       </div>
-                      <div className="font-medium">{item.hsnCode || "—"}</div>
+                      <div className="font-medium">{item.hsnCode || "â€”"}</div>
                     </div>
                   </div>
                 </div>

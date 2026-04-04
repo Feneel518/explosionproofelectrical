@@ -89,88 +89,14 @@ export async function rollbackInvoiceEffects(
   });
 
   if (existingLedgerRows.length > 0) {
-    const stockDeltaByKey = new Map<
-      string,
-      {
-        rawMaterialId: string | null;
-        productVariantId: string | null;
-        castingMasterId: string | null;
-        deltaOnHand: number;
-      }
-    >();
+    const touchedRawMaterialIds = new Set<string>();
+    const touchedVariantIds = new Set<string>();
+    const touchedCastingIds = new Set<string>();
 
     for (const row of existingLedgerRows) {
-      const key = row.rawMaterialId
-        ? `RM:${row.rawMaterialId}`
-        : row.productVariantId
-          ? `PV:${row.productVariantId}`
-          : row.castingMasterId
-            ? `CM:${row.castingMasterId}`
-            : null;
-      if (!key) continue;
-
-      const effect = Number(row.qtyIn || 0) - Number(row.qtyOut || 0);
-      const existing = stockDeltaByKey.get(key);
-
-      if (existing) {
-        existing.deltaOnHand += effect;
-      } else {
-        stockDeltaByKey.set(key, {
-          rawMaterialId: row.rawMaterialId ?? null,
-          productVariantId: row.productVariantId ?? null,
-          castingMasterId: row.castingMasterId ?? null,
-          deltaOnHand: effect,
-        });
-      }
-    }
-
-    const now = new Date();
-
-    for (const deltaRow of stockDeltaByKey.values()) {
-      if (deltaRow.deltaOnHand === 0) continue;
-
-      const where = deltaRow.rawMaterialId
-        ? { rawMaterialId: deltaRow.rawMaterialId }
-        : deltaRow.productVariantId
-          ? { productVariantId: deltaRow.productVariantId }
-          : { castingMasterId: deltaRow.castingMasterId };
-
-      const existingBalance = await tx.stockBalance.findFirst({
-        where,
-        select: {
-          id: true,
-          qtyOnHand: true,
-          qtyReserved: true,
-        },
-      });
-
-      const currentOnHand = Number(existingBalance?.qtyOnHand || 0);
-      const currentReserved = Number(existingBalance?.qtyReserved || 0);
-      const nextOnHand = currentOnHand - deltaRow.deltaOnHand;
-      const nextAvailable = nextOnHand - currentReserved;
-
-      if (existingBalance) {
-        await tx.stockBalance.update({
-          where: { id: existingBalance.id },
-          data: {
-            qtyOnHand: nextOnHand,
-            qtyAvailable: nextAvailable,
-            lastMovementAt: now,
-          },
-        });
-      } else {
-        await tx.stockBalance.create({
-          data: {
-            rawMaterialId: deltaRow.rawMaterialId,
-            productVariantId: deltaRow.productVariantId,
-            castingMasterId: deltaRow.castingMasterId,
-            qtyOnHand: nextOnHand,
-            qtyReserved: 0,
-            qtyAvailable: nextOnHand,
-            lastMovementAt: now,
-          },
-        });
-      }
+      if (row.rawMaterialId) touchedRawMaterialIds.add(row.rawMaterialId);
+      if (row.productVariantId) touchedVariantIds.add(row.productVariantId);
+      if (row.castingMasterId) touchedCastingIds.add(row.castingMasterId);
     }
 
     await tx.stockLedger.deleteMany({
@@ -179,6 +105,160 @@ export async function rollbackInvoiceEffects(
         referenceId: invoiceId,
       },
     });
+
+    for (const rawMaterialId of touchedRawMaterialIds) {
+      const [rawMaterial, ledgerAgg, latestLedger, existingBalance] = await Promise.all([
+        tx.rawMaterial.findUnique({
+          where: { id: rawMaterialId },
+          select: { openingStockQty: true },
+        }),
+        tx.stockLedger.aggregate({
+          where: { rawMaterialId },
+          _sum: { qtyIn: true, qtyOut: true },
+        }),
+        tx.stockLedger.findFirst({
+          where: { rawMaterialId },
+          orderBy: [{ movementDate: "desc" }, { createdAt: "desc" }],
+          select: { movementDate: true },
+        }),
+        tx.stockBalance.findFirst({
+          where: { rawMaterialId },
+          select: { id: true, qtyReserved: true },
+        }),
+      ]);
+
+      const openingQty = Number(rawMaterial?.openingStockQty || 0);
+      const qtyIn = Number(ledgerAgg._sum.qtyIn || 0);
+      const qtyOut = Number(ledgerAgg._sum.qtyOut || 0);
+      const qtyOnHand = openingQty + qtyIn - qtyOut;
+      const qtyReserved = Number(existingBalance?.qtyReserved || 0);
+      const qtyAvailable = qtyOnHand - qtyReserved;
+      const lastMovementAt = latestLedger?.movementDate ?? null;
+
+      if (existingBalance) {
+        await tx.stockBalance.update({
+          where: { id: existingBalance.id },
+          data: {
+            qtyOnHand,
+            qtyAvailable,
+            lastMovementAt,
+          },
+        });
+      } else if (qtyOnHand !== 0 || qtyReserved !== 0 || lastMovementAt) {
+        await tx.stockBalance.create({
+          data: {
+            rawMaterialId,
+            productVariantId: null,
+            castingMasterId: null,
+            qtyOnHand,
+            qtyReserved,
+            qtyAvailable,
+            lastMovementAt,
+          },
+        });
+      }
+    }
+
+    for (const productVariantId of touchedVariantIds) {
+      const [ledgerAgg, latestLedger, existingBalance] = await Promise.all([
+        tx.stockLedger.aggregate({
+          where: { productVariantId },
+          _sum: { qtyIn: true, qtyOut: true },
+        }),
+        tx.stockLedger.findFirst({
+          where: { productVariantId },
+          orderBy: [{ movementDate: "desc" }, { createdAt: "desc" }],
+          select: { movementDate: true },
+        }),
+        tx.stockBalance.findFirst({
+          where: { productVariantId },
+          select: { id: true, qtyReserved: true },
+        }),
+      ]);
+
+      const qtyIn = Number(ledgerAgg._sum.qtyIn || 0);
+      const qtyOut = Number(ledgerAgg._sum.qtyOut || 0);
+      const qtyOnHand = qtyIn - qtyOut;
+      const qtyReserved = Number(existingBalance?.qtyReserved || 0);
+      const qtyAvailable = qtyOnHand - qtyReserved;
+      const lastMovementAt = latestLedger?.movementDate ?? null;
+
+      if (existingBalance) {
+        await tx.stockBalance.update({
+          where: { id: existingBalance.id },
+          data: {
+            qtyOnHand,
+            qtyAvailable,
+            lastMovementAt,
+          },
+        });
+      } else if (qtyOnHand !== 0 || qtyReserved !== 0 || lastMovementAt) {
+        await tx.stockBalance.create({
+          data: {
+            rawMaterialId: null,
+            productVariantId,
+            castingMasterId: null,
+            qtyOnHand,
+            qtyReserved,
+            qtyAvailable,
+            lastMovementAt,
+          },
+        });
+      }
+    }
+
+    for (const castingMasterId of touchedCastingIds) {
+      const [castingMaster, ledgerAgg, latestLedger, existingBalance] = await Promise.all([
+        tx.castingMaster.findUnique({
+          where: { id: castingMasterId },
+          select: { openingStockQty: true },
+        }),
+        tx.stockLedger.aggregate({
+          where: { castingMasterId },
+          _sum: { qtyIn: true, qtyOut: true },
+        }),
+        tx.stockLedger.findFirst({
+          where: { castingMasterId },
+          orderBy: [{ movementDate: "desc" }, { createdAt: "desc" }],
+          select: { movementDate: true },
+        }),
+        tx.stockBalance.findFirst({
+          where: { castingMasterId },
+          select: { id: true, qtyReserved: true },
+        }),
+      ]);
+
+      const openingQty = Number(castingMaster?.openingStockQty || 0);
+      const qtyIn = Number(ledgerAgg._sum.qtyIn || 0);
+      const qtyOut = Number(ledgerAgg._sum.qtyOut || 0);
+      const qtyOnHand = openingQty + qtyIn - qtyOut;
+      const qtyReserved = Number(existingBalance?.qtyReserved || 0);
+      const qtyAvailable = qtyOnHand - qtyReserved;
+      const lastMovementAt = latestLedger?.movementDate ?? null;
+
+      if (existingBalance) {
+        await tx.stockBalance.update({
+          where: { id: existingBalance.id },
+          data: {
+            qtyOnHand,
+            qtyAvailable,
+            lastMovementAt,
+          },
+        });
+      } else if (qtyOnHand !== 0 || qtyReserved !== 0 || lastMovementAt) {
+        await tx.stockBalance.create({
+          data: {
+            rawMaterialId: null,
+            productVariantId: null,
+            castingMasterId,
+            qtyOnHand,
+            qtyReserved,
+            qtyAvailable,
+            lastMovementAt,
+          },
+        });
+      }
+    }
   }
 }
 

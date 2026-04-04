@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { Printer } from "lucide-react";
+import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
 
 type PendingOrderItem = {
   id: string;
@@ -432,7 +433,11 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
                     </TableCell>
 
                     <TableCell className="align-top">
-                      <Badge variant="outline">{row.status}</Badge>
+                      <Badge
+                        variant={getSalesOrderStatusBadge(row.status).variant}
+                        className={getSalesOrderStatusBadge(row.status).className}>
+                        {row.status}
+                      </Badge>
                     </TableCell>
 
                     <TableCell className="text-right align-top font-semibold">

@@ -5,6 +5,7 @@ import { RecentOrderPoint } from "@/lib/types/OrderAnalyticsTypes";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { FC } from "react";
+import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
 
 interface RecentOrdersProps {
   data: RecentOrderPoint[];
@@ -26,8 +27,10 @@ const RecentOrders: FC<RecentOrdersProps> = ({ data }) => {
         {data.length === 0 ? (
           <div className="text-sm text-muted-foreground">No recent orders.</div>
         ) : (
-          data.map((item, index) => (
-            <div key={item.id}>
+          data.map((item, index) => {
+            const statusBadge = getSalesOrderStatusBadge(item.status);
+            return (
+              <div key={item.id}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3>{item.orderNo}</h3>
@@ -41,15 +44,20 @@ const RecentOrders: FC<RecentOrdersProps> = ({ data }) => {
 
                 <div className="flex flex-col items-end gap-2">
                   <h3>{formatCurrencyINR(item.totalAmount)}</h3>
-                  <Badge variant="secondary">{item.status}</Badge>
+                  <Badge
+                    variant={statusBadge.variant}
+                    className={statusBadge.className}>
+                    {item.status}
+                  </Badge>
                 </div>
               </div>
 
               {index !== data.length - 1 && (
                 <Separator className="m-2 w-full bg-white/20" />
               )}
-            </div>
-          ))
+              </div>
+            );
+          })
         )}
       </div>
     </div>

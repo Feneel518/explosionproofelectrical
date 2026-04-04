@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import OrderAction from "./OrderAction";
 import { SalesOrderStatus } from "@prisma/client";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
 
 interface OrderTableProps {
   items: Item[];
@@ -87,26 +88,6 @@ function formatCurrency(v: any) {
     currency: "INR",
     maximumFractionDigits: 2,
   }).format(num);
-}
-
-function statusBadgeVariant(status: string) {
-  switch (status) {
-    case "COMPLETED":
-    case "INVOICED":
-    case "DISPATCHED":
-      return "default";
-    case "CANCELLED":
-      return "destructive";
-    case "IN_PRODUCTION":
-    case "PARTIALLY_DISPATCHED":
-    case "PARTIALLY_INVOICED":
-      return "outline";
-    case "CONFIRMED":
-      return "secondary";
-    case "DRAFT":
-    default:
-      return "secondary";
-  }
 }
 
 const OrderTable: FC<OrderTableProps> = ({
@@ -184,7 +165,9 @@ const OrderTable: FC<OrderTableProps> = ({
                   </div>
 
                   <div className="flex shrink-0 flex-col items-end gap-2">
-                    <Badge variant={statusBadgeVariant(o.status) as any}>
+                    <Badge
+                      variant={getSalesOrderStatusBadge(o.status).variant}
+                      className={getSalesOrderStatusBadge(o.status).className}>
                       {o.status}
                     </Badge>
                     {o.deletedAt ? (
@@ -298,7 +281,9 @@ const OrderTable: FC<OrderTableProps> = ({
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant={statusBadgeVariant(o.status) as any}>
+                      <Badge
+                        variant={getSalesOrderStatusBadge(o.status).variant}
+                        className={getSalesOrderStatusBadge(o.status).className}>
                         {o.status}
                       </Badge>
                     </TableCell>

@@ -30,7 +30,7 @@ import { CustomerSelectItem } from "@/lib/actions/dashboard/global/listCustomers
 import { getCustomerForSelectById } from "@/lib/actions/dashboard/global/getCustomerForSelectById";
 import { finalizeQuotationAction } from "@/lib/actions/dashboard/sales/quotation/finalizeQuotationAction";
 import {
-  CustomerLastVariantPrice,
+  CustomerLastVariantPriceBySource,
   getCustomerLastVariantPricesAction,
 } from "@/lib/actions/dashboard/sales/quotation/getCustomerLastVariantPricesAction";
 import {
@@ -115,8 +115,9 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
     React.useState(false);
   const [isLoadingLastPrices, setIsLoadingLastPrices] = React.useState(false);
   const [lastPriceByVariantId, setLastPriceByVariantId] = React.useState<
-    Record<string, CustomerLastVariantPrice>
+    Record<string, CustomerLastVariantPriceBySource>
   >({});
+  const [lastPriceRefreshTick, setLastPriceRefreshTick] = React.useState(0);
 
   const [initialVersion, setInitialVersion] = React.useState<number>(
     initialDraftVersion ?? 0,
@@ -265,17 +266,32 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
     () => watchedVariantIds.join("|"),
     [watchedVariantIds],
   );
+  const lastPriceRequestIdRef = React.useRef(0);
 
-  React.useEffect(() => {
-    let cancelled = false;
+  const loadLastPrices = React.useCallback(
+    async ({
+      customerId,
+      variantIds,
+    }: {
+      customerId?: string | null;
+      variantIds?: string[];
+    } = {}) => {
+      const selectedCustomerId = customerId ?? form.getValues("header.customerId");
+      const selectedVariantIds = Array.from(
+        new Set(
+          (
+            variantIds ??
+            (form.getValues("items") ?? [])
+              .map((item) => item.variantId)
+              .filter((id): id is string => Boolean(id))
+          ).filter(Boolean),
+        ),
+      );
 
-    async function loadLastPrices() {
-      const variantIds = watchedVariantIdsKey
-        ? watchedVariantIdsKey.split("|").filter(Boolean)
-        : [];
+      const requestId = ++lastPriceRequestIdRef.current;
 
-      if (!watchedCustomerId || variantIds.length === 0) {
-        if (!cancelled) {
+      if (!selectedCustomerId || selectedVariantIds.length === 0) {
+        if (requestId === lastPriceRequestIdRef.current) {
           setLastPriceByVariantId({});
           setIsLoadingLastPrices(false);
         }
@@ -286,29 +302,62 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
 
       try {
         const res = await getCustomerLastVariantPricesAction({
-          customerId: watchedCustomerId,
-          variantIds,
+          customerId: selectedCustomerId,
+          variantIds: selectedVariantIds,
         });
 
-        if (!res.ok || cancelled) return;
+        if (!res.ok || requestId !== lastPriceRequestIdRef.current) return;
 
-        const next: Record<string, CustomerLastVariantPrice> = {};
+        const next: Record<string, CustomerLastVariantPriceBySource> = {};
         for (const row of res.prices) {
           next[row.variantId] = row;
         }
 
-        if (!cancelled) setLastPriceByVariantId(next);
+        setLastPriceByVariantId(next);
       } finally {
-        if (!cancelled) setIsLoadingLastPrices(false);
+        if (requestId === lastPriceRequestIdRef.current) {
+          setIsLoadingLastPrices(false);
+        }
       }
-    }
+    },
+    [form],
+  );
 
-    loadLastPrices();
+  const triggerLastPriceRefresh = React.useCallback(() => {
+    setLastPriceRefreshTick((tick) => tick + 1);
+  }, []);
+
+  React.useEffect(() => {
+    if (!watchedCustomerId || watchedVariantIds.length === 0) return;
+
+    const onFocus = () => triggerLastPriceRefresh();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        triggerLastPriceRefresh();
+      }
+    };
+
+    const interval = window.setInterval(triggerLastPriceRefresh, 15000);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [watchedCustomerId, watchedVariantIdsKey]);
+  }, [triggerLastPriceRefresh, watchedCustomerId, watchedVariantIds.length]);
+
+  React.useEffect(() => {
+    const variantIds = watchedVariantIdsKey
+      ? watchedVariantIdsKey.split("|").filter(Boolean)
+      : [];
+
+    void loadLastPrices({
+      customerId: watchedCustomerId,
+      variantIds,
+    });
+  }, [loadLastPrices, watchedCustomerId, watchedVariantIdsKey, lastPriceRefreshTick]);
 
   const saveIndicator = (() => {
     if (!quotationId) return <Badge variant="secondary">Creating draft…</Badge>;
@@ -492,6 +541,10 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
     form.setValue("header.customerId", customerId, {
       shouldDirty: true,
       shouldTouch: true,
+    });
+
+    queueMicrotask(() => {
+      void loadLastPrices({ customerId });
     });
 
     if (!customerId) return;
@@ -1000,6 +1053,9 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                           index={index}
                           isLoadingLastPrices={isLoadingLastPrices}
                           lastPriceByVariantId={lastPriceByVariantId}
+                          onPriceHistoryRefresh={() => {
+                            void loadLastPrices();
+                          }}
                           onRemove={() => removeItem(index)}
                           onDuplicate={() => duplicateItem(index)}
                           onMoveUp={() => moveItemUp(index)}
@@ -1054,8 +1110,9 @@ export default QuotationFormNew;
 interface QuotationItemRowProps {
   form: ReturnType<typeof useForm<QuotationDraftData>>;
   index: number;
-  lastPriceByVariantId: Record<string, CustomerLastVariantPrice>;
+  lastPriceByVariantId: Record<string, CustomerLastVariantPriceBySource>;
   isLoadingLastPrices: boolean;
+  onPriceHistoryRefresh: () => void;
   onRemove: () => void;
   onDuplicate: () => void;
   onMoveUp: () => void;
@@ -1068,6 +1125,7 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
   index,
   lastPriceByVariantId,
   isLoadingLastPrices,
+  onPriceHistoryRefresh,
   onRemove,
   onDuplicate,
   onMoveUp,
@@ -1115,12 +1173,20 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
       ? lastPriceByVariantId[variantId]
       : null;
 
-  const formattedLastPriceDate = lastPriceInfo?.sourceDate
+  const formattedInvoiceDate = lastPriceInfo?.lastInvoice?.sourceDate
     ? new Intl.DateTimeFormat("en-IN", {
         day: "2-digit",
         month: "short",
         year: "numeric",
-      }).format(new Date(lastPriceInfo.sourceDate))
+      }).format(new Date(lastPriceInfo.lastInvoice.sourceDate))
+    : null;
+
+  const formattedSalesOrderDate = lastPriceInfo?.lastSalesOrder?.sourceDate
+    ? new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(lastPriceInfo.lastSalesOrder.sourceDate))
     : null;
 
   return (
@@ -1144,12 +1210,29 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     {Number(unitPrice || 0).toFixed(2)} · Total: ₹
                     {lineTotal.toFixed(2)}
                   </p>
-                  {lastPriceInfo ? (
-                    <p className="mt-1 text-xs text-emerald-700">
-                      Last {lastPriceInfo.source === "INVOICE" ? "invoiced" : "ordered"}: Rs.
-                      {Number(lastPriceInfo.unitPrice || 0).toFixed(2)} ({lastPriceInfo.sourceNo}
-                      {formattedLastPriceDate ? ` on ${formattedLastPriceDate}` : ""})
-                    </p>
+                  {lastPriceInfo?.lastInvoice || lastPriceInfo?.lastSalesOrder ? (
+                    <div className="mt-1 space-y-1 text-xs text-emerald-700">
+                      {lastPriceInfo.lastInvoice ? (
+                        <p>
+                          Last invoice price: Rs.{" "}
+                          {Number(lastPriceInfo.lastInvoice.unitPrice || 0).toFixed(2)} (
+                          {lastPriceInfo.lastInvoice.sourceNo}
+                          {formattedInvoiceDate ? ` on ${formattedInvoiceDate}` : ""})
+                        </p>
+                      ) : null}
+
+                      {lastPriceInfo.lastSalesOrder ? (
+                        <p>
+                          Last order price: Rs.{" "}
+                          {Number(lastPriceInfo.lastSalesOrder.unitPrice || 0).toFixed(2)} (
+                          {lastPriceInfo.lastSalesOrder.sourceNo}
+                          {formattedSalesOrderDate
+                            ? ` on ${formattedSalesOrderDate}`
+                            : ""}
+                          )
+                        </p>
+                      ) : null}
+                    </div>
                   ) : variantId && isLoadingLastPrices ? (
                     <p className="mt-1 text-xs text-muted-foreground">
                       Loading last customer price...
@@ -1229,6 +1312,9 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                         });
                         form.setValue(`items.${index}.description`, null, {
                           shouldDirty: true,
+                        });
+                        queueMicrotask(() => {
+                          onPriceHistoryRefresh();
                         });
                         return;
                       }
@@ -1398,6 +1484,9 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                           shouldValidate: true,
                         },
                       );
+                      queueMicrotask(() => {
+                        onPriceHistoryRefresh();
+                      });
                     }}
                   />
                 </div>
@@ -1652,11 +1741,27 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                           placeholder="0.00"
                         />
                       </FormControl>
-                      {lastPriceInfo ? (
-                        <p className="text-xs text-emerald-700">
-                          Last customer price: Rs.
-                          {Number(lastPriceInfo.unitPrice || 0).toFixed(2)} ({lastPriceInfo.sourceNo})
-                        </p>
+                      {lastPriceInfo?.lastInvoice || lastPriceInfo?.lastSalesOrder ? (
+                        <div className="space-y-1 text-xs text-emerald-700">
+                          {lastPriceInfo.lastInvoice ? (
+                            <p>
+                              Last invoice: Rs.{" "}
+                              {Number(lastPriceInfo.lastInvoice.unitPrice || 0).toFixed(
+                                2,
+                              )}{" "}
+                              ({lastPriceInfo.lastInvoice.sourceNo})
+                            </p>
+                          ) : null}
+                          {lastPriceInfo.lastSalesOrder ? (
+                            <p>
+                              Last order: Rs.{" "}
+                              {Number(
+                                lastPriceInfo.lastSalesOrder.unitPrice || 0,
+                              ).toFixed(2)}{" "}
+                              ({lastPriceInfo.lastSalesOrder.sourceNo})
+                            </p>
+                          ) : null}
+                        </div>
                       ) : variantId && isLoadingLastPrices ? (
                         <p className="text-xs text-muted-foreground">
                           Loading price history...

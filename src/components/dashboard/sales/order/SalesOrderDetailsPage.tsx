@@ -23,6 +23,7 @@ import PdfPreviewCard from "../../global/PDFPreviewCard";
 import WorkOrderCopyModal from "@/components/customerCopy/sales-order/WorkOrderCopyDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
+import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
 
 interface SalesOrderDetailsPageProps {
   order: ClientSafe<GetSalesOrderByIdData>;
@@ -49,26 +50,6 @@ function formatCurrency(value?: number | string | null) {
   }).format(n);
 }
 
-function getStatusVariant(status: string) {
-  switch (status) {
-    case "COMPLETED":
-    case "INVOICED":
-    case "DISPATCHED":
-      return "default";
-    case "CANCELLED":
-      return "destructive";
-    case "IN_PRODUCTION":
-    case "PARTIALLY_DISPATCHED":
-    case "PARTIALLY_INVOICED":
-      return "outline";
-    case "CONFIRMED":
-      return "secondary";
-    case "DRAFT":
-    default:
-      return "secondary";
-  }
-}
-
 function getInvoiceStatusVariant(status: string) {
   switch (status) {
     case "FINALIZED":
@@ -90,6 +71,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
     order.orderFy,
     order.orderNo,
   );
+  const statusBadge = getSalesOrderStatusBadge(order.status);
 
   const clientName =
     order.clientNameSnapshot ||
@@ -117,7 +99,9 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
               {orderLabel}
             </h1>
 
-            <Badge variant={getStatusVariant(order.status) as any}>
+            <Badge
+              variant={statusBadge.variant}
+              className={statusBadge.className}>
               {order.status}
             </Badge>
 

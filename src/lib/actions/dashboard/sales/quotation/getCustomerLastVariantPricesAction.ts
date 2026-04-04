@@ -5,11 +5,17 @@ import { prisma } from "@/lib/prisma/db";
 
 export type CustomerLastVariantPrice = {
   variantId: string;
-  unitPrice: number;
   source: "INVOICE" | "SALES_ORDER";
   sourceId: string;
   sourceNo: string;
   sourceDate: string | null;
+  unitPrice: number;
+};
+
+export type CustomerLastVariantPriceBySource = {
+  variantId: string;
+  lastInvoice: CustomerLastVariantPrice | null;
+  lastSalesOrder: CustomerLastVariantPrice | null;
 };
 
 export async function getCustomerLastVariantPricesAction({
@@ -22,12 +28,18 @@ export async function getCustomerLastVariantPricesAction({
   await requireAuth();
 
   if (!customerId) {
-    return { ok: true as const, prices: [] as CustomerLastVariantPrice[] };
+    return {
+      ok: true as const,
+      prices: [] as CustomerLastVariantPriceBySource[],
+    };
   }
 
   const uniqueVariantIds = Array.from(new Set((variantIds ?? []).filter(Boolean)));
   if (uniqueVariantIds.length === 0) {
-    return { ok: true as const, prices: [] as CustomerLastVariantPrice[] };
+    return {
+      ok: true as const,
+      prices: [] as CustomerLastVariantPriceBySource[],
+    };
   }
 
   const invoiceRows = await prisma.invoiceItem.findMany({
@@ -35,7 +47,9 @@ export async function getCustomerLastVariantPricesAction({
       variantId: { in: uniqueVariantIds },
       invoice: {
         customerId,
-        status: "FINALIZED",
+        status: {
+          in: ["DRAFT", "FINALIZED"],
+        },
       },
     },
     select: {
@@ -55,12 +69,12 @@ export async function getCustomerLastVariantPricesAction({
     take: Math.max(20, uniqueVariantIds.length * 8),
   });
 
-  const byVariant = new Map<string, CustomerLastVariantPrice>();
+  const lastInvoiceByVariant = new Map<string, CustomerLastVariantPrice>();
 
   for (const row of invoiceRows) {
-    if (!row.variantId || byVariant.has(row.variantId)) continue;
+    if (!row.variantId || lastInvoiceByVariant.has(row.variantId)) continue;
 
-    byVariant.set(row.variantId, {
+    lastInvoiceByVariant.set(row.variantId, {
       variantId: row.variantId,
       unitPrice: Number(row.unitPrice || 0),
       source: "INVOICE",
@@ -72,62 +86,66 @@ export async function getCustomerLastVariantPricesAction({
     });
   }
 
-  const missingVariantIds = uniqueVariantIds.filter((id) => !byVariant.has(id));
+  const salesOrderRows = await prisma.salesOrderItem.findMany({
+    where: {
+      variantId: { in: uniqueVariantIds },
+      salesOrder: {
+        customerId,
+        status: {
+          in: [
+            "DRAFT",
+            "CONFIRMED",
+            "IN_PRODUCTION",
+            "PARTIALLY_DISPATCHED",
+            "DISPATCHED",
+            "PARTIALLY_INVOICED",
+            "INVOICED",
+            "COMPLETED",
+          ],
+        },
+      },
+    },
+    select: {
+      variantId: true,
+      unitPrice: true,
+      salesOrder: {
+        select: {
+          id: true,
+          orderNo: true,
+          orderFy: true,
+          orderDate: true,
+        },
+      },
+      createdAt: true,
+    },
+    orderBy: [{ salesOrder: { orderDate: "desc" } }, { createdAt: "desc" }],
+    take: Math.max(20, uniqueVariantIds.length * 8),
+  });
 
-  if (missingVariantIds.length > 0) {
-    const salesOrderRows = await prisma.salesOrderItem.findMany({
-      where: {
-        variantId: { in: missingVariantIds },
-        salesOrder: {
-          customerId,
-          status: {
-            in: [
-              "CONFIRMED",
-              "IN_PRODUCTION",
-              "PARTIALLY_DISPATCHED",
-              "DISPATCHED",
-              "PARTIALLY_INVOICED",
-              "INVOICED",
-              "COMPLETED",
-            ],
-          },
-        },
-      },
-      select: {
-        variantId: true,
-        unitPrice: true,
-        salesOrder: {
-          select: {
-            id: true,
-            orderNo: true,
-            orderFy: true,
-            orderDate: true,
-          },
-        },
-        createdAt: true,
-      },
-      orderBy: [{ salesOrder: { orderDate: "desc" } }, { createdAt: "desc" }],
-      take: Math.max(20, missingVariantIds.length * 8),
+  const lastSalesOrderByVariant = new Map<string, CustomerLastVariantPrice>();
+  for (const row of salesOrderRows) {
+    if (!row.variantId || lastSalesOrderByVariant.has(row.variantId)) continue;
+
+    lastSalesOrderByVariant.set(row.variantId, {
+      variantId: row.variantId,
+      unitPrice: Number(row.unitPrice || 0),
+      source: "SALES_ORDER",
+      sourceId: row.salesOrder.id,
+      sourceNo: `${row.salesOrder.orderFy}-${String(row.salesOrder.orderNo).padStart(3, "0")}`,
+      sourceDate: row.salesOrder.orderDate
+        ? row.salesOrder.orderDate.toISOString()
+        : null,
     });
-
-    for (const row of salesOrderRows) {
-      if (!row.variantId || byVariant.has(row.variantId)) continue;
-
-      byVariant.set(row.variantId, {
-        variantId: row.variantId,
-        unitPrice: Number(row.unitPrice || 0),
-        source: "SALES_ORDER",
-        sourceId: row.salesOrder.id,
-        sourceNo: `${row.salesOrder.orderFy}-${String(row.salesOrder.orderNo).padStart(3, "0")}`,
-        sourceDate: row.salesOrder.orderDate
-          ? row.salesOrder.orderDate.toISOString()
-          : null,
-      });
-    }
   }
+
+  const prices: CustomerLastVariantPriceBySource[] = uniqueVariantIds.map((variantId) => ({
+    variantId,
+    lastInvoice: lastInvoiceByVariant.get(variantId) ?? null,
+    lastSalesOrder: lastSalesOrderByVariant.get(variantId) ?? null,
+  }));
 
   return {
     ok: true as const,
-    prices: Array.from(byVariant.values()),
+    prices,
   };
 }

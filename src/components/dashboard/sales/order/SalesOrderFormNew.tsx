@@ -340,10 +340,24 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
   }
 
   async function applyCustomerToHeader(customerId: string | null) {
+    const previousCustomerId = form.getValues("header.customerId") ?? null;
+    const linkedQuotationId = form.getValues("header.quotationId") ?? "";
+    const hasLinkedQuotation = Boolean(linkedQuotationId);
+    const customerChanged = previousCustomerId !== customerId;
+
     form.setValue("header.customerId", customerId, {
       shouldDirty: true,
       shouldTouch: true,
     });
+
+    if (hasLinkedQuotation && customerChanged) {
+      form.setValue("header.quotationId", "", { shouldDirty: true });
+      form.setValue("header.sourceType", "DIRECT", { shouldDirty: true });
+      form.setValue("header.isConvertedFromQuotation", false, {
+        shouldDirty: true,
+      });
+      toast.info("Quotation link removed because customer was changed");
+    }
 
     if (!customerId) {
       form.setValue("header.clientName", "", { shouldDirty: true });

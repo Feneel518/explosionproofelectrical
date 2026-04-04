@@ -19,6 +19,12 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+function formatNumber(value?: number | null) {
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+  }).format(Number(value || 0));
+}
+
 function formatDate(value?: Date | string | null) {
   if (!value) return "-";
   return new Intl.DateTimeFormat("en-IN", {
@@ -28,10 +34,24 @@ function formatDate(value?: Date | string | null) {
   }).format(new Date(value));
 }
 
+function formatMonthLabel(value: Date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    month: "short",
+    year: "numeric",
+  }).format(value);
+}
+
 const Page: FC<PageProps> = async ({ params }) => {
   const { id } = await params;
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const nextMonthStart = new Date(monthStart);
+  nextMonthStart.setMonth(nextMonthStart.getMonth() + 1);
+  const monthLabel = formatMonthLabel(monthStart);
 
-  const [casting, jobItems] = await Promise.all([
+  const [casting, jobItems, stockAggAll, stockAggMonth, lastStockMovement] =
+    await Promise.all([
     prisma.castingMaster.findUnique({
       where: { id },
       select: {
@@ -92,11 +112,51 @@ const Page: FC<PageProps> = async ({ params }) => {
       },
       take: 300,
     }),
-  ]);
+    prisma.stockLedger.aggregate({
+      where: { castingMasterId: id },
+      _sum: {
+        qtyIn: true,
+        qtyOut: true,
+      },
+    }),
+    prisma.stockLedger.aggregate({
+      where: {
+        castingMasterId: id,
+        movementDate: {
+          gte: monthStart,
+          lt: nextMonthStart,
+        },
+      },
+      _sum: {
+        qtyIn: true,
+        qtyOut: true,
+      },
+    }),
+    prisma.stockLedger.findFirst({
+      where: { castingMasterId: id },
+      orderBy: [{ createdAt: "desc" }, { movementDate: "desc" }],
+      select: {
+        movementDate: true,
+        createdAt: true,
+        movementType: true,
+        referenceType: true,
+        referenceNo: true,
+        qtyIn: true,
+        qtyOut: true,
+      },
+    }),
+    ]);
 
   if (!casting) {
     return <div className="text-sm text-muted-foreground">Casting master not found.</div>;
   }
+
+  const allIn = Number(stockAggAll._sum.qtyIn ?? 0);
+  const allOut = Number(stockAggAll._sum.qtyOut ?? 0);
+  const monthIn = Number(stockAggMonth._sum.qtyIn ?? 0);
+  const monthOut = Number(stockAggMonth._sum.qtyOut ?? 0);
+  const onHand = Number(casting.stockBalance?.qtyOnHand ?? 0);
+  const openingThisMonth = onHand - monthIn + monthOut;
 
   const totalIssuedWeight = jobItems.reduce(
     (sum, row) => sum + Number(row.issuedWeightKg || 0),
@@ -173,6 +233,59 @@ const Page: FC<PageProps> = async ({ params }) => {
         }
         openingStockAt={casting.openingStockAt}
       />
+
+      <div className="rounded-xl border bg-card p-5 space-y-3">
+        <h2 className="text-lg font-semibold">Stock In/Out Summary</h2>
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-muted-foreground">
+              Opening ({monthLabel})
+            </div>
+            <div className="text-xl font-semibold">
+              {formatNumber(openingThisMonth)} {casting.unit}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-muted-foreground">
+              Inward MTD ({monthLabel})
+            </div>
+            <div className="text-xl font-semibold">
+              {formatNumber(monthIn)} {casting.unit}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-muted-foreground">
+              Outward MTD ({monthLabel})
+            </div>
+            <div className="text-xl font-semibold">
+              {formatNumber(monthOut)} {casting.unit}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-muted-foreground">On Hand</div>
+            <div className="text-xl font-semibold">
+              {formatNumber(onHand)} {casting.unit}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-muted-foreground">Inward (All Time)</div>
+            <div className="text-xl font-semibold">
+              {formatNumber(allIn)} {casting.unit}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-muted-foreground">Outward (All Time)</div>
+            <div className="text-xl font-semibold">
+              {formatNumber(allOut)} {casting.unit}
+            </div>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {lastStockMovement
+            ? `Last movement: ${formatDate(lastStockMovement.createdAt)} • ${lastStockMovement.movementType} • IN ${formatNumber(lastStockMovement.qtyIn)} / OUT ${formatNumber(lastStockMovement.qtyOut)} • ${lastStockMovement.referenceType}${lastStockMovement.referenceNo ? ` (${lastStockMovement.referenceNo})` : ""}`
+            : "Last movement: -"}
+        </div>
+      </div>
 
       <div className="rounded-xl border bg-card p-5 space-y-3">
         <h2 className="text-lg font-semibold">Worker Consumption Summary</h2>

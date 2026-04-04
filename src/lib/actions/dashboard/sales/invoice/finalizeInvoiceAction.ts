@@ -7,6 +7,10 @@ import { prisma } from "@/lib/prisma/db";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { ProductMediaKind } from "@prisma/client";
 import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
+import {
+  refreshSalesOrderInvoiceProgress,
+  rollbackInvoiceEffects,
+} from "./invoiceSettlement";
 
 import { revalidatePath } from "next/cache";
 
@@ -104,6 +108,11 @@ export const finalizeInvoiceAction = async (id: string) => {
 
     await prisma.$transaction(
       async (tx) => {
+        await rollbackInvoiceEffects(tx, {
+          invoiceId: invoice.id,
+          salesOrderId: invoice.salesOrderId ?? null,
+        });
+
         const liveMap = new Map<
           string,
           {
@@ -512,94 +521,32 @@ export const finalizeInvoiceAction = async (id: string) => {
         }
       }
 
-        if (isOrderLinked && invoice.salesOrderId) {
-          for (const item of preparedItems) {
-            if (item.isManual || !item.salesOrderItemId) continue;
+      if (isOrderLinked && invoice.salesOrderId) {
+        for (const item of preparedItems) {
+          if (item.isManual || !item.salesOrderItemId) continue;
 
-            const live = liveMap.get(item.salesOrderItemId);
-            if (!live) continue;
+          const live = liveMap.get(item.salesOrderItemId);
+          if (!live) continue;
 
-            const newInvoicedQty = live.invoicedQty + item.qty;
-            const newDispatchedQty = newInvoicedQty;
-            const newPendingQty = Math.max(live.qty - newInvoicedQty, 0);
+          const newInvoicedQty = live.invoicedQty + item.qty;
+          const newDispatchedQty = newInvoicedQty;
+          const newPendingQty = Math.max(live.qty - newInvoicedQty, 0);
 
-            await tx.salesOrderItem.update({
-              where: { id: item.salesOrderItemId },
-              data: {
-                invoicedQty: newInvoicedQty,
-                dispatchedQty: newDispatchedQty,
-                pendingQty: newPendingQty,
-              },
-            });
-          }
-
-          const refreshedItems = await tx.salesOrderItem.findMany({
-            where: { salesOrderId: invoice.salesOrderId },
-            select: {
-              qty: true,
-              invoicedQty: true,
-              dispatchedQty: true,
-            },
-          });
-
-          const totalOrderedQty = refreshedItems.reduce((a, i) => a + i.qty, 0);
-          const totalInvoicedQty = refreshedItems.reduce(
-            (a, i) => a + i.invoicedQty,
-            0,
-          );
-          const totalDispatchedQty = refreshedItems.reduce(
-            (a, i) => a + i.dispatchedQty,
-            0,
-          );
-          const totalPendingQty = refreshedItems.reduce(
-            (a, i) => a + Math.max(i.qty - i.invoicedQty, 0),
-            0,
-          );
-
-          const isFullyInvoiced =
-            refreshedItems.length > 0 &&
-            refreshedItems.every((i) => i.invoicedQty >= i.qty);
-
-          const isFullyDispatched =
-            refreshedItems.length > 0 &&
-            refreshedItems.every((i) => i.dispatchedQty >= i.qty);
-
-          let status:
-            | "CONFIRMED"
-            | "PARTIALLY_DISPATCHED"
-            | "DISPATCHED"
-            | "PARTIALLY_INVOICED"
-            | "INVOICED"
-            | "COMPLETED" = "CONFIRMED";
-
-          if (isFullyInvoiced && isFullyDispatched) {
-            status = "COMPLETED";
-          } else if (isFullyInvoiced) {
-            status = "INVOICED";
-          } else if (totalInvoicedQty > 0) {
-            status = "PARTIALLY_INVOICED";
-          } else if (isFullyDispatched) {
-            status = "DISPATCHED";
-          } else if (totalDispatchedQty > 0) {
-            status = "PARTIALLY_DISPATCHED";
-          }
-
-          await tx.salesOrder.update({
-            where: { id: invoice.salesOrderId },
+          await tx.salesOrderItem.update({
+            where: { id: item.salesOrderItemId },
             data: {
-              totalOrderedQty,
-              totalDispatchedQty,
-              totalInvoicedQty,
-              totalPendingQty,
-              isFullyInvoiced,
-              isFullyDispatched,
-              firstInvoicedAt: totalInvoicedQty > 0 ? new Date() : undefined,
-              fullyInvoicedAt: isFullyInvoiced ? new Date() : null,
-              status,
-              updatedById: session.user.id,
+              invoicedQty: newInvoicedQty,
+              dispatchedQty: newDispatchedQty,
+              pendingQty: newPendingQty,
             },
           });
         }
+
+        await refreshSalesOrderInvoiceProgress(tx, {
+          salesOrderId: invoice.salesOrderId,
+          updatedById: session.user.id,
+        });
+      }
       },
       INVOICE_TRANSACTION_OPTIONS,
     );

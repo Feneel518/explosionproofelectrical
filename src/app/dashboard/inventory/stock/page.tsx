@@ -26,6 +26,13 @@ function formatDateTime(value?: Date | null) {
   }).format(value);
 }
 
+function formatMonthLabel(value: Date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    month: "short",
+    year: "numeric",
+  }).format(value);
+}
+
 export default async function Page() {
   const [settings, balances] = await Promise.all([
     prisma.inventorySetting.findUnique({
@@ -82,6 +89,14 @@ export default async function Page() {
   const rawMaterialCount = balances.filter((row) => Boolean(row.rawMaterial)).length;
   const finishedGoodCount = balances.filter((row) => Boolean(row.productVariant)).length;
   const castingCount = balances.filter((row) => Boolean(row.castingMaster)).length;
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const nextMonthStart = new Date(monthStart);
+  nextMonthStart.setMonth(nextMonthStart.getMonth() + 1);
+
+  const monthLabel = formatMonthLabel(monthStart);
 
   const rawMaterialIds = balances
     .map((row) => row.rawMaterial?.id ?? null)
@@ -104,7 +119,14 @@ export default async function Page() {
     movementWhereOr.push({ castingMasterId: { in: castingIds } });
   }
 
-  const [rawMaterialConsumption, variantConsumption, castingConsumption] =
+  const [
+    rawMaterialConsumption,
+    variantConsumption,
+    castingConsumption,
+    rawMaterialMtdMovements,
+    variantMtdMovements,
+    castingMtdMovements,
+  ] =
     await Promise.all([
       rawMaterialIds.length > 0
         ? prisma.stockLedger.groupBy({
@@ -139,6 +161,54 @@ export default async function Page() {
             },
           })
         : Promise.resolve([]),
+      rawMaterialIds.length > 0
+        ? prisma.stockLedger.groupBy({
+            by: ["rawMaterialId"],
+            where: {
+              rawMaterialId: { in: rawMaterialIds },
+              movementDate: {
+                gte: monthStart,
+                lt: nextMonthStart,
+              },
+            },
+            _sum: {
+              qtyIn: true,
+              qtyOut: true,
+            },
+          })
+        : Promise.resolve([]),
+      variantIds.length > 0
+        ? prisma.stockLedger.groupBy({
+            by: ["productVariantId"],
+            where: {
+              productVariantId: { in: variantIds },
+              movementDate: {
+                gte: monthStart,
+                lt: nextMonthStart,
+              },
+            },
+            _sum: {
+              qtyIn: true,
+              qtyOut: true,
+            },
+          })
+        : Promise.resolve([]),
+      castingIds.length > 0
+        ? prisma.stockLedger.groupBy({
+            by: ["castingMasterId"],
+            where: {
+              castingMasterId: { in: castingIds },
+              movementDate: {
+                gte: monthStart,
+                lt: nextMonthStart,
+              },
+            },
+            _sum: {
+              qtyIn: true,
+              qtyOut: true,
+            },
+          })
+        : Promise.resolve([]),
     ]);
 
   const consumedByRawMaterialId = new Map(
@@ -164,6 +234,83 @@ export default async function Page() {
         Boolean(row.castingMasterId),
       )
       .map((row) => [row.castingMasterId, row._sum.qtyOut ?? 0] as const),
+  );
+
+  const mtdByRawMaterialId = new Map(
+    rawMaterialMtdMovements
+      .filter(
+        (
+          row,
+        ): row is {
+          rawMaterialId: string;
+          _sum: { qtyIn: number | null; qtyOut: number | null };
+        } => Boolean(row.rawMaterialId),
+      )
+      .map((row) => [
+        row.rawMaterialId,
+        {
+          qtyIn: row._sum.qtyIn ?? 0,
+          qtyOut: row._sum.qtyOut ?? 0,
+        },
+      ] as const),
+  );
+
+  const mtdByVariantId = new Map(
+    variantMtdMovements
+      .filter(
+        (
+          row,
+        ): row is {
+          productVariantId: string;
+          _sum: { qtyIn: number | null; qtyOut: number | null };
+        } => Boolean(row.productVariantId),
+      )
+      .map((row) => [
+        row.productVariantId,
+        {
+          qtyIn: row._sum.qtyIn ?? 0,
+          qtyOut: row._sum.qtyOut ?? 0,
+        },
+      ] as const),
+  );
+
+  const mtdByCastingId = new Map(
+    castingMtdMovements
+      .filter(
+        (
+          row,
+        ): row is {
+          castingMasterId: string;
+          _sum: { qtyIn: number | null; qtyOut: number | null };
+        } => Boolean(row.castingMasterId),
+      )
+      .map((row) => [
+        row.castingMasterId,
+        {
+          qtyIn: row._sum.qtyIn ?? 0,
+          qtyOut: row._sum.qtyOut ?? 0,
+        },
+      ] as const),
+  );
+
+  const totalsMtd = balances.reduce(
+    (acc, row) => {
+      const mtd = row.rawMaterial
+        ? mtdByRawMaterialId.get(row.rawMaterial.id) ?? { qtyIn: 0, qtyOut: 0 }
+        : row.productVariant
+          ? mtdByVariantId.get(row.productVariant.id) ?? { qtyIn: 0, qtyOut: 0 }
+          : row.castingMaster
+            ? mtdByCastingId.get(row.castingMaster.id) ?? { qtyIn: 0, qtyOut: 0 }
+            : { qtyIn: 0, qtyOut: 0 };
+
+      const openingQty = row.qtyOnHand - mtd.qtyIn + mtd.qtyOut;
+
+      acc.opening += openingQty;
+      acc.inward += mtd.qtyIn;
+      acc.consumed += mtd.qtyOut;
+      return acc;
+    },
+    { opening: 0, inward: 0, consumed: 0 },
   );
 
   const latestMovements =
@@ -360,7 +507,7 @@ export default async function Page() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-5 xl:grid-cols-9">
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Tracked Items</div>
           <div className="text-2xl font-semibold">{balances.length}</div>
@@ -383,6 +530,30 @@ export default async function Page() {
         </div>
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">
+            Opening ({monthLabel})
+          </div>
+          <div className="text-2xl font-semibold">
+            {formatNumber(totalsMtd.opening)}
+          </div>
+        </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">
+            Inward MTD ({monthLabel})
+          </div>
+          <div className="text-2xl font-semibold">
+            {formatNumber(totalsMtd.inward)}
+          </div>
+        </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">
+            Consumed MTD ({monthLabel})
+          </div>
+          <div className="text-2xl font-semibold">
+            {formatNumber(totalsMtd.consumed)}
+          </div>
+        </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">
             Low Stock ({"<="} {threshold})
           </div>
           <div className="text-2xl font-semibold">{lowStockCount}</div>
@@ -395,8 +566,11 @@ export default async function Page() {
             <TableRow>
               <TableHead className="text-white">Item</TableHead>
               <TableHead className="text-white">Code / HSN / Unit</TableHead>
+              <TableHead className="text-white">Opening ({monthLabel})</TableHead>
+              <TableHead className="text-white">Inward MTD</TableHead>
+              <TableHead className="text-white">Consumed MTD</TableHead>
+              <TableHead className="text-white">Consumed (All)</TableHead>
               <TableHead className="text-white">On Hand</TableHead>
-              <TableHead className="text-white">Consumed</TableHead>
               <TableHead className="text-white">Available</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Last Movement</TableHead>
@@ -407,7 +581,7 @@ export default async function Page() {
             {balances.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={11}
                   className="py-10 text-center text-muted-foreground">
                   No stock balances found.
                 </TableCell>
@@ -461,6 +635,24 @@ export default async function Page() {
                     ? consumedByCastingId.get(row.castingMaster?.id ?? "") ?? 0
                     : consumedByVariantId.get(row.productVariant?.id ?? "") ?? 0;
 
+                const monthMovement = isRawMaterial
+                  ? mtdByRawMaterialId.get(row.rawMaterial?.id ?? "") ?? {
+                      qtyIn: 0,
+                      qtyOut: 0,
+                    }
+                  : isCasting
+                    ? mtdByCastingId.get(row.castingMaster?.id ?? "") ?? {
+                        qtyIn: 0,
+                        qtyOut: 0,
+                      }
+                    : mtdByVariantId.get(row.productVariant?.id ?? "") ?? {
+                        qtyIn: 0,
+                        qtyOut: 0,
+                      };
+
+                const openingQty =
+                  Number(row.qtyOnHand) - monthMovement.qtyIn + monthMovement.qtyOut;
+
                 return (
                   <TableRow key={row.id}>
                     <TableCell>
@@ -496,8 +688,11 @@ export default async function Page() {
                       ) : null}
                     </TableCell>
                     <TableCell>{meta || "-"}</TableCell>
-                    <TableCell>{formatNumber(row.qtyOnHand)}</TableCell>
+                    <TableCell>{formatNumber(openingQty)}</TableCell>
+                    <TableCell>{formatNumber(monthMovement.qtyIn)}</TableCell>
+                    <TableCell>{formatNumber(monthMovement.qtyOut)}</TableCell>
                     <TableCell>{formatNumber(consumedQty)}</TableCell>
+                    <TableCell>{formatNumber(row.qtyOnHand)}</TableCell>
                     <TableCell>{formatNumber(row.qtyAvailable)}</TableCell>
                     <TableCell>
                       {isLow ? (

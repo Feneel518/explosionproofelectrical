@@ -82,6 +82,7 @@ const Page: FC<PageProps> = async ({ params }) => {
         id: true,
         qty: true,
         unitCost: true,
+        effectiveUnitCost: true,
         title: true,
         supplierItemName: true,
         grn: {
@@ -107,7 +108,7 @@ const Page: FC<PageProps> = async ({ params }) => {
     .map((item) => ({
       id: item.id,
       qty: item.qty,
-      unitCost: Number(item.unitCost || 0),
+      unitCost: Number(item.effectiveUnitCost ?? item.unitCost ?? 0),
       supplier: item.grn.supplierNameSnapshot || "Unknown Supplier",
       receivedAt: item.grn.receivedAt,
       supplierInvoiceNo: item.grn.supplierInvoiceNo,

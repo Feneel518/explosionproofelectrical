@@ -3,6 +3,7 @@ import { LeadPlatform, Prisma, QuotationStatus } from "@prisma/client";
 
 export const buildQuotationWhere = (sp: QuotationQP) => {
   const and: Prisma.QuotationWhereInput[] = [];
+  const now = new Date();
 
   // soft delete filter
   if (sp.trash === "EXCLUDE") and.push({ deletedAt: null });
@@ -49,15 +50,42 @@ export const buildQuotationWhere = (sp: QuotationQP) => {
     and.push({ platform: sp.platform as LeadPlatform });
   }
 
+  if (sp.categoryId && sp.categoryId !== "ALL") {
+    and.push({
+      items: {
+        some: {
+          OR: [
+            {
+              product: {
+                categoryId: sp.categoryId,
+              },
+            },
+            {
+              variant: {
+                product: {
+                  categoryId: sp.categoryId,
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+
   if (sp.followUp === "OVERDUE") {
-    and.push({ nextFollowupAt: { lt: new Date() } });
+    and.push({ nextFollowupAt: { not: null, lt: now } });
   }
   if (sp.followUp === "TODAY") {
-    and.push({ nextFollowupAt: { equals: new Date() } });
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+    and.push({ nextFollowupAt: { gte: start, lte: end } });
   }
 
   if (sp.followUp === "UPCOMING") {
-    and.push({ nextFollowupAt: { gt: new Date() } });
+    and.push({ nextFollowupAt: { not: null, gt: now } });
   }
 
   // FY filter
@@ -88,7 +116,7 @@ export const buildQuotationWhere = (sp: QuotationQP) => {
     and.push({
       nextFollowupAt: {
         not: null,
-        lt: new Date(),
+        lt: now,
       },
     });
   }

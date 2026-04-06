@@ -52,6 +52,44 @@ function toCurrency(value?: number | string | null) {
   }).format(num);
 }
 
+function round2(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function clampPercent(value: unknown) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  if (n < 0) return 0;
+  if (n > 100) return 100;
+  return round2(n);
+}
+
+function recalculateDraftItem(item: GrnDraftData["items"][number]) {
+  const qtyRaw = Number(item.qty ?? 0);
+  const qty = Number.isFinite(qtyRaw) ? Math.max(0, Math.trunc(qtyRaw)) : 0;
+
+  const unitCostRaw = Number(item.unitCost ?? 0);
+  const unitCost = Number.isFinite(unitCostRaw) ? Math.max(0, unitCostRaw) : 0;
+
+  const discountPercent = clampPercent(item.discountPercent ?? 0);
+
+  const grossAmount = round2(qty * unitCost);
+  const discountAmount = round2((grossAmount * discountPercent) / 100);
+  const lineTotal = round2(Math.max(0, grossAmount - discountAmount));
+  const effectiveUnitCost = qty > 0 ? round2(lineTotal / qty) : 0;
+
+  return {
+    ...item,
+    qty,
+    unitCost,
+    discountPercent,
+    grossAmount,
+    discountAmount,
+    effectiveUnitCost,
+    lineTotal,
+  };
+}
+
 function DatePickerField({
   value,
   onChange,
@@ -101,7 +139,10 @@ export default function GrnForm({
   initialDraftVersion: number;
 }) {
   const router = useRouter();
-  const [draft, setDraft] = React.useState<GrnDraftData>(initialDraft);
+  const [draft, setDraft] = React.useState<GrnDraftData>(() => ({
+    ...initialDraft,
+    items: (initialDraft.items ?? []).map(recalculateDraftItem),
+  }));
   const [isSaving, setIsSaving] = React.useState(false);
   const [isFinalizing, setIsFinalizing] = React.useState(false);
   const hydratedRef = React.useRef(false);
@@ -162,7 +203,7 @@ export default function GrnForm({
       ...prev,
       items: [
         ...prev.items,
-        {
+        recalculateDraftItem({
           id: crypto.randomUUID(),
           rawMaterialId: null,
           title: "",
@@ -172,8 +213,13 @@ export default function GrnForm({
           unit: "Nos",
           qty: 1,
           unitCost: 0,
+          discountPercent: 0,
+          grossAmount: 0,
+          discountAmount: 0,
+          effectiveUnitCost: 0,
+          lineTotal: 0,
           sortOrder: prev.items.length,
-        },
+        }),
       ],
     }));
   };
@@ -208,7 +254,9 @@ export default function GrnForm({
     setDraft((prev) => ({
       ...prev,
       items: prev.items.map((item, i) =>
-        i === index ? { ...item, [key]: value } : item,
+        i === index
+          ? recalculateDraftItem({ ...item, [key]: value } as any)
+          : item,
       ),
     }));
   };
@@ -221,7 +269,7 @@ export default function GrnForm({
       ...prev,
       items: prev.items.map((item, i) =>
         i === index
-          ? {
+          ? recalculateDraftItem({
               ...item,
               rawMaterialId: rawMaterial.id,
               title: rawMaterial.companyItemName,
@@ -229,17 +277,26 @@ export default function GrnForm({
               sku: rawMaterial.itemCode ?? "",
               hsnCode: rawMaterial.hsnCode ?? "",
               unit: rawMaterial.unit || item.unit || "Nos",
-            }
+            })
           : item,
       ),
     }));
   };
 
-  const totalValue = draft.items.reduce((sum, item) => {
-    const qty = Number(item.qty || 0);
-    const unitCost = Number(item.unitCost || 0);
-    return sum + qty * unitCost;
-  }, 0);
+  const subtotalValue = draft.items.reduce(
+    (sum, item) => sum + Number(item.grossAmount || 0),
+    0,
+  );
+
+  const totalDiscount = draft.items.reduce(
+    (sum, item) => sum + Number(item.discountAmount || 0),
+    0,
+  );
+
+  const totalValue = draft.items.reduce(
+    (sum, item) => sum + Number(item.lineTotal || 0),
+    0,
+  );
 
   const totalQty = draft.items.reduce(
     (sum, item) => sum + Number(item.qty || 0),
@@ -661,6 +718,56 @@ export default function GrnForm({
                           }
                         />
                       </div>
+
+                      <div className="space-y-1">
+                        <label className="text-sm">Discount %</label>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          value={item.discountPercent ?? 0}
+                          onChange={(event) =>
+                            updateItem(
+                              index,
+                              "discountPercent",
+                              Number(event.target.value || 0),
+                            )
+                          }
+                        />
+                      </div>
+
+                      <div className="rounded-lg border p-3 text-sm md:col-span-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="text-muted-foreground">
+                            Gross Amount:
+                          </div>
+                          <div className="text-right font-medium">
+                            {toCurrency(item.grossAmount)}
+                          </div>
+
+                          <div className="text-muted-foreground">
+                            Discount Amount:
+                          </div>
+                          <div className="text-right font-medium">
+                            {toCurrency(item.discountAmount)}
+                          </div>
+
+                          <div className="text-muted-foreground">
+                            Unit Cost After Discount:
+                          </div>
+                          <div className="text-right font-medium">
+                            {toCurrency(item.effectiveUnitCost)}
+                          </div>
+
+                          <div className="text-muted-foreground font-semibold">
+                            Final Line Amount:
+                          </div>
+                          <div className="text-right font-semibold">
+                            {toCurrency(item.lineTotal)}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -705,7 +812,17 @@ export default function GrnForm({
               </div>
 
               <div className="flex items-center justify-between font-semibold">
-                <span>Total Basic Value</span>
+                <span>Subtotal (Before Discount)</span>
+                <span>{toCurrency(subtotalValue)}</span>
+              </div>
+
+              <div className="flex items-center justify-between font-semibold">
+                <span>Total Discount</span>
+                <span>{toCurrency(totalDiscount)}</span>
+              </div>
+
+              <div className="flex items-center justify-between font-semibold">
+                <span>Total Value (After Discount)</span>
                 <span>{toCurrency(totalValue)}</span>
               </div>
             </CardContent>

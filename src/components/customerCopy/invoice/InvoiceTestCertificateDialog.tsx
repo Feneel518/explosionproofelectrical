@@ -45,7 +45,9 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
 
   const toggleItem = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id],
+      prev.includes(id)
+        ? prev.filter((itemId) => itemId !== id)
+        : [...prev, id],
     );
   };
 
@@ -124,7 +126,9 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
                   </div>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {[item.sku, item.typeNumber].filter(Boolean).join(" â€¢ ") || "â€”"}
+                    {[item.sku, item.typeNumber]
+                      .filter(Boolean)
+                      .join(" â€¢ ") || "-"}
                   </p>
                 </div>
               </label>
@@ -137,4 +141,3 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
 };
 
 export default InvoiceTestCertificateDialog;
-

@@ -33,6 +33,11 @@ export type GrnDraftData = {
     unit?: string | null;
     qty: number;
     unitCost: number;
+    discountPercent: number;
+    grossAmount: number;
+    discountAmount: number;
+    effectiveUnitCost: number;
+    lineTotal: number;
     sortOrder: number;
   }>;
 };

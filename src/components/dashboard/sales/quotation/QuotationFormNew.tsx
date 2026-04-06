@@ -78,6 +78,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 
 interface QuotationFormNewProps {
   quotationId: string;
@@ -1789,7 +1790,7 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     Line Total
                   </div>
                   <div className="text-lg font-semibold">
-                    â‚¹{lineTotal.toFixed(2)}
+                  {formatCurrencyINR(lineTotal)}
                   </div>
                 </div>
 

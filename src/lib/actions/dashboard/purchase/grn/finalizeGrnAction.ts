@@ -12,6 +12,18 @@ function toNumber(value: unknown, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function round2(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function clampPercent(value: unknown) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  if (n < 0) return 0;
+  if (n > 100) return 100;
+  return round2(n);
+}
+
 function toDateOrNull(value?: string | null) {
   if (!value) return null;
   const d = new Date(value);
@@ -62,8 +74,13 @@ export async function finalizeGrnAction(id: string) {
   }
 
   const preparedItems = draft.items.map((item, index) => {
-    const qty = Math.trunc(toNumber(item.qty, 0));
-    const unitCost = toNumber(item.unitCost, 0);
+    const qty = Math.max(0, Math.trunc(toNumber(item.qty, 0)));
+    const unitCost = Math.max(0, toNumber(item.unitCost, 0));
+    const discountPercent = clampPercent(item.discountPercent);
+    const grossAmount = round2(qty * unitCost);
+    const discountAmount = round2((grossAmount * discountPercent) / 100);
+    const lineTotal = round2(Math.max(0, grossAmount - discountAmount));
+    const effectiveUnitCost = qty > 0 ? round2(lineTotal / qty) : 0;
 
     if (!item.rawMaterialId || qty <= 0) {
       throw new Error(`Invalid GRN item at row ${index + 1}.`);
@@ -80,7 +97,11 @@ export async function finalizeGrnAction(id: string) {
       unit: item.unit ?? "Nos",
       qty,
       unitCost,
-      lineTotal: Number((qty * unitCost).toFixed(2)),
+      discountPercent,
+      grossAmount,
+      discountAmount,
+      effectiveUnitCost,
+      lineTotal,
       sortOrder: Number.isFinite(item.sortOrder) ? item.sortOrder : index,
     };
   });
@@ -178,6 +199,10 @@ export async function finalizeGrnAction(id: string) {
           unit: item.unit,
           qty: item.qty,
           unitCost: item.unitCost,
+          discountPercent: item.discountPercent,
+          grossAmount: item.grossAmount,
+          discountAmount: item.discountAmount,
+          effectiveUnitCost: item.effectiveUnitCost,
           lineTotal: item.lineTotal,
           sortOrder: item.sortOrder,
         },
@@ -190,7 +215,7 @@ export async function finalizeGrnAction(id: string) {
         referenceId: grn.id,
         referenceNo: `${grn.grnFy}-${grn.grnNo}`,
         qty: item.qty,
-        unitCost: item.unitCost,
+        unitCost: item.effectiveUnitCost,
         movementDate: receivedAt,
         actorName: supplierNameSnapshot,
         remarks: `GRN finalized (${item.title})`,

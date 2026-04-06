@@ -98,6 +98,14 @@ function toQuantityLabel(status: QuantityCheckStatus) {
 
 export default function GrnDetailView({ grn }: { grn: any }) {
   const documentNo = formatFinancialDocumentNumber(grn.grnFy, grn.grnNo);
+  const subtotalValue = (grn.items ?? []).reduce(
+    (sum: number, item: any) => sum + Number(item.grossAmount ?? item.lineTotal ?? 0),
+    0,
+  );
+  const totalDiscount = (grn.items ?? []).reduce(
+    (sum: number, item: any) => sum + Number(item.discountAmount ?? 0),
+    0,
+  );
   const totalValue = (grn.items ?? []).reduce(
     (sum: number, item: any) => sum + Number(item.lineTotal ?? 0),
     0,
@@ -203,7 +211,17 @@ export default function GrnDetailView({ grn }: { grn: any }) {
             }
           />
           <Info
-            label="Total Value"
+            label="Subtotal (Before Discount)"
+            value={formatCurrency(subtotalValue)}
+            className="md:col-span-3"
+          />
+          <Info
+            label="Total Discount"
+            value={formatCurrency(totalDiscount)}
+            className="md:col-span-3"
+          />
+          <Info
+            label="Net Total (After Discount)"
             value={formatCurrency(totalValue)}
             className="md:col-span-3"
           />
@@ -348,10 +366,25 @@ export default function GrnDetailView({ grn }: { grn: any }) {
                 <div className="text-xs text-muted-foreground">
                   {[item.sku, item.hsnCode].filter(Boolean).join(" • ") || "-"}
                 </div>
-                <div className="mt-2 grid gap-2 text-sm md:grid-cols-4">
+                <div className="mt-2 grid gap-2 text-sm md:grid-cols-6">
                   <InfoInline label="Qty" value={item.qty} />
                   <InfoInline label="Unit" value={item.unit || "-"} />
-                  <InfoInline label="Unit Cost" value={formatCurrency(item.unitCost)} />
+                  <InfoInline
+                    label="Base Unit Cost"
+                    value={formatCurrency(item.unitCost)}
+                  />
+                  <InfoInline
+                    label="Discount %"
+                    value={`${Number(item.discountPercent ?? 0).toFixed(2)}%`}
+                  />
+                  <InfoInline
+                    label="Discount Amount"
+                    value={formatCurrency(item.discountAmount)}
+                  />
+                  <InfoInline
+                    label="Net Unit Cost"
+                    value={formatCurrency(item.effectiveUnitCost ?? item.unitCost)}
+                  />
                   <InfoInline label="Line Total" value={formatCurrency(item.lineTotal)} />
                 </div>
               </div>

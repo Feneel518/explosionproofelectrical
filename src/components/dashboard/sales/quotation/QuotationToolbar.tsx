@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { useDebouncedValue } from "@/hooks/useDebounce";
 import {
-  getFinancialYearLabel,
   getFinancialYearLabelFromStartYear,
   getFinancialYearStartYear,
 } from "@/lib/helpers/globalHelpers/financialYear";
@@ -31,6 +30,7 @@ import React, { FC } from "react";
 
 interface QuotationToolbarProps {
   qp: QuotationQP;
+  categories: { id: string; name: string }[];
 }
 
 // FY-start-year list (so Feb 2026 => default is 2025)
@@ -39,7 +39,7 @@ const FY_YEARS = Array.from(
   (_, i) => getFinancialYearStartYear() - i,
 );
 
-const QuotationToolbar: FC<QuotationToolbarProps> = ({ qp }) => {
+const QuotationToolbar: FC<QuotationToolbarProps> = ({ qp, categories }) => {
   const [state, setState] = useQueryStates(quotationParsers, {
     shallow: false,
   });
@@ -69,6 +69,7 @@ const QuotationToolbar: FC<QuotationToolbarProps> = ({ qp }) => {
 
   const activeFilters =
     (qp.q ? 1 : 0) +
+    (qp.categoryId !== "ALL" ? 1 : 0) +
     (qp.status !== "ALL" ? 1 : 0) +
     (qp.platform !== "ALL" ? 1 : 0) +
     (qp.fy !== defaultFy ? 1 : 0) +
@@ -85,6 +86,7 @@ const QuotationToolbar: FC<QuotationToolbarProps> = ({ qp }) => {
   const reset = () => {
     setState({
       q: "",
+      categoryId: "ALL",
       status: "ALL",
       platform: "ALL",
       year: defaultYear,
@@ -115,6 +117,25 @@ const QuotationToolbar: FC<QuotationToolbarProps> = ({ qp }) => {
             placeholder="Search quote no / client / phone / email…"
           />
         </div>
+        <div className="">
+          <h3>Category</h3>
+          <Select
+            value={state.categoryId ?? "ALL"}
+            onValueChange={(v) => setState({ categoryId: v, page: 1 })}>
+            <SelectTrigger className="w-full ">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Categories</SelectItem>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="">
           <h3>Status</h3>
           <Select

@@ -1,4 +1,3 @@
-import { CustomersQP } from "@/lib/searchParams/dashboard/customers/customersSearchParams";
 import { ProductsQP } from "@/lib/searchParams/dashboard/products/productsSearchParams";
 import { Prisma } from "@prisma/client";
 
@@ -24,6 +23,10 @@ export const buildProductWhere = async (qp: ProductsQP) => {
   if (sp.status === "ACTIVE") and.push({ status: "ACTIVE" });
   if (sp.status === "INACTIVE") and.push({ status: "INACTIVE" });
 
+  if (sp.categoryId && sp.categoryId !== "ALL") {
+    and.push({ categoryId: sp.categoryId });
+  }
+
   return { AND: and };
 };
 
@@ -34,6 +37,8 @@ export const buildProductsOrderBy = async (qp: ProductsQP) => {
   switch (sp.sort) {
     case "name":
       return { name: dir };
+    case "status":
+      return { status: dir };
     case "createdAt":
     default:
       return { createdAt: dir };

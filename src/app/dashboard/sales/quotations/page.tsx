@@ -24,7 +24,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
   const where = buildQuotationWhere(sp);
   const orderBy = buildQuotationsOrderBy(sp);
 
-  const [items, total] = await Promise.all([
+  const [items, total, categories] = await Promise.all([
     prisma.quotation.findMany({
       where,
       orderBy: orderBy as any,
@@ -64,9 +64,15 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       },
     }),
     prisma.quotation.count({ where }),
+    prisma.category.findMany({
+      where: { deletedAt: null, status: "ACTIVE" },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
   ]);
 
   const safeItems = serializeForClient(items);
+  const safeCategories = serializeForClient(categories);
 
   return (
     <div className="space-y-6">
@@ -91,6 +97,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
         page={pageParams}
         pageSize={pageSizeParams}
         qp={sp}
+        categories={safeCategories}
       />
     </div>
   );

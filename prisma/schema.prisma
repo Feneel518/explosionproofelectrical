@@ -1589,9 +1589,13 @@ model GoodsReceiptNoteItem {
 
   qty Int @default(1)
 
-  unitCost  Decimal @default(0) @db.Decimal(12, 2)
-  lineTotal Decimal @default(0) @db.Decimal(14, 2)
-  sortOrder Int     @default(0)
+  unitCost          Decimal @default(0) @db.Decimal(12, 2)
+  discountPercent   Decimal @default(0) @db.Decimal(5, 2)
+  grossAmount       Decimal @default(0) @db.Decimal(14, 2)
+  discountAmount    Decimal @default(0) @db.Decimal(14, 2)
+  effectiveUnitCost Decimal @default(0) @db.Decimal(12, 2)
+  lineTotal         Decimal @default(0) @db.Decimal(14, 2)
+  sortOrder         Int     @default(0)
 
   @@index([grnId, sortOrder])
   @@index([productVariantId])

@@ -51,6 +51,8 @@ export const TrashFilter = ["EXCLUDE", "ONLY", "INCLUDE"];
 export const quotationParsers = {
   q: parseAsString.withDefault(""),
 
+  categoryId: parseAsString.withDefault("ALL"),
+
   status: parseAsStringEnum(QUOTATION_STATUSES).withDefault("ALL"),
   platform: parseAsStringEnum(LEAD_PLATFORMS).withDefault("ALL"),
 

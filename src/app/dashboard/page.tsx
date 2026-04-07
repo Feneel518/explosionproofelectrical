@@ -39,20 +39,22 @@ const page: FC = async () => {
 
   const quickCards = [
     {
-      title: "Open Orders",
-      value: overview.sales.orders.open,
-      subtitle: `${overview.sales.orders.pendingDispatchOrders} pending-dispatch order(s)`,
+      title: "Pending Orders (FY)",
+      value: `${overview.sales.orders.pendingOrdersThisFy} / ${overview.sales.orders.totalOrdersThisFy}`,
+      subtitle: `${overview.currentFinancialYear} financial year`,
       icon: ClipboardList,
       href: "/dashboard/sales/orders",
-      alert: false,
+      alert: overview.sales.orders.pendingOrdersThisFy > 0,
     },
     {
-      title: "Pending Dispatch Qty",
-      value: overview.sales.orders.pendingDispatchQty,
-      subtitle: `${overview.sales.orders.overdueForDispatch} order(s) overdue`,
+      title: "Top Pending Qty Material",
+      value: overview.sales.orders.topPendingMaterial.qty,
+      subtitle:
+        overview.sales.orders.topPendingMaterial.title ??
+        "No pending material found",
       icon: PackageSearch,
       href: "/dashboard/sales/pending",
-      alert: overview.sales.orders.overdueForDispatch > 0,
+      alert: overview.sales.orders.topPendingMaterial.qty > 0,
     },
     {
       title: "Payment Pending",
@@ -162,8 +164,13 @@ const page: FC = async () => {
           </CardHeader>
           <CardContent className="px-4 space-y-3">
             <StatRow
-              label="Quotations"
-              value={`${overview.sales.quotations.open} open / ${overview.sales.quotations.total} total`}
+              label="Quotation Sent (Not Converted)"
+              value={`${overview.sales.quotations.sentNotConverted} quotation(s)`}
+            />
+            <StatRow
+              label="Pending Orders (FY)"
+              value={`${overview.sales.orders.pendingOrdersThisFy} / ${overview.sales.orders.totalOrdersThisFy}`}
+              isAlert={overview.sales.orders.pendingOrdersThisFy > 0}
             />
             <StatRow
               label="Follow-up Due"

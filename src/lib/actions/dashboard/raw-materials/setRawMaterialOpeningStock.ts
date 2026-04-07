@@ -50,6 +50,7 @@ export async function setRawMaterialOpeningStockAction(
       select: {
         id: true,
         companyItemName: true,
+        openingStockQty: true,
       },
     });
 
@@ -57,13 +58,8 @@ export async function setRawMaterialOpeningStockAction(
       return { ok: false as const, message: "Raw material not found." };
     }
 
-    const currentBalance = await prisma.stockBalance.findFirst({
-      where: { rawMaterialId: input.rawMaterialId },
-      select: { qtyOnHand: true },
-    });
-
-    const currentOnHand = currentBalance?.qtyOnHand ?? 0;
-    const delta = openingQty - currentOnHand;
+    const previousOpeningQty = Number(material.openingStockQty ?? 0);
+    const delta = openingQty - previousOpeningQty;
 
     await prisma.$transaction(async (tx) => {
       if (delta !== 0) {
@@ -77,7 +73,7 @@ export async function setRawMaterialOpeningStockAction(
           unitCost: openingUnitCost,
           movementDate: openingAt,
           actorName: session.user.email || null,
-          remarks: `Opening stock set for ${material.companyItemName} from ${currentOnHand} to ${openingQty}`,
+          remarks: `Opening stock updated for ${material.companyItemName} from ${previousOpeningQty} to ${openingQty}`,
           createdById: session.user.id,
         });
       }
@@ -103,7 +99,7 @@ export async function setRawMaterialOpeningStockAction(
       message:
         delta === 0
           ? "Opening stock details updated."
-          : `Opening stock set successfully (adjusted ${delta > 0 ? "+" : ""}${delta}).`,
+          : `Opening stock updated successfully (delta ${delta > 0 ? "+" : ""}${delta} added to in-hand).`,
     };
   } catch (error: any) {
     return fail(error?.message ?? "Failed to set opening stock.");

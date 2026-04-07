@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/prisma/db";
 import { getPaymentReminderState } from "@/lib/helpers/globalHelpers/invoicePaymentReminder";
+import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
+import { SalesOrderStatus } from "@prisma/client";
 
 function toNumber(value: unknown) {
   if (value == null) return 0;
@@ -16,6 +18,7 @@ function getStartOfMonth() {
 
 export type DashboardOverviewData = {
   generatedAt: string;
+  currentFinancialYear: string;
   masters: {
     customers: { total: number; active: number };
     suppliers: { total: number; active: number };
@@ -29,12 +32,19 @@ export type DashboardOverviewData = {
       won: number;
       lostOrClosed: number;
       followupDue: number;
+      sentNotConverted: number;
     };
     orders: {
       total: number;
       open: number;
       pendingDispatchOrders: number;
       pendingDispatchQty: number;
+      pendingOrdersThisFy: number;
+      totalOrdersThisFy: number;
+      topPendingMaterial: {
+        title: string | null;
+        qty: number;
+      };
       overdueForDispatch: number;
       bookedValue: number;
     };
@@ -99,6 +109,7 @@ export type DashboardOverviewData = {
 export async function getDashboardOverviewAction(): Promise<DashboardOverviewData> {
   const startOfMonth = getStartOfMonth();
   const now = new Date();
+  const currentFinancialYear = getFinancialYearLabel(now);
 
   const [
     customerTotal,
@@ -115,11 +126,15 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
     quotationWon,
     quotationLostOrClosed,
     quotationFollowupDue,
+    quotationSentNotConverted,
 
     orderTotal,
     orderOpen,
     orderPendingDispatch,
     orderPendingQtyAgg,
+    orderPendingThisFy,
+    orderTotalThisFy,
+    topPendingMaterialAgg,
     orderOverdueDispatch,
     orderBookedValueAgg,
 
@@ -187,6 +202,13 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         nextFollowupAt: { lte: now },
       },
     }),
+    prisma.quotation.count({
+      where: {
+        deletedAt: null,
+        status: { in: ["SENT", "FOLLOWUP"] },
+        convertedToOrderAt: null,
+      },
+    }),
 
     prisma.salesOrder.count({ where: { deletedAt: null } }),
     prisma.salesOrder.count({
@@ -209,6 +231,37 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         totalPendingQty: { gt: 0 },
       },
       _sum: { totalPendingQty: true },
+    }),
+    prisma.salesOrder.count({
+      where: {
+        deletedAt: null,
+        orderFy: currentFinancialYear,
+        status: { notIn: [SalesOrderStatus.CANCELLED, SalesOrderStatus.COMPLETED] },
+        totalPendingQty: { gt: 0 },
+      },
+    }),
+    prisma.salesOrder.count({
+      where: {
+        deletedAt: null,
+        orderFy: currentFinancialYear,
+      },
+    }),
+    prisma.salesOrderItem.groupBy({
+      by: ["title"],
+      where: {
+        pendingQty: { gt: 0 },
+        salesOrder: {
+          deletedAt: null,
+          status: { notIn: [SalesOrderStatus.CANCELLED, SalesOrderStatus.COMPLETED] },
+        },
+      },
+      _sum: { pendingQty: true },
+      orderBy: {
+        _sum: {
+          pendingQty: "desc",
+        },
+      },
+      take: 1,
     }),
     prisma.salesOrder.count({
       where: {
@@ -372,6 +425,7 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
 
   return {
     generatedAt: now.toISOString(),
+    currentFinancialYear,
     masters: {
       customers: { total: customerTotal, active: customerActive },
       suppliers: { total: supplierTotal, active: supplierActive },
@@ -385,12 +439,19 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         won: quotationWon,
         lostOrClosed: quotationLostOrClosed,
         followupDue: quotationFollowupDue,
+        sentNotConverted: quotationSentNotConverted,
       },
       orders: {
         total: orderTotal,
         open: orderOpen,
         pendingDispatchOrders: orderPendingDispatch,
         pendingDispatchQty: orderPendingQtyAgg._sum.totalPendingQty ?? 0,
+        pendingOrdersThisFy: orderPendingThisFy,
+        totalOrdersThisFy: orderTotalThisFy,
+        topPendingMaterial: {
+          title: topPendingMaterialAgg[0]?.title ?? null,
+          qty: topPendingMaterialAgg[0]?._sum.pendingQty ?? 0,
+        },
         overdueForDispatch: orderOverdueDispatch,
         bookedValue: toNumber(orderBookedValueAgg._sum.grandTotal),
       },

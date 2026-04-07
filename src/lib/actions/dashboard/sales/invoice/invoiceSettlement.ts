@@ -108,7 +108,8 @@ export async function rollbackInvoiceEffects(
     });
 
     for (const rawMaterialId of touchedRawMaterialIds) {
-      const [rawMaterial, ledgerAgg, latestLedger, existingBalance] = await Promise.all([
+      const [rawMaterial, ledgerAgg, latestLedger, existingBalance, openingMovement] =
+        await Promise.all([
         tx.rawMaterial.findUnique({
           where: { id: rawMaterialId },
           select: { openingStockQty: true },
@@ -126,12 +127,21 @@ export async function rollbackInvoiceEffects(
           where: { rawMaterialId },
           select: { id: true, qtyReserved: true },
         }),
-      ]);
+        tx.stockLedger.findFirst({
+          where: {
+            rawMaterialId,
+            referenceType: "MANUAL_ADJUSTMENT",
+            referenceNo: "OPENING-STOCK",
+          },
+          select: { id: true },
+        }),
+        ]);
 
       const openingQty = Number(rawMaterial?.openingStockQty || 0);
       const qtyIn = Number(ledgerAgg._sum.qtyIn || 0);
       const qtyOut = Number(ledgerAgg._sum.qtyOut || 0);
-      const qtyOnHand = openingQty + qtyIn - qtyOut;
+      const qtyFromLedger = qtyIn - qtyOut;
+      const qtyOnHand = openingMovement ? qtyFromLedger : openingQty + qtyFromLedger;
       const qtyReserved = Number(existingBalance?.qtyReserved || 0);
       const qtyAvailable = qtyOnHand - qtyReserved;
       const lastMovementAt = latestLedger?.movementDate ?? null;
@@ -209,7 +219,8 @@ export async function rollbackInvoiceEffects(
     }
 
     for (const castingMasterId of touchedCastingIds) {
-      const [castingMaster, ledgerAgg, latestLedger, existingBalance] = await Promise.all([
+      const [castingMaster, ledgerAgg, latestLedger, existingBalance, openingMovement] =
+        await Promise.all([
         tx.castingMaster.findUnique({
           where: { id: castingMasterId },
           select: { openingStockQty: true },
@@ -227,12 +238,21 @@ export async function rollbackInvoiceEffects(
           where: { castingMasterId },
           select: { id: true, qtyReserved: true },
         }),
-      ]);
+        tx.stockLedger.findFirst({
+          where: {
+            castingMasterId,
+            referenceType: "MANUAL_ADJUSTMENT",
+            referenceNo: "OPENING-STOCK",
+          },
+          select: { id: true },
+        }),
+        ]);
 
       const openingQty = Number(castingMaster?.openingStockQty || 0);
       const qtyIn = Number(ledgerAgg._sum.qtyIn || 0);
       const qtyOut = Number(ledgerAgg._sum.qtyOut || 0);
-      const qtyOnHand = openingQty + qtyIn - qtyOut;
+      const qtyFromLedger = qtyIn - qtyOut;
+      const qtyOnHand = openingMovement ? qtyFromLedger : openingQty + qtyFromLedger;
       const qtyReserved = Number(existingBalance?.qtyReserved || 0);
       const qtyAvailable = qtyOnHand - qtyReserved;
       const lastMovementAt = latestLedger?.movementDate ?? null;

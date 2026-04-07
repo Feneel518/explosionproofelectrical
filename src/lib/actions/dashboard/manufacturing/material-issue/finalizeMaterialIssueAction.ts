@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/check/requireAuth";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { MaterialIssueType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { MaterialIssueDraftData } from "./createDraftMaterialIssueAction";
@@ -234,7 +235,7 @@ export async function finalizeMaterialIssueAction(id: string) {
           createdById: session.user.id,
         });
       }
-    });
+    }, FINALIZE_TRANSACTION_OPTIONS);
   } catch (error: any) {
     return {
       ok: false as const,

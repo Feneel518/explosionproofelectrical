@@ -6,6 +6,7 @@ import { requireAuth } from "@/lib/check/requireAuth";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { CastingJobDraftData } from "./createDraftCastingJobAction";
 
 function toInt(value: unknown, fallback = 0) {
@@ -249,7 +250,7 @@ export async function finalizeCastingJobAction(id: string) {
           createdById: session.user.id,
         });
       }
-    });
+    }, FINALIZE_TRANSACTION_OPTIONS);
   } catch (error: any) {
     return {
       ok: false as const,

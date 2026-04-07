@@ -4,9 +4,9 @@ import { requireAuth } from "@/lib/check/requireAuth";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { ProductMediaKind } from "@prisma/client";
-import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
 import {
   refreshSalesOrderInvoiceProgress,
   rollbackInvoiceEffects,
@@ -547,7 +547,7 @@ export const finalizeInvoiceAction = async (id: string) => {
           updatedById: session.user.id,
         });
       }
-    }, INVOICE_TRANSACTION_OPTIONS);
+    }, FINALIZE_TRANSACTION_OPTIONS);
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${id}`);

@@ -8,6 +8,7 @@ import {
   StockAdjustmentMovementType,
 } from "@/lib/helpers/inventory/stockAdjustment";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { revalidatePath } from "next/cache";
 import {
   StockAdjustmentDraftData,
@@ -241,7 +242,7 @@ export async function finalizeStockAdjustmentAction(id: string) {
           createdById: session.user.id,
         });
       }
-    });
+    }, FINALIZE_TRANSACTION_OPTIONS);
   } catch (error: any) {
     return {
       ok: false as const,

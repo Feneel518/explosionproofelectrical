@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { SalesOrderDraftData } from "@/lib/types/SalesOrderTypes";
 import { ProductMediaKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -54,9 +55,8 @@ export const finalizeSalesOrderAction = async (id: string) => {
 
     let quotationId = draft.header?.quotationId ?? null;
     const draftCustomerId = draft.header?.customerId ?? null;
-    let quotationToUnlink:
-      | { id: string; nextFollowupAt: Date | null }
-      | null = null;
+    let quotationToUnlink: { id: string; nextFollowupAt: Date | null } | null =
+      null;
 
     const invalidItem = draft.items.find(
       (it) =>
@@ -330,7 +330,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
           },
         });
       }
-    });
+    }, FINALIZE_TRANSACTION_OPTIONS);
 
     revalidatePath("/dashboard/sales/orders");
 
@@ -341,6 +341,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
     return {
       ok: false as const,
       message: "Failed to finalize order",
+      error: error,
     };
   }
 };

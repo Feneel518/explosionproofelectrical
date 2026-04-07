@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
 import { revalidatePath } from "next/cache";
 
@@ -316,10 +317,7 @@ export const finalizeQuotationAction = async (id: string) => {
           }
         }
       },
-      {
-        timeout: 20000,
-        maxWait: 10000,
-      },
+      FINALIZE_TRANSACTION_OPTIONS,
     );
 
     revalidatePath("/dashboard/sales/quotations");

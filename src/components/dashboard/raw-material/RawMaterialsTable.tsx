@@ -37,7 +37,35 @@ type Item = {
   preferredSupplier: {
     companyName: string;
   } | null;
+  stockOnHand: number;
+  lastPurchasePrice: number | null;
+  lastPurchaseAt: Date | null;
+  lastPurchaseSupplier: string | null;
 };
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
+    Number(value || 0),
+  );
+}
+
+function formatCurrency(value?: number | null) {
+  if (value == null) return "-";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+}
+
+function formatDate(value?: Date | null) {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
 export default function RawMaterialsTable({
   items,
@@ -93,7 +121,9 @@ export default function RawMaterialsTable({
               <TableHead className="text-white">Supplier Item Name</TableHead>
               <TableHead className="text-white">Code / HSN / Unit</TableHead>
               <TableHead className="text-white">Preferred Supplier</TableHead>
-              <TableHead className="text-white">Reorder</TableHead>
+              <TableHead className="text-white">Stock</TableHead>
+              <TableHead className="text-white">Last GRN Price</TableHead>
+              <TableHead className="text-white">Last Purchase</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Deleted</TableHead>
               <TableHead className="text-white w-[120px] text-right">
@@ -106,7 +136,7 @@ export default function RawMaterialsTable({
             {items.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={10}
                   className="py-10 text-center text-sm text-muted-foreground">
                   No raw materials found.
                 </TableCell>
@@ -132,7 +162,23 @@ export default function RawMaterialsTable({
                     </div>
                   </TableCell>
                   <TableCell>{item.preferredSupplier?.companyName || "-"}</TableCell>
-                  <TableCell>{item.reorderLevel ?? "-"}</TableCell>
+                  <TableCell>
+                    <div>
+                      {formatNumber(item.stockOnHand)} {item.unit}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Reorder: {item.reorderLevel ?? "-"}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>{formatCurrency(item.lastPurchasePrice)}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div>{formatDate(item.lastPurchaseAt)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {item.lastPurchaseSupplier || "-"}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     {item.status === "ACTIVE" ? (
                       <Badge>ACTIVE</Badge>
@@ -219,3 +265,4 @@ export default function RawMaterialsTable({
     </div>
   );
 }
+

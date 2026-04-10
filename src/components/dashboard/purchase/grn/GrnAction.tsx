@@ -34,7 +34,7 @@ export default function GrnAction({
             <Link href={`/grn/${id}/view`}>View Customer Copy</Link>
           </DropdownMenuItem>
         ) : null}
-        {status === "DRAFT" ? (
+        {status !== "CANCELLED" ? (
           <DropdownMenuItem asChild>
             <Link href={`/dashboard/purchase/grn/${id}/edit`}>Edit</Link>
           </DropdownMenuItem>

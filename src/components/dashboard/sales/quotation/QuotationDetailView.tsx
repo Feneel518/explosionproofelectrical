@@ -1,17 +1,20 @@
 ﻿"use client";
 
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import QuotationFollowupsSection from "./QuotationFollowupsSection";
 import { reopenQuotationAsDraftAction } from "@/lib/actions/dashboard/sales/quotation/reopenQuotationAsDraftAction";
+import { createDraftSalesOrderAction } from "@/lib/actions/dashboard/sales/order/createDraftSalesOrderAction";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
-import { QuotationDraftData } from "@/lib/types/QuotationType";
 import { GetQuotationByIdData } from "@/lib/types/QuotationTypes";
 import Image from "next/image";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   quotation: GetQuotationByIdData;
@@ -27,7 +30,7 @@ function fmtDate(value?: string | Date | null) {
 
 function fmtMoney(value?: number | string | null) {
   const n = Number(value ?? 0);
-  return `â‚¹${n.toFixed(2)}`;
+  return formatCurrencyINR(n);
 }
 
 function statusVariant(status: string) {
@@ -113,11 +116,16 @@ function getSelectedDrawings(item: GetQuotationByIdData["items"][number]) {
 
 export default function QuotationDetailView({ quotation }: Props) {
   const router = useRouter();
+  const [isConvertingToOrder, setIsConvertingToOrder] = React.useState(false);
   const clientName =
     quotation.customer?.companyName ||
     quotation.clientName ||
     quotation.receivedFromName ||
     "Unnamed Client";
+  const canConvertToOrder =
+    !quotation.convertedToOrderAt &&
+    quotation.status !== "LOST" &&
+    quotation.status !== "CANCELLED";
 
   return (
     <div className="space-y-6">
@@ -155,6 +163,34 @@ export default function QuotationDetailView({ quotation }: Props) {
             }}>
             Edit Quotation
           </Button>
+
+          {canConvertToOrder ? (
+            <Button
+              type="button"
+              disabled={isConvertingToOrder}
+              onClick={async () => {
+                setIsConvertingToOrder(true);
+                try {
+                  const res = await createDraftSalesOrderAction(quotation.id);
+                  if (!res.ok) {
+                    toast.error(res.message);
+                    return;
+                  }
+                  router.push(`/dashboard/sales/orders/${res.id}/edit`);
+                } finally {
+                  setIsConvertingToOrder(false);
+                }
+              }}>
+              {isConvertingToOrder ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Convert to Order"
+              )}
+            </Button>
+          ) : null}
         </CardHeader>
 
         <CardContent className="grid gap-4 md:grid-cols-4">

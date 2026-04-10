@@ -23,10 +23,10 @@ export async function getGrnDraftAction(id: string) {
     return { ok: false as const, message: "GRN not found." };
   }
 
-  if (grn.status !== "DRAFT") {
+  if (grn.status === "CANCELLED") {
     return {
       ok: false as const,
-      message: "GRN is finalized. Draft can no longer be edited.",
+      message: "Cancelled GRN cannot be edited.",
     };
   }
 

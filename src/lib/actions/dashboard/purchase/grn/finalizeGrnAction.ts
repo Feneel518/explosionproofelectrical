@@ -43,6 +43,75 @@ function normalizeInvoiceFiles(
     .filter((file) => file.url.length > 0);
 }
 
+async function recomputeRawMaterialBalance(
+  tx: Prisma.TransactionClient,
+  rawMaterialId: string,
+) {
+  const [rawMaterial, ledgerAgg, latestLedger, existingBalance, openingMovement] =
+    await Promise.all([
+      tx.rawMaterial.findUnique({
+        where: { id: rawMaterialId },
+        select: { openingStockQty: true },
+      }),
+      tx.stockLedger.aggregate({
+        where: { rawMaterialId },
+        _sum: { qtyIn: true, qtyOut: true },
+      }),
+      tx.stockLedger.findFirst({
+        where: { rawMaterialId },
+        orderBy: [{ movementDate: "desc" }, { createdAt: "desc" }],
+        select: { movementDate: true },
+      }),
+      tx.stockBalance.findFirst({
+        where: { rawMaterialId },
+        select: { id: true, qtyReserved: true },
+      }),
+      tx.stockLedger.findFirst({
+        where: {
+          rawMaterialId,
+          referenceType: "MANUAL_ADJUSTMENT",
+          referenceNo: "OPENING-STOCK",
+        },
+        select: { id: true },
+      }),
+    ]);
+
+  const openingQty = Number(rawMaterial?.openingStockQty || 0);
+  const qtyIn = Number(ledgerAgg._sum.qtyIn || 0);
+  const qtyOut = Number(ledgerAgg._sum.qtyOut || 0);
+  const qtyFromLedger = qtyIn - qtyOut;
+  const qtyOnHand = openingMovement ? qtyFromLedger : openingQty + qtyFromLedger;
+  const qtyReserved = Number(existingBalance?.qtyReserved || 0);
+  const qtyAvailable = qtyOnHand - qtyReserved;
+  const lastMovementAt = latestLedger?.movementDate ?? null;
+
+  if (existingBalance) {
+    await tx.stockBalance.update({
+      where: { id: existingBalance.id },
+      data: {
+        qtyOnHand,
+        qtyAvailable,
+        lastMovementAt,
+      },
+    });
+    return;
+  }
+
+  if (qtyOnHand !== 0 || qtyReserved !== 0 || lastMovementAt) {
+    await tx.stockBalance.create({
+      data: {
+        rawMaterialId,
+        productVariantId: null,
+        castingMasterId: null,
+        qtyOnHand,
+        qtyReserved,
+        qtyAvailable,
+        lastMovementAt,
+      },
+    });
+  }
+}
+
 export async function finalizeGrnAction(id: string) {
   const session = await requireAuth();
 
@@ -61,8 +130,8 @@ export async function finalizeGrnAction(id: string) {
     return { ok: false as const, message: "GRN not found." };
   }
 
-  if (grn.status !== "DRAFT") {
-    return { ok: false as const, message: "Only draft GRN can be finalized." };
+  if (grn.status === "CANCELLED") {
+    return { ok: false as const, message: "Cancelled GRN cannot be finalized." };
   }
 
   const draft = grn.draftData as GrnDraftData | null;
@@ -157,6 +226,37 @@ export async function finalizeGrnAction(id: string) {
   }
 
   await prisma.$transaction(async (tx) => {
+    const previousLedgerRows = await tx.stockLedger.findMany({
+      where: {
+        referenceType: "GRN",
+        referenceId: grn.id,
+      },
+      select: {
+        rawMaterialId: true,
+      },
+    });
+
+    if (previousLedgerRows.length > 0) {
+      const touchedRawMaterialIds = Array.from(
+        new Set(
+          previousLedgerRows
+            .map((row) => row.rawMaterialId)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      );
+
+      await tx.stockLedger.deleteMany({
+        where: {
+          referenceType: "GRN",
+          referenceId: grn.id,
+        },
+      });
+
+      for (const rawMaterialId of touchedRawMaterialIds) {
+        await recomputeRawMaterialBalance(tx, rawMaterialId);
+      }
+    }
+
     await tx.goodsReceiptNote.update({
       where: { id: grn.id },
       data: {

@@ -250,6 +250,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
           data: {
             status: "WON",
             convertedToOrderAt: new Date(),
+            nextFollowupAt: null,
             updatedById: session.user.id,
           },
         });
@@ -333,6 +334,13 @@ export const finalizeSalesOrderAction = async (id: string) => {
     }, FINALIZE_TRANSACTION_OPTIONS);
 
     revalidatePath("/dashboard/sales/orders");
+    revalidatePath("/dashboard/sales/quotations");
+    if (quotationId) {
+      revalidatePath(`/dashboard/sales/quotations/${quotationId}`);
+    }
+    if (quotationToUnlink) {
+      revalidatePath(`/dashboard/sales/quotations/${quotationToUnlink.id}`);
+    }
 
     return { ok: true as const, message: "Order finalized" };
   } catch (error) {

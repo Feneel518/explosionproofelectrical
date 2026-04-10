@@ -24,8 +24,8 @@ export async function saveGrnDraftSnapshotAction({
     return { ok: false as const, message: "GRN not found." };
   }
 
-  if (grn.status !== "DRAFT") {
-    return { ok: false as const, message: "Only draft GRN can be saved." };
+  if (grn.status === "CANCELLED") {
+    return { ok: false as const, message: "Cancelled GRN cannot be saved." };
   }
 
   if (clientVersion !== grn.draftVersion) {
@@ -52,4 +52,3 @@ export async function saveGrnDraftSnapshotAction({
     savedAt: updated.updatedAt.toISOString(),
   };
 }
-

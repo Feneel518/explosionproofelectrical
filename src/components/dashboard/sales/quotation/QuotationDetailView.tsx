@@ -359,7 +359,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                       <div className="mt-1 text-sm text-muted-foreground">
                         {[item.sku, item.typeNumber]
                           .filter(Boolean)
-                          .join(" â€¢ ") || "-"}
+                          .join("   ") || "-"}
                       </div>
                     </div>
 
@@ -442,7 +442,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                                 {comp.unit ? (
                                   <span className="text-muted-foreground">
                                     {" "}
-                                    â€¢ {comp.unit}
+                                    {comp.unit}
                                   </span>
                                 ) : null}
                               </div>

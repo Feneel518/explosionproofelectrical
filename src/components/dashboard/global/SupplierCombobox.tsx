@@ -58,7 +58,7 @@ type Props = {
 function secondaryLine(c: SupplierSearchItem) {
   const parts: string[] = [];
   if (c.city) parts.push([c.city].filter(Boolean).join(", "));
-  return parts.join(" â€¢ ");
+  return parts.join("   ");
 }
 
 function contactLine(c: SupplierSearchItem) {
@@ -181,7 +181,7 @@ export function SupplierCombobox({
   const content = (
     <Command shouldFilter={false}>
       <CommandInput
-        placeholder="Search by name, phone, email, GSTIN, cityâ€¦"
+        placeholder="Search by name, phone, email, GSTIN, city"
         value={search}
         onValueChange={setSearch}
       />
@@ -280,7 +280,7 @@ export function SupplierCombobox({
               {loadingMore ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading moreâ€¦
+                  Loading more
                 </span>
               ) : (
                 "Load more"

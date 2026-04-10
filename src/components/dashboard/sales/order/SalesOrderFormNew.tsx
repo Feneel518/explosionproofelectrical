@@ -59,8 +59,6 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
   orderNo,
   customers,
 }) => {
-
-
   const router = useRouter();
 
   const [isSaving, setIsSaving] = React.useState(false);
@@ -149,11 +147,11 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
 
   const saveIndicator = (() => {
     if (!salesOrderId) {
-      return <Badge variant="secondary">Creating draftâ€¦</Badge>;
+      return <Badge variant="secondary">Creating draft</Badge>;
     }
 
     if (autosave.status === "saving") {
-      return <Badge variant="secondary">Savingâ€¦</Badge>;
+      return <Badge variant="secondary">Saving</Badge>;
     }
 
     if (autosave.status === "saved") {

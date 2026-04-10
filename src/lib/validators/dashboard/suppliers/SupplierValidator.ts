@@ -66,4 +66,3 @@ export const SupplierSchema = z.object({
 });
 
 export type SupplierSchemaRequest = z.infer<typeof SupplierSchema>;
-

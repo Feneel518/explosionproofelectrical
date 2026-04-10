@@ -205,7 +205,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
       setIsApplyingCustomerDefaults(true);
       try {
         const fromList = customerDefaultsById.get(customerId) ?? null;
-        const customer = fromList ?? (await getCustomerForSelectById(customerId));
+        const customer =
+          fromList ?? (await getCustomerForSelectById(customerId));
         if (!customer) return;
 
         form.setValue("header.clientName", customer.companyName ?? "", {
@@ -214,12 +215,16 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
         });
         form.setValue(
           "header.receivedFromEmail",
-          customer.companyEmail ?? form.getValues("header.receivedFromEmail") ?? "",
+          customer.companyEmail ??
+            form.getValues("header.receivedFromEmail") ??
+            "",
           { shouldDirty: true, shouldTouch: true },
         );
         form.setValue(
           "header.receivedFromPhone",
-          customer.companyPhone ?? form.getValues("header.receivedFromPhone") ?? "",
+          customer.companyPhone ??
+            form.getValues("header.receivedFromPhone") ??
+            "",
           { shouldDirty: true, shouldTouch: true },
         );
         form.setValue(
@@ -243,10 +248,14 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
           { shouldDirty: true, shouldTouch: true },
         );
         if (customer.defaultQuotationDeliveryDate) {
-          form.setValue("header.deliveryDate", customer.defaultQuotationDeliveryDate, {
-            shouldDirty: true,
-            shouldTouch: true,
-          });
+          form.setValue(
+            "header.deliveryDate",
+            customer.defaultQuotationDeliveryDate,
+            {
+              shouldDirty: true,
+              shouldTouch: true,
+            },
+          );
         }
       } finally {
         setIsApplyingCustomerDefaults(false);
@@ -277,7 +286,8 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
       customerId?: string | null;
       variantIds?: string[];
     } = {}) => {
-      const selectedCustomerId = customerId ?? form.getValues("header.customerId");
+      const selectedCustomerId =
+        customerId ?? form.getValues("header.customerId");
       const selectedVariantIds = Array.from(
         new Set(
           (
@@ -358,13 +368,18 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
       customerId: watchedCustomerId,
       variantIds,
     });
-  }, [loadLastPrices, watchedCustomerId, watchedVariantIdsKey, lastPriceRefreshTick]);
+  }, [
+    loadLastPrices,
+    watchedCustomerId,
+    watchedVariantIdsKey,
+    lastPriceRefreshTick,
+  ]);
 
   const saveIndicator = (() => {
-    if (!quotationId) return <Badge variant="secondary">Creating draftâ€¦</Badge>;
+    if (!quotationId) return <Badge variant="secondary">Creating draft</Badge>;
 
     if (autosave.status === "saving")
-      return <Badge variant="secondary">Savingâ€¦</Badge>;
+      return <Badge variant="secondary">Saving</Badge>;
 
     if (autosave.status === "saved")
       return (
@@ -912,69 +927,78 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
                               );
                               return (
                                 <>
-                            <FormLabel>Next follow-up date</FormLabel>
+                                  <FormLabel>Next follow-up date</FormLabel>
 
-                            <Popover
-                              open={openFollowup}
-                              onOpenChange={setOpenFollowup}>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal",
-                                      !field.value && "text-muted-foreground",
-                                    )}>
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {selectedFollowupDate
-                                      ? format(selectedFollowupDate, "PPP")
-                                      : "Pick a date"}
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
+                                  <Popover
+                                    open={openFollowup}
+                                    onOpenChange={setOpenFollowup}>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          className={cn(
+                                            "w-full justify-start text-left font-normal",
+                                            !field.value &&
+                                              "text-muted-foreground",
+                                          )}>
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {selectedFollowupDate
+                                            ? format(
+                                                selectedFollowupDate,
+                                                "PPP",
+                                              )
+                                            : "Pick a date"}
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
 
-                              <PopoverContent
-                                className="w-[320px] flex flex-col gap-2 items-center p-0"
-                                align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={selectedFollowupDate ?? addDays(new Date(), 7)}
-                                  onSelect={(date) => {
-                                    field.onChange(date ?? null);
-                                    setOpenFollowup(false);
-                                  }}
-                                  disabled={(date) =>
-                                    date <
-                                    new Date(new Date().setHours(0, 0, 0, 0))
-                                  }
-                                  initialFocus
-                                />
+                                    <PopoverContent
+                                      className="w-[320px] flex flex-col gap-2 items-center p-0"
+                                      align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={
+                                          selectedFollowupDate ??
+                                          addDays(new Date(), 7)
+                                        }
+                                        onSelect={(date) => {
+                                          field.onChange(date ?? null);
+                                          setOpenFollowup(false);
+                                        }}
+                                        disabled={(date) =>
+                                          date <
+                                          new Date(
+                                            new Date().setHours(0, 0, 0, 0),
+                                          )
+                                        }
+                                        initialFocus
+                                      />
 
-                                <div className="border-t p-2 flex flex-wrap gap-2">
-                                  {PRESETS.map((preset) => (
-                                    <Button
-                                      key={preset.value}
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      className="flex-1"
-                                      onClick={() => {
-                                        const newDate = addDays(
-                                          new Date(),
-                                          preset.value,
-                                        );
-                                        field.onChange(newDate);
-                                        setOpenFollowup(false);
-                                      }}>
-                                      {preset.label}
-                                    </Button>
-                                  ))}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
+                                      <div className="border-t p-2 flex flex-wrap gap-2">
+                                        {PRESETS.map((preset) => (
+                                          <Button
+                                            key={preset.value}
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1"
+                                            onClick={() => {
+                                              const newDate = addDays(
+                                                new Date(),
+                                                preset.value,
+                                              );
+                                              field.onChange(newDate);
+                                              setOpenFollowup(false);
+                                            }}>
+                                            {preset.label}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
 
-                            <FormMessage />
+                                  <FormMessage />
                                 </>
                               );
                             })()}
@@ -1207,18 +1231,24 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Qty: {Number(qty || 0)} Â· Unit Price: â‚¹
-                    {Number(unitPrice || 0).toFixed(2)} Â· Total: â‚¹
+                    Qty: {Number(qty || 0)} · Unit Price:
+                    {Number(unitPrice || 0).toFixed(2)} · Total:
                     {lineTotal.toFixed(2)}
                   </p>
-                  {lastPriceInfo?.lastInvoice || lastPriceInfo?.lastSalesOrder ? (
+                  {lastPriceInfo?.lastInvoice ||
+                  lastPriceInfo?.lastSalesOrder ? (
                     <div className="mt-1 space-y-1 text-xs text-emerald-700">
                       {lastPriceInfo.lastInvoice ? (
                         <p>
                           Last invoice price: Rs.{" "}
-                          {Number(lastPriceInfo.lastInvoice.unitPrice || 0).toFixed(2)} (
-                          {lastPriceInfo.lastInvoice.sourceNo}
-                          {formattedInvoiceDate ? ` on ${formattedInvoiceDate}` : ""})
+                          {Number(
+                            lastPriceInfo.lastInvoice.unitPrice || 0,
+                          ).toFixed(2)}{" "}
+                          ({lastPriceInfo.lastInvoice.sourceNo}
+                          {formattedInvoiceDate
+                            ? ` on ${formattedInvoiceDate}`
+                            : ""}
+                          )
                           {lastPriceInfo.lastInvoice.sourcePoNumber
                             ? ` · PO ${lastPriceInfo.lastInvoice.sourcePoNumber}`
                             : ""}
@@ -1228,8 +1258,10 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                       {lastPriceInfo.lastSalesOrder ? (
                         <p>
                           Last order price: Rs.{" "}
-                          {Number(lastPriceInfo.lastSalesOrder.unitPrice || 0).toFixed(2)} (
-                          {lastPriceInfo.lastSalesOrder.sourceNo}
+                          {Number(
+                            lastPriceInfo.lastSalesOrder.unitPrice || 0,
+                          ).toFixed(2)}{" "}
+                          ({lastPriceInfo.lastSalesOrder.sourceNo}
                           {formattedSalesOrderDate
                             ? ` on ${formattedSalesOrderDate}`
                             : ""}
@@ -1748,14 +1780,15 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                           placeholder="0.00"
                         />
                       </FormControl>
-                      {lastPriceInfo?.lastInvoice || lastPriceInfo?.lastSalesOrder ? (
+                      {lastPriceInfo?.lastInvoice ||
+                      lastPriceInfo?.lastSalesOrder ? (
                         <div className="space-y-1 text-xs text-emerald-700">
                           {lastPriceInfo.lastInvoice ? (
                             <p>
                               Last invoice: Rs.{" "}
-                              {Number(lastPriceInfo.lastInvoice.unitPrice || 0).toFixed(
-                                2,
-                              )}{" "}
+                              {Number(
+                                lastPriceInfo.lastInvoice.unitPrice || 0,
+                              ).toFixed(2)}{" "}
                               ({lastPriceInfo.lastInvoice.sourceNo})
                               {lastPriceInfo.lastInvoice.sourcePoNumber
                                 ? ` · PO ${lastPriceInfo.lastInvoice.sourcePoNumber}`
@@ -1790,7 +1823,7 @@ const QuotationItemRow: FC<QuotationItemRowProps> = ({
                     Line Total
                   </div>
                   <div className="text-lg font-semibold">
-                  {formatCurrencyINR(lineTotal)}
+                    {formatCurrencyINR(lineTotal)}
                   </div>
                 </div>
 

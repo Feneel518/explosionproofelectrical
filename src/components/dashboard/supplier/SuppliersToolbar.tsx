@@ -56,7 +56,7 @@ export default function SuppliersToolbar({ qp }: { qp: SuppliersQP }) {
           className="md:max-w-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name / phone / email / GSTINâ€¦"
+          placeholder="Search name / phone / email / GSTIN"
         />
 
         {/* City */}
@@ -64,7 +64,7 @@ export default function SuppliersToolbar({ qp }: { qp: SuppliersQP }) {
           className="w-full md:w-[200px]"
           value={city}
           onChange={(e) => setCity(e.target.value)}
-          placeholder="Cityâ€¦"
+          placeholder="City"
         />
 
         <Select
@@ -148,4 +148,3 @@ export default function SuppliersToolbar({ qp }: { qp: SuppliersQP }) {
     </div>
   );
 }
-

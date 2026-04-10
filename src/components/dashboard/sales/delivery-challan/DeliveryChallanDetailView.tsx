@@ -396,7 +396,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
                       <div className="mt-1 text-sm text-muted-foreground">
                         {[item.sku, item.typeNumber]
                           .filter(Boolean)
-                          .join(" â€¢ ") || "-"}
+                          .join("   ") || "-"}
                       </div>
                     </div>
 

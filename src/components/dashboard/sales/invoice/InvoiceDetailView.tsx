@@ -385,7 +385,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                           item.serialNumber,
                         ]
                           .filter(Boolean)
-                          .join(" â€¢ ") || "-"}
+                          .join("   ") || "-"}
                       </div>
                     </div>
 

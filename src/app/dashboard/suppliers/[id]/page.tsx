@@ -85,7 +85,7 @@ const page: FC<pageProps> = async ({ params }) => {
       </div>
 
       <Button asChild variant="ghost">
-        <Link href="/dashboard/suppliers">â† Back to Suppliers</Link>
+        <Link href="/dashboard/suppliers">Back to Suppliers</Link>
       </Button>
     </div>
   );

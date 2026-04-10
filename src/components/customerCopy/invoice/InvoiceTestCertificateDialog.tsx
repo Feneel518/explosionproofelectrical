@@ -126,9 +126,8 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
                   </div>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {[item.sku, item.typeNumber]
-                      .filter(Boolean)
-                      .join(" â€¢ ") || "-"}
+                    {[item.sku, item.typeNumber].filter(Boolean).join("   ") ||
+                      "-"}
                   </p>
                 </div>
               </label>

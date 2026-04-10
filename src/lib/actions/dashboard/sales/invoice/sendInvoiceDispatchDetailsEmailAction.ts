@@ -37,6 +37,19 @@ function isLikelyEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function getFileNameFromUrl(url: string, fallback: string) {
+  try {
+    const parsed = new URL(url);
+    const fileName = decodeURIComponent(
+      parsed.pathname.split("/").pop() || fallback,
+    ).trim();
+
+    return fileName || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function sendInvoiceDispatchDetailsEmailAction(
   invoiceId: string,
   recipient: string,
@@ -181,6 +194,18 @@ export async function sendInvoiceDispatchDetailsEmailAction(
         </div>`
       : `<div style="margin:0 0 16px;font-size:14px;color:#64748b;">LR Copy: Not attached</div>`;
 
+    const lrCopyAttachments = lrCopyRows
+      .filter(
+        (file): file is { id: string; url: string; title: string | null } =>
+          typeof file.url === "string" && file.url.trim().length > 0,
+      )
+      .map((file, index) => ({
+        filename:
+          (typeof file.title === "string" && file.title.trim()) ||
+          getFileNameFromUrl(file.url, `LR-Copy-${index + 1}`),
+        path: file.url,
+      }));
+
     const subject = `Dispatch Details - Invoice ${invoiceNumber}`;
 
     const html = renderThemedEmailLayout({
@@ -235,6 +260,7 @@ export async function sendInvoiceDispatchDetailsEmailAction(
       to: recipients.join(", "),
       subject,
       html,
+      attachments: lrCopyAttachments.length ? lrCopyAttachments : undefined,
     });
 
     await prisma.invoice.update({

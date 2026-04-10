@@ -1,16 +1,19 @@
-﻿"use client";
+"use client";
 
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ProductMediaKind } from "@prisma/client";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
+import { FileUpload } from "@/components/dashboard/global/FileUpload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { reopenInvoiceAsDraftAction } from "@/lib/actions/dashboard/sales/invoice/reopenInvoiceAsDraftAction";
-import PdfPreviewCard from "../../global/PDFPreviewCard";
+import { updateInvoiceLrCopyAction } from "@/lib/actions/dashboard/sales/invoice/updateInvoiceLrCopyAction";
 import InvoicePackingStickerDialog from "@/components/customerCopy/invoice/InvoicePackingStickerDialog";
 import InvoiceTestCertificateDialog from "@/components/customerCopy/invoice/InvoiceTestCertificateDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
@@ -20,6 +23,12 @@ import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 
 type Props = {
   invoice: any;
+};
+
+type LrCopyFile = {
+  kind: ProductMediaKind;
+  url: string;
+  title?: string | null;
 };
 
 function fmtDate(value?: string | Date | null) {
@@ -66,6 +75,36 @@ function getPackingRows(packing: unknown): Array<{
 
 export default function InvoiceDetailView({ invoice }: Props) {
   const router = useRouter();
+  const [isSavingLrCopy, startSavingLrCopy] = React.useTransition();
+  const [lrCopyFiles, setLrCopyFiles] = React.useState<LrCopyFile[]>([]);
+
+  React.useEffect(() => {
+    const nextFiles: LrCopyFile[] = Array.isArray(invoice.lrCopy)
+      ? invoice.lrCopy
+          .map((file: any) => {
+            const url =
+              typeof file?.url === "string" ? file.url.trim() : undefined;
+            if (!url) return null;
+
+            return {
+              kind:
+                file?.kind === ProductMediaKind.IMAGE
+                  ? ProductMediaKind.IMAGE
+                  : ProductMediaKind.DRAWING,
+              url,
+              title:
+                typeof file?.title === "string" && file.title.trim().length > 0
+                  ? file.title.trim()
+                  : null,
+            } satisfies LrCopyFile;
+          })
+          .filter((file: LrCopyFile | null): file is LrCopyFile =>
+            Boolean(file),
+          )
+      : [];
+
+    setLrCopyFiles(nextFiles);
+  }, [invoice.id, invoice.lrCopy]);
 
   const customer = invoice.salesOrder?.customer || invoice.customer;
   const companyName = customer?.companyName || "-";
@@ -147,6 +186,28 @@ export default function InvoiceDetailView({ invoice }: Props) {
         }))
       : [],
   }));
+
+  const onLrCopyChange = (nextFiles: LrCopyFile[]) => {
+    if (invoice.status !== "FINALIZED") {
+      toast.error("Finalize invoice first to update LR copy");
+      return;
+    }
+
+    const previousFiles = lrCopyFiles;
+    setLrCopyFiles(nextFiles);
+
+    startSavingLrCopy(async () => {
+      const res = await updateInvoiceLrCopyAction(invoice.id, nextFiles);
+      if (!res.ok) {
+        setLrCopyFiles(previousFiles);
+        toast.error(res.message);
+        return;
+      }
+
+      toast.success(res.message);
+      router.refresh();
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -604,47 +665,48 @@ export default function InvoiceDetailView({ invoice }: Props) {
           <CardTitle>LR Copy</CardTitle>
         </CardHeader>
         <CardContent>
-          {invoice.lrCopy.length === 0 ? (
+          {invoice.status === "FINALIZED" ? (
+            <div className="space-y-2">
+              <FileUpload
+                endpoint="productDrawing"
+                kind={ProductMediaKind.DRAWING}
+                label="Upload LR Copy"
+                hint="Upload LR copy PDF or image. This will be used in dispatch details email."
+                value={lrCopyFiles}
+                onChange={onLrCopyChange}
+              />
+              {isSavingLrCopy ? (
+                <div className="text-xs text-muted-foreground">
+                  Saving LR copy...
+                </div>
+              ) : null}
+            </div>
+          ) : lrCopyFiles.length === 0 ? (
             <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
-              No LR copy uploaded.
+              No LR copy uploaded. Finalize invoice first, then upload from this
+              page.
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {invoice.lrCopy.map((file: any) => {
-                const isPdf = file.url.toLowerCase().includes(".pdf");
-
-                if (isPdf) {
-                  return (
-                    <PdfPreviewCard
-                      key={file.id}
-                      url={file.url}
-                      title={file.title || "LR Copy"}
-                      height={420}
-                    />
-                  );
-                }
-
-                return (
-                  <a
-                    key={file.id}
-                    href={file.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group overflow-hidden rounded-xl border bg-background">
-                    <div className="relative h-72 w-full overflow-hidden bg-white">
-                      <Image
-                        src={file.url}
-                        alt={file.title || "LR Copy"}
-                        fill
-                        className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
-                      />
-                    </div>
-                    <div className="truncate border-t px-3 py-2 text-xs text-muted-foreground">
-                      {file.title || "LR Copy"}
-                    </div>
-                  </a>
-                );
-              })}
+            <div className="space-y-3">
+              <div className="rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground">
+                LR copy is available. Finalize invoice first to update it from
+                this page.
+              </div>
+              <div className="rounded-xl border p-4 text-sm">
+                <div className="mb-2 font-medium">Existing Files</div>
+                <div className="space-y-1">
+                  {lrCopyFiles.map((file, index) => (
+                    <a
+                      key={`${file.url}-${index}`}
+                      href={file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block truncate text-primary underline">
+                      {file.title || `LR Copy ${index + 1}`}
+                    </a>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

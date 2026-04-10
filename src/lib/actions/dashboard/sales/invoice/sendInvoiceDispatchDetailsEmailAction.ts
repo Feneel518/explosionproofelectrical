@@ -26,11 +26,34 @@ function formatDate(value?: Date | null) {
   }
 }
 
-function normalizeToEmailList(value: string) {
-  return value
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+  if (typeof error === "string" && error.trim()) {
+    return error.trim();
+  }
+  return "Unknown error";
+}
+
+function isHttpUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function normalizeSendToEmailList(value: string) {
+  return Array.from(
+    new Set(
+      value
+        .split(/[,\n;]+/)
+        .map((part) => part.trim())
+        .filter(Boolean),
+    ),
+  );
 }
 
 function isLikelyEmail(value: string) {
@@ -57,7 +80,7 @@ export async function sendInvoiceDispatchDetailsEmailAction(
   await requireAuth();
 
   try {
-    const recipients = normalizeToEmailList(recipient);
+    const recipients = normalizeSendToEmailList(recipient);
 
     if (!recipients.length) {
       return { ok: false as const, message: "Recipient email is required" };
@@ -197,7 +220,9 @@ export async function sendInvoiceDispatchDetailsEmailAction(
     const lrCopyAttachments = lrCopyRows
       .filter(
         (file): file is { id: string; url: string; title: string | null } =>
-          typeof file.url === "string" && file.url.trim().length > 0,
+          typeof file.url === "string" &&
+          file.url.trim().length > 0 &&
+          isHttpUrl(file.url.trim()),
       )
       .map((file, index) => ({
         filename:
@@ -255,13 +280,30 @@ export async function sendInvoiceDispatchDetailsEmailAction(
       `,
     });
 
-    await transporter.sendMail({
+    const mailOptions = {
       from: process.env.SMTP_FROM || process.env.EMAIL_USER,
       to: recipients.join(", "),
       subject,
       html,
       attachments: lrCopyAttachments.length ? lrCopyAttachments : undefined,
-    });
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      if (!lrCopyAttachments.length) {
+        throw error;
+      }
+
+      console.warn(
+        "sendInvoiceDispatchDetailsEmailAction attachment send failed, retrying without attachment",
+        error,
+      );
+      await transporter.sendMail({
+        ...mailOptions,
+        attachments: undefined,
+      });
+    }
 
     await prisma.invoice.update({
       where: { id: invoice.id },
@@ -280,10 +322,11 @@ export async function sendInvoiceDispatchDetailsEmailAction(
       message: `Dispatch details sent to ${recipients.join(", ")}`,
     };
   } catch (error) {
-    console.error("sendInvoiceDispatchDetailsEmailAction", error);
+    const errorMessage = getErrorMessage(error);
+    console.error("sendInvoiceDispatchDetailsEmailAction", errorMessage, error);
     return {
       ok: false as const,
-      message: "Failed to send dispatch details email",
+      message: `Failed to send dispatch details email: ${errorMessage}`,
     };
   }
 }

@@ -35,10 +35,13 @@ export default function RawMaterialsToolbar({ qp }: { qp: RawMaterialsQP }) {
     setState({ q: debouncedSearch, page: 1 });
   }, [debouncedSearch]);
 
-  const activeFilters = (qp.q ? 1 : 0) + (qp.status !== "ALL" ? 1 : 0) + (qp.trash !== "EXCLUDE" ? 1 : 0);
+  const activeFilters =
+    (qp.q ? 1 : 0) +
+    (qp.status !== "ALL" ? 1 : 0) +
+    (qp.trash !== "EXCLUDE" ? 1 : 0);
 
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between flex-wrap">
       <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
         <Input
           className="md:max-w-sm"
@@ -121,7 +124,8 @@ export default function RawMaterialsToolbar({ qp }: { qp: RawMaterialsQP }) {
 
       <Button asChild>
         <Link href="/dashboard/raw-materials/new">
-          <Plus />New Raw Material
+          <Plus />
+          New Raw Material
         </Link>
       </Button>
     </div>

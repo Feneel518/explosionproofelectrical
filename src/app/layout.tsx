@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { EB_Garamond, Poppins } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NuqsAdapter } from "nuqs/adapters/next/app";

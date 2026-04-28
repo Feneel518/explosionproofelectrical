@@ -17,6 +17,11 @@ export async function rescheduleQuotationFollowupAction(input: {
       id: true,
       quotationId: true,
       doneAt: true,
+      quotation: {
+        select: {
+          status: true,
+        },
+      },
     },
   });
 
@@ -58,6 +63,9 @@ export async function rescheduleQuotationFollowupAction(input: {
         where: { id: followup.quotationId },
         data: {
           nextFollowupAt: earliestPending?.scheduledAt ?? null,
+          ...(["SENT", "EXPIRED"].includes(followup.quotation.status)
+            ? { status: "FOLLOWUP" as const }
+            : {}),
           updatedById: session.user.id,
         },
       });

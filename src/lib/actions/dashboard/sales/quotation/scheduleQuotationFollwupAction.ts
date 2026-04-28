@@ -13,7 +13,7 @@ export async function scheduleQuotationFollowupAction(input: {
 
   const quotation = await prisma.quotation.findUnique({
     where: { id: input.quotationId },
-    select: { id: true },
+    select: { id: true, status: true },
   });
 
   if (!quotation) {
@@ -48,6 +48,9 @@ export async function scheduleQuotationFollowupAction(input: {
         where: { id: input.quotationId },
         data: {
           nextFollowupAt: earliestPending?.scheduledAt ?? input.scheduledAt,
+          ...(["SENT", "EXPIRED"].includes(quotation.status)
+            ? { status: "FOLLOWUP" as const }
+            : {}),
           updatedById: session.user.id,
         },
       });

@@ -84,6 +84,7 @@ export default function ScheduleFollowupDialog({
       }
 
       toast.success("Follow-up scheduled");
+      window.dispatchEvent(new Event("quotation-followups-changed"));
       onOpenChange(false);
       form.reset({
         scheduledAt: addDays(new Date(), 7),

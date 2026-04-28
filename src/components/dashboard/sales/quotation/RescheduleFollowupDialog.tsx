@@ -86,6 +86,7 @@ export default function RescheduleFollowupDialog({
       }
 
       toast.success("Follow-up rescheduled");
+      window.dispatchEvent(new Event("quotation-followups-changed"));
       onOpenChange(false);
     } finally {
       setIsPending(false);

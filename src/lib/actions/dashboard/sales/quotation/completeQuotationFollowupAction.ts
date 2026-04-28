@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export async function completeQuotationFollowupAction(input: {
   followupId: string;
-  outcome?: FollowupOutcome | null;
+  outcome?: FollowupOutcome | "APPROVED" | "REJECTED" | null;
   note?: string | null;
 }) {
   await requireAuth();
@@ -17,6 +17,11 @@ export async function completeQuotationFollowupAction(input: {
     select: {
       id: true,
       quotationId: true,
+      quotation: {
+        select: {
+          status: true,
+        },
+      },
     },
   });
 
@@ -25,6 +30,18 @@ export async function completeQuotationFollowupAction(input: {
   }
 
   const now = new Date();
+  const normalizedOutcome =
+    input.outcome === "APPROVED"
+      ? "WON"
+      : input.outcome === "REJECTED"
+        ? "LOST_TO_COMPETITOR"
+        : input.outcome;
+  const quotationStatus =
+    normalizedOutcome === "WON"
+      ? "WON"
+      : normalizedOutcome === "LOST_TO_COMPETITOR"
+        ? "LOST"
+        : undefined;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -32,7 +49,7 @@ export async function completeQuotationFollowupAction(input: {
         where: { id: input.followupId },
         data: {
           doneAt: now,
-          outcome: input.outcome ?? null,
+          outcome: normalizedOutcome ?? null,
           note: input.note ?? undefined,
         },
       });
@@ -55,6 +72,13 @@ export async function completeQuotationFollowupAction(input: {
         data: {
           lastFollowupAt: now,
           nextFollowupAt: nextPending?.scheduledAt ?? null,
+          ...(quotationStatus
+            ? { status: quotationStatus }
+            : nextPending && ["SENT", "EXPIRED"].includes(followup.quotation.status)
+              ? { status: "FOLLOWUP" as const }
+              : !nextPending && followup.quotation.status === "FOLLOWUP"
+                ? { status: "SENT" as const }
+                : {}),
         },
       });
     });

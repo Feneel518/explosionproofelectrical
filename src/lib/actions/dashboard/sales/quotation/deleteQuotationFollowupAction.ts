@@ -15,6 +15,11 @@ export async function deleteQuotationFollowupAction(input: {
       id: true,
       quotationId: true,
       doneAt: true,
+      quotation: {
+        select: {
+          status: true,
+        },
+      },
     },
   });
 
@@ -52,6 +57,12 @@ export async function deleteQuotationFollowupAction(input: {
         where: { id: followup.quotationId },
         data: {
           nextFollowupAt: earliestPending?.scheduledAt ?? null,
+          ...(earliestPending &&
+          ["SENT", "EXPIRED"].includes(followup.quotation.status)
+            ? { status: "FOLLOWUP" as const }
+            : !earliestPending && followup.quotation.status === "FOLLOWUP"
+              ? { status: "SENT" as const }
+              : {}),
           updatedById: session.user.id,
         },
       });

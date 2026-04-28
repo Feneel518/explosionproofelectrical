@@ -60,6 +60,7 @@ export default function QuotationFollowupsSection({
         return;
       }
       toast.success("Follow-up deleted");
+      window.dispatchEvent(new Event("quotation-followups-changed"));
     } finally {
       setDeletingId(null);
     }

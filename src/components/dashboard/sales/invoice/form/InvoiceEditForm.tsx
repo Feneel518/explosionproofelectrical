@@ -4,7 +4,12 @@ import * as React from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
 import { ProductMediaKind } from "@prisma/client";
-import { useFieldArray, useForm, useWatch, type Resolver } from "react-hook-form";
+import {
+  useFieldArray,
+  useForm,
+  useWatch,
+  type Resolver,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -922,14 +927,18 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
         };
       });
 
-      const pendingIds = new Set(pendingMapped.map((item) => item.salesOrderItemId));
+      const pendingIds = new Set(
+        pendingMapped.map((item) => item.salesOrderItemId),
+      );
 
       const manualOrExtraDraftItems = draftItems
         .filter(
           (item) =>
             Boolean(item.isManual) || !pendingIds.has(item.salesOrderItemId),
         )
-        .map((item, index) => mapDraftItemToForm(item, pendingMapped.length + index));
+        .map((item, index) =>
+          mapDraftItemToForm(item, pendingMapped.length + index),
+        );
 
       const merged = [...pendingMapped, ...manualOrExtraDraftItems]
         .filter((item) => Boolean(item.salesOrderItemId))
@@ -1325,9 +1334,13 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       shouldDirty: true,
       shouldTouch: true,
     });
-    form.setValue(`items.${index}.unit`, form.getValues(`items.${index}.unit`) || "Nos", {
-      shouldDirty: true,
-    });
+    form.setValue(
+      `items.${index}.unit`,
+      form.getValues(`items.${index}.unit`) || "Nos",
+      {
+        shouldDirty: true,
+      },
+    );
     form.setValue(`items.${index}.selected`, true, {
       shouldDirty: true,
       shouldTouch: true,
@@ -1563,8 +1576,12 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
       if (res.invoice) {
         form.reset(buildDefaultValues(res.invoice));
-        setCurrentSalesOrderId(res.invoice.salesOrderId ?? selectedSalesOrderId);
-        setSelectedSalesOrderId(res.invoice.salesOrderId ?? selectedSalesOrderId);
+        setCurrentSalesOrderId(
+          res.invoice.salesOrderId ?? selectedSalesOrderId,
+        );
+        setSelectedSalesOrderId(
+          res.invoice.salesOrderId ?? selectedSalesOrderId,
+        );
       }
 
       toast.success("Invoice converted to sales-order draft");
@@ -1580,7 +1597,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
       const values = form.getValues();
       const payload = buildInvoiceDraftPayload(values);
-      const res = await detachSalesOrderFromInvoiceDraftAction(invoice.id, payload);
+      const res = await detachSalesOrderFromInvoiceDraftAction(
+        invoice.id,
+        payload,
+      );
 
       if (!res.ok) {
         toast.error(res.message ?? "Failed to convert invoice to offline");
@@ -1608,14 +1628,14 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     <div className="space-y-4">
       <div className="flex flex-col w-full items-start justify-between gap-3">
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
-            <div className="space-y-1">
-              <div className="text-xl font-semibold">Edit Invoice</div>
-              <div className="text-sm text-muted-foreground">
-                {isOfflineInvoice
-                  ? "You can keep this as an offline invoice or attach a sales order."
-                  : "This invoice is linked to a sales order, or you can convert it back to offline."}
-              </div>
+          <div className="space-y-1">
+            <div className="text-xl font-semibold">Edit Invoice</div>
+            <div className="text-sm text-muted-foreground">
+              {isOfflineInvoice
+                ? "You can keep this as an offline invoice or attach a sales order."
+                : "This invoice is linked to a sales order, or you can convert it back to offline."}
             </div>
+          </div>
 
           <div className="flex items-center gap-2">
             <Button
@@ -1659,12 +1679,14 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                         <SalesOrderCombobox
                           value={selectedSalesOrderId}
                           onChange={setSelectedSalesOrderId}
-                          disabled={isSaving || isFinalizing || isSwitchingToOrder}
+                          disabled={
+                            isSaving || isFinalizing || isSwitchingToOrder
+                          }
                           placeholder="Search sales order / PO number"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Select a sales order if this draft should be created from a
-                          purchase order instead of staying offline.
+                          Select a sales order if this draft should be created
+                          from a purchase order instead of staying offline.
                         </p>
                       </div>
 
@@ -1672,6 +1694,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                         type="button"
                         variant="outline"
                         onClick={attachSalesOrderToDraft}
+                        className="my-auto"
                         disabled={
                           !selectedSalesOrderId ||
                           isSaving ||
@@ -1692,13 +1715,14 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                       <div className="space-y-1">
                         <FormLabel>Convert To Offline Invoice</FormLabel>
                         <p className="text-xs text-muted-foreground">
-                          This removes the sales-order link and keeps the current
-                          draft items as manual offline lines.
+                          This removes the sales-order link and keeps the
+                          current draft items as manual offline lines.
                         </p>
                       </div>
 
                       <Button
                         type="button"
+                        className="my-auto"
                         variant="outline"
                         onClick={detachSalesOrderFromDraft}
                         disabled={
@@ -2049,7 +2073,9 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <CardTitle>
-                      {isOfflineInvoice ? "Invoice Items" : "Select Pending Items"}
+                      {isOfflineInvoice
+                        ? "Invoice Items"
+                        : "Select Pending Items"}
                     </CardTitle>
                     <CardDescription>
                       {isOfflineInvoice
@@ -2098,7 +2124,9 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                 <p className="font-medium">
                                   {formatCurrency(item.unitPrice)}
                                 </p>
-                                <p className="text-muted-foreground">per unit</p>
+                                <p className="text-muted-foreground">
+                                  per unit
+                                </p>
                               </div>
                               {item.isManual ? (
                                 <Button
@@ -2185,7 +2213,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-3">
                                     <h3 className="truncate text-base font-semibold">
-                                      {displayValue(item.title, "Untitled Product")}
+                                      {displayValue(
+                                        item.title,
+                                        "Untitled Product",
+                                      )}
                                     </h3>
                                     <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                                       #{index + 1}
@@ -2209,7 +2240,9 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                     Item Type
                                   </p>
                                   <p className="font-medium">
-                                    {item.isManual ? "Manual line item" : "Order item"}
+                                    {item.isManual
+                                      ? "Manual line item"
+                                      : "Order item"}
                                   </p>
                                 </div>
                                 <div>
@@ -2226,291 +2259,312 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                   <p className="text-muted-foreground">
                                     Ordered Qty
                                   </p>
-                                  <p className="font-medium">{item.orderedQty}</p>
+                                  <p className="font-medium">
+                                    {item.orderedQty}
+                                  </p>
                                 </div>
                                 <div>
-                                  <p className="text-muted-foreground">Max Qty</p>
+                                  <p className="text-muted-foreground">
+                                    Max Qty
+                                  </p>
                                   <p className="font-medium">
-                                    {Number.isFinite(maxQty) ? maxQty : "No limit"}
+                                    {Number.isFinite(maxQty)
+                                      ? maxQty
+                                      : "No limit"}
                                   </p>
                                 </div>
                               </div>
 
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                          {item.isManual ? (
-                            <>
-                              <div className="space-y-2 xl:col-span-2">
-                                <FormLabel>Product Variant</FormLabel>
-                                <ProductVariantCombobox
-                                  value={
-                                    form.watch(`items.${index}.variantId`) ?? null
-                                  }
-                                  onChange={(variant) => {
-                                    applyOfflineVariantToItem(index, variant);
-                                  }}
+                              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                                {item.isManual ? (
+                                  <>
+                                    <div className="space-y-2 xl:col-span-2">
+                                      <FormLabel>Product Variant</FormLabel>
+                                      <ProductVariantCombobox
+                                        value={
+                                          form.watch(
+                                            `items.${index}.variantId`,
+                                          ) ?? null
+                                        }
+                                        onChange={(variant) => {
+                                          applyOfflineVariantToItem(
+                                            index,
+                                            variant,
+                                          );
+                                        }}
+                                      />
+                                    </div>
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.title`}
+                                      render={({ field }) => (
+                                        <FormItem className="xl:col-span-2">
+                                          <FormLabel>Item Title</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Enter item title"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.sku`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>SKU</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="SKU"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.typeNumber`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Type Number</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Type Number"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.hsnCode`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>HSN Code</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="HSN Code"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.description`}
+                                      render={({ field }) => (
+                                        <FormItem className="xl:col-span-2">
+                                          <FormLabel>Description</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Description"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.unit`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Unit</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Nos / Kg / Mtr"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.unitPrice`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Unit Price</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              value={field.value ?? 0}
+                                              onChange={(event) =>
+                                                field.onChange(
+                                                  Math.max(
+                                                    0,
+                                                    Number(
+                                                      event.target.value || 0,
+                                                    ),
+                                                  ),
+                                                )
+                                              }
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </>
+                                ) : null}
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.qty`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Invoice Qty</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          min={1}
+                                          max={
+                                            Number.isFinite(maxQty)
+                                              ? maxQty
+                                              : undefined
+                                          }
+                                          placeholder="Enter qty"
+                                          value={field.value ?? 0}
+                                          onChange={(e) => {
+                                            const raw = Number(
+                                              e.target.value || 0,
+                                            );
+                                            const safe = Number.isFinite(maxQty)
+                                              ? Math.max(
+                                                  0,
+                                                  Math.min(raw, maxQty),
+                                                )
+                                              : Math.max(0, raw);
+                                            field.onChange(safe);
+                                          }}
+                                          onBlur={() => sanitizeQty(index)}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.cimfrNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>CIMFR Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter CIMFR number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.pesoNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>PESO Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter PESO number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.serialNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Serial Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter serial number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.typeNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Type Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter type number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
                                 />
                               </div>
 
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.title`}
-                                render={({ field }) => (
-                                  <FormItem className="xl:col-span-2">
-                                    <FormLabel>Item Title</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        value={field.value ?? ""}
-                                        placeholder="Enter item title"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
+                              <Separator />
+
+                              <FileUpload
+                                endpoint="productImage"
+                                kind={ProductMediaKind.IMAGE}
+                                label="Product Picture"
+                                hint="Upload delivered product image(s)"
+                                value={
+                                  form.watch(`items.${index}.productPicture`) ||
+                                  []
+                                }
+                                onChange={(files) =>
+                                  form.setValue(
+                                    `items.${index}.productPicture`,
+                                    files,
+                                    {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    },
+                                  )
+                                }
                               />
-
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.sku`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>SKU</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        value={field.value ?? ""}
-                                        placeholder="SKU"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.typeNumber`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Type Number</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        value={field.value ?? ""}
-                                        placeholder="Type Number"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.hsnCode`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>HSN Code</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        value={field.value ?? ""}
-                                        placeholder="HSN Code"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.description`}
-                                render={({ field }) => (
-                                  <FormItem className="xl:col-span-2">
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        value={field.value ?? ""}
-                                        placeholder="Description"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.unit`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Unit</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        value={field.value ?? ""}
-                                        placeholder="Nos / Kg / Mtr"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.unitPrice`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Unit Price</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        min={0}
-                                        value={field.value ?? 0}
-                                        onChange={(event) =>
-                                          field.onChange(
-                                            Math.max(
-                                              0,
-                                              Number(event.target.value || 0),
-                                            ),
-                                          )
-                                        }
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </>
-                          ) : null}
-
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.qty`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Invoice Qty</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    min={1}
-                                    max={
-                                      Number.isFinite(maxQty) ? maxQty : undefined
-                                    }
-                                    placeholder="Enter qty"
-                                    value={field.value ?? 0}
-                                    onChange={(e) => {
-                                      const raw = Number(e.target.value || 0);
-                                      const safe = Number.isFinite(maxQty)
-                                        ? Math.max(0, Math.min(raw, maxQty))
-                                        : Math.max(0, raw);
-                                      field.onChange(safe);
-                                    }}
-                                    onBlur={() => sanitizeQty(index)}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.cimfrNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>CIMFR Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter CIMFR number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.pesoNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>PESO Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter PESO number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.serialNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Serial Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter serial number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.typeNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Type Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter type number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <Separator />
-
-                        <FileUpload
-                          endpoint="productImage"
-                          kind={ProductMediaKind.IMAGE}
-                          label="Product Picture"
-                          hint="Upload delivered product image(s)"
-                          value={
-                            form.watch(`items.${index}.productPicture`) || []
-                          }
-                          onChange={(files) =>
-                            form.setValue(
-                              `items.${index}.productPicture`,
-                              files,
-                              {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              },
-                            )
-                          }
-                        />
                               <div className="flex justify-end">
                                 <Button
                                   type="button"

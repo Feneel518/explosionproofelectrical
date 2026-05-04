@@ -45,8 +45,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { CustomerCombobox } from "@/components/dashboard/global/CustomerCombobox";
 import { ProductVariantCombobox } from "@/components/dashboard/global/ProductVariantCombobox";
+import { SalesOrderCombobox } from "@/components/dashboard/global/SalesOrderCombobox";
 import { updateInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/updateInvoiceDraftData";
 import { finalizeInvoiceAction } from "@/lib/actions/dashboard/sales/invoice/finalizeInvoiceAction";
+import { attachSalesOrderToInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/attachSalesOrderToInvoiceDraftAction";
+import { detachSalesOrderFromInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/detachSalesOrderFromInvoiceDraftAction";
 import { useRouter } from "nextjs-toploader/app";
 import { MediaItem } from "@/lib/actions/dashboard/sales/invoice/getInvoiceEditDataAction";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
@@ -441,6 +444,240 @@ function mapDraftItemToForm(
   };
 }
 
+function buildDefaultValues(invoice: InvoiceEditData): FormValues {
+  const draftHeader = invoice.draftData?.header ?? {};
+  const draftItems = Array.isArray(invoice.draftData?.items)
+    ? invoice.draftData.items
+    : [];
+  const draftPackages = Array.isArray(invoice.draftData?.packages)
+    ? invoice.draftData.packages
+    : [];
+
+  const draftItemIdToSalesOrderItemId = new Map(
+    draftItems
+      .map((item) => {
+        const draftItemId =
+          typeof (item as { id?: unknown }).id === "string"
+            ? ((item as { id?: string }).id ?? null)
+            : null;
+
+        const salesOrderItemId =
+          typeof item.salesOrderItemId === "string"
+            ? item.salesOrderItemId
+            : null;
+
+        if (!draftItemId || !salesOrderItemId) return null;
+
+        return [draftItemId, salesOrderItemId] as const;
+      })
+      .filter((row): row is readonly [string, string] => Boolean(row)),
+  );
+
+  return {
+    header: {
+      customerId: draftHeader.customerId ?? invoice.customerId ?? null,
+      invoiceNo: Number(draftHeader.invoiceNo ?? invoice.invoiceNo ?? 1),
+      invoiceDate:
+        toDate(draftHeader.invoiceDate) ??
+        toDate(invoice.invoiceDate) ??
+        new Date(),
+      dispatchDate:
+        toDate(draftHeader.dispatchDate) ??
+        toDate(invoice.dispatchDate) ??
+        null,
+      poNumber: draftHeader.poNumber ?? invoice.poNumber ?? "",
+      transporterName:
+        draftHeader.transporterName ?? invoice.transporterName ?? "",
+      vehicleNumber: draftHeader.vehicleNumber ?? invoice.vehicleNumber ?? "",
+      driverName: draftHeader.driverName ?? invoice.driverName ?? "",
+      driverPhone: draftHeader.driverPhone ?? invoice.driverPhone ?? "",
+      dispatchThrough:
+        draftHeader.dispatchThrough ?? invoice.dispatchThrough ?? "",
+      lrNumber: draftHeader.lrNumber ?? invoice.lrNumber ?? "",
+      ewayBill: draftHeader.ewayBill ?? invoice.ewayBill ?? "",
+      remarks: draftHeader.remarks ?? invoice.remarks ?? "",
+      clientNameSnapshot:
+        draftHeader.clientNameSnapshot ?? invoice.clientNameSnapshot ?? "",
+      citySnapshot: draftHeader.citySnapshot ?? invoice.citySnapshot ?? "",
+      stateSnapshot: draftHeader.stateSnapshot ?? invoice.stateSnapshot ?? "",
+      gstinSnapshot: draftHeader.gstinSnapshot ?? invoice.gstinSnapshot ?? "",
+      lrCopy: draftHeader.lrCopy ?? invoice.lrCopy ?? [],
+    },
+
+    items: (() => {
+      const pendingMapped = invoice.pendingItems.map((item, index) => {
+        const existing = draftItems.find((d) => d.salesOrderItemId === item.id);
+
+        const maxQty = Math.max(
+          0,
+          Math.min(Number(item.remainingQty ?? 0), Number(item.qty ?? 0)),
+        );
+
+        const rawQty = Number(existing?.qty ?? maxQty);
+        const safeQty = Math.max(0, Math.min(rawQty, maxQty));
+        const unitPrice = Number(existing?.unitPrice ?? item.unitPrice ?? 0);
+
+        return {
+          salesOrderItemId: item.id,
+          isManual: Boolean(existing?.isManual),
+          productId: existing?.productId ?? item.productId ?? null,
+          variantId: existing?.variantId ?? item.variantId ?? null,
+          selected:
+            typeof existing?.selected === "boolean"
+              ? existing.selected
+              : Boolean(existing),
+
+          title: item.title ?? "",
+          sku: item.sku ?? null,
+          typeNumber: existing?.typeNumber ?? item.typeNumber ?? null,
+          description: existing?.description ?? item.description ?? null,
+          hsnCode: existing?.hsnCode ?? item.hsnCode ?? null,
+          unit: item.unit ?? null,
+
+          orderedQty: Number(item.qty ?? 0),
+          alreadyInvoiced: Number(item.invoicedQty ?? 0),
+          alreadyDispatched: Number(item.dispatchedQty ?? 0),
+          remainingQty: Number(item.remainingQty ?? 0),
+
+          qty: safeQty,
+
+          cimfrNumber: existing?.cimfrNumber ?? null,
+          pesoNumber: existing?.pesoNumber ?? null,
+          serialNumber: existing?.serialNumber ?? null,
+
+          productPicture: existing?.productPicture ?? [],
+
+          unitPrice,
+          lineSubtotal: safeQty * unitPrice,
+          sortOrder: existing?.sortOrder ?? item.sortOrder ?? index,
+        };
+      });
+
+      const pendingIds = new Set(
+        pendingMapped.map((item) => item.salesOrderItemId),
+      );
+
+      const manualOrExtraDraftItems = draftItems
+        .filter(
+          (item) =>
+            Boolean(item.isManual) || !pendingIds.has(item.salesOrderItemId),
+        )
+        .map((item, index) =>
+          mapDraftItemToForm(item, pendingMapped.length + index),
+        );
+
+      const merged = [...pendingMapped, ...manualOrExtraDraftItems]
+        .filter((item) => Boolean(item.salesOrderItemId))
+        .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+
+      if (merged.length > 0) {
+        return merged;
+      }
+
+      if (draftItems.length > 0) {
+        return draftItems
+          .map((item, index) => mapDraftItemToForm(item, index))
+          .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+      }
+
+      return [createManualInvoiceItem(0)];
+    })(),
+    packages: draftPackages
+      .map((pkg, index) => {
+        if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) return null;
+
+        const row = pkg as {
+          packageNo?: unknown;
+          packageType?: unknown;
+          label?: unknown;
+          remarks?: unknown;
+          grossWeight?: unknown;
+          netWeight?: unknown;
+          items?: unknown;
+        };
+
+        const packageItemsRaw = Array.isArray(row.items) ? row.items : [];
+
+        const items = packageItemsRaw
+          .map((item) => {
+            if (!item || typeof item !== "object" || Array.isArray(item))
+              return null;
+
+            const packageItem = item as {
+              salesOrderItemId?: unknown;
+              invoiceItemDraftId?: unknown;
+              qty?: unknown;
+            };
+
+            const salesOrderItemIdDirect =
+              typeof packageItem.salesOrderItemId === "string"
+                ? packageItem.salesOrderItemId
+                : null;
+            const draftItemId =
+              typeof packageItem.invoiceItemDraftId === "string"
+                ? packageItem.invoiceItemDraftId
+                : null;
+
+            const salesOrderItemId =
+              salesOrderItemIdDirect ??
+              (draftItemId
+                ? (draftItemIdToSalesOrderItemId.get(draftItemId) ?? null)
+                : null);
+
+            if (!salesOrderItemId) return null;
+
+            return {
+              salesOrderItemId,
+              qty: Number(packageItem.qty ?? 0),
+            };
+          })
+          .filter(
+            (
+              item,
+            ): item is {
+              salesOrderItemId: string;
+              qty: number;
+            } => Boolean(item),
+          );
+
+        const packageNo =
+          typeof row.packageNo === "string" && row.packageNo.trim()
+            ? row.packageNo
+            : String(index + 1);
+
+        return {
+          packageNo,
+          packageType:
+            typeof row.packageType === "string" ? row.packageType : "",
+          label: typeof row.label === "string" ? row.label : "",
+          remarks: typeof row.remarks === "string" ? row.remarks : "",
+          grossWeight:
+            row.grossWeight === null || row.grossWeight === undefined
+              ? ""
+              : String(row.grossWeight),
+          netWeight:
+            row.netWeight === null || row.netWeight === undefined
+              ? ""
+              : String(row.netWeight),
+          items,
+        };
+      })
+      .filter(
+        (
+          pkg,
+        ): pkg is {
+          packageNo: string;
+          packageType: string;
+          label: string;
+          remarks: string;
+          grossWeight: string;
+          netWeight: string;
+          items: { salesOrderItemId: string; qty: number }[];
+        } => Boolean(pkg),
+      ),
+  };
+}
+
 function buildInvoiceDraftPayload(values: FormValues) {
   const selected = values.items
     .filter((item) => item.selected)
@@ -566,9 +803,17 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [isFinalizing, setIsFinalizing] = React.useState(false);
+  const [isSwitchingToOrder, setIsSwitchingToOrder] = React.useState(false);
+  const [isSwitchingToOffline, setIsSwitchingToOffline] = React.useState(false);
   const [isApplyingCustomerDefaults, setIsApplyingCustomerDefaults] =
     React.useState(false);
-  const isOfflineInvoice = !invoice.salesOrderId;
+  const [currentSalesOrderId, setCurrentSalesOrderId] = React.useState<
+    string | null
+  >(invoice.salesOrderId ?? null);
+  const [selectedSalesOrderId, setSelectedSalesOrderId] = React.useState<
+    string | null
+  >(invoice.salesOrderId ?? null);
+  const isOfflineInvoice = !currentSalesOrderId;
   const draftHeader = invoice.draftData?.header ?? {};
   const draftItems = Array.isArray(invoice.draftData?.items)
     ? invoice.draftData.items
@@ -834,6 +1079,11 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   const [unitsPerBox, setUnitsPerBox] = React.useState(4);
   const [splitIntoBoxes, setSplitIntoBoxes] = React.useState(3);
   const [splitItemId, setSplitItemId] = React.useState("");
+
+  React.useEffect(() => {
+    setCurrentSalesOrderId(invoice.salesOrderId ?? null);
+    setSelectedSalesOrderId(invoice.salesOrderId ?? null);
+  }, [invoice.salesOrderId]);
 
   React.useEffect(() => {
     if (selectedItems.length === 0) {
@@ -1291,6 +1541,65 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       setIsFinalizing(false);
     }
   }
+
+  async function attachSalesOrderToDraft() {
+    if (!selectedSalesOrderId) {
+      toast.error("Please select a sales order");
+      return;
+    }
+
+    try {
+      setIsSwitchingToOrder(true);
+
+      const res = await attachSalesOrderToInvoiceDraftAction(
+        invoice.id,
+        selectedSalesOrderId,
+      );
+
+      if (!res.ok) {
+        toast.error(res.message ?? "Failed to link sales order");
+        return;
+      }
+
+      if (res.invoice) {
+        form.reset(buildDefaultValues(res.invoice));
+        setCurrentSalesOrderId(res.invoice.salesOrderId ?? selectedSalesOrderId);
+        setSelectedSalesOrderId(res.invoice.salesOrderId ?? selectedSalesOrderId);
+      }
+
+      toast.success("Invoice converted to sales-order draft");
+      router.refresh();
+    } finally {
+      setIsSwitchingToOrder(false);
+    }
+  }
+
+  async function detachSalesOrderFromDraft() {
+    try {
+      setIsSwitchingToOffline(true);
+
+      const values = form.getValues();
+      const payload = buildInvoiceDraftPayload(values);
+      const res = await detachSalesOrderFromInvoiceDraftAction(invoice.id, payload);
+
+      if (!res.ok) {
+        toast.error(res.message ?? "Failed to convert invoice to offline");
+        return;
+      }
+
+      if (res.invoice) {
+        form.reset(buildDefaultValues(res.invoice));
+        setCurrentSalesOrderId(null);
+        setSelectedSalesOrderId(null);
+      }
+
+      toast.success("Invoice converted to offline draft");
+      router.refresh();
+    } finally {
+      setIsSwitchingToOffline(false);
+    }
+  }
+
   async function onSubmit(values: FormValues) {
     await handleSaveDraft(values);
   }
@@ -1299,12 +1608,14 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     <div className="space-y-4">
       <div className="flex flex-col w-full items-start justify-between gap-3">
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="text-xl font-semibold">Edit Invoice</div>
-            <div className="text-sm text-muted-foreground">
-              Select pending items, fill dispatch details and save draft.
+            <div className="space-y-1">
+              <div className="text-xl font-semibold">Edit Invoice</div>
+              <div className="text-sm text-muted-foreground">
+                {isOfflineInvoice
+                  ? "You can keep this as an offline invoice or attach a sales order."
+                  : "This invoice is linked to a sales order, or you can convert it back to offline."}
+              </div>
             </div>
-          </div>
 
           <div className="flex items-center gap-2">
             <Button
@@ -1333,11 +1644,77 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
               <CardHeader>
                 <CardTitle>Invoice Details</CardTitle>
                 <CardDescription>
-                  Invoice numbering, dates and dispatch details
+                  {isOfflineInvoice
+                    ? "Invoice numbering, customer details and optional sales-order attachment"
+                    : "Invoice numbering, dates, dispatch details, and linked sales-order controls"}
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4">
+                {isOfflineInvoice ? (
+                  <div className="rounded-xl border border-dashed p-4">
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                      <div className="space-y-2">
+                        <FormLabel>Convert From Sales Order</FormLabel>
+                        <SalesOrderCombobox
+                          value={selectedSalesOrderId}
+                          onChange={setSelectedSalesOrderId}
+                          disabled={isSaving || isFinalizing || isSwitchingToOrder}
+                          placeholder="Search sales order / PO number"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Select a sales order if this draft should be created from a
+                          purchase order instead of staying offline.
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={attachSalesOrderToDraft}
+                        disabled={
+                          !selectedSalesOrderId ||
+                          isSaving ||
+                          isFinalizing ||
+                          isSwitchingToOrder
+                        }>
+                        {isSwitchingToOrder
+                          ? "Switching..."
+                          : "Use Selected Sales Order"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {!isOfflineInvoice ? (
+                  <div className="rounded-xl border border-dashed p-4">
+                    <div className="flex flex-wrap items-end justify-between gap-4">
+                      <div className="space-y-1">
+                        <FormLabel>Convert To Offline Invoice</FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          This removes the sales-order link and keeps the current
+                          draft items as manual offline lines.
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={detachSalesOrderFromDraft}
+                        disabled={
+                          isSaving ||
+                          isFinalizing ||
+                          isSwitchingToOrder ||
+                          isSwitchingToOffline
+                        }>
+                        {isSwitchingToOffline
+                          ? "Switching..."
+                          : "Convert To Offline"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="grid lg:grid-cols-4 gap-4">
                   <div className="flex flex-col gap-2">
                     <FormLabel>Customer</FormLabel>

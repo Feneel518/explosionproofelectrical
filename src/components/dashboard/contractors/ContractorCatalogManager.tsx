@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,7 @@ export default function ContractorCatalogManager({
   operations: Operation[];
   rates: Rate[];
 }) {
+  const router = useRouter();
   const [pending, startTransition] = React.useTransition();
 
   const [productForm, setProductForm] = React.useState<ProductFormState>({

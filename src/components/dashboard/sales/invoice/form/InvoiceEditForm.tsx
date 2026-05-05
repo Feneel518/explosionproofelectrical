@@ -887,6 +887,12 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       dispatchThrough:
         draftHeader.dispatchThrough ?? invoice.dispatchThrough ?? "",
       lrNumber: draftHeader.lrNumber ?? invoice.lrNumber ?? "",
+      transportationPayment:
+        draftHeader.transportationPayment ??
+        invoice.transportationPayment ??
+        TransportationPayment.TO_PAY,
+      transportationAmount:
+        draftHeader.transportationAmount ?? invoice.transportationAmount ?? null,
       ewayBill: draftHeader.ewayBill ?? invoice.ewayBill ?? "",
       remarks: draftHeader.remarks ?? invoice.remarks ?? "",
       clientNameSnapshot:

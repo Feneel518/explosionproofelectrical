@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "nextjs-toploader/app";
+import { useQueryStates } from "nuqs";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +35,12 @@ import {
   buildContractorRateLabel,
   formatMonthYearLabel,
 } from "@/lib/helpers/globalHelpers/contractorLabels";
+import {
+  payoutsParsers,
+  PayoutsQP,
+  PayoutSort,
+  SortDir,
+} from "@/lib/searchParams/dashboard/contractors/payoutsSearchParams";
 
 type WorkerOption = {
   id: string;
@@ -101,8 +109,7 @@ const formatDate = (value: Date) =>
 
 export default function MonthlyPayoutsManager({
   workers,
-  monthYear,
-  workerId,
+  qp,
   selectedWorkerName,
   summary,
   historyRows,
@@ -110,8 +117,7 @@ export default function MonthlyPayoutsManager({
   payouts,
 }: {
   workers: WorkerOption[];
-  monthYear: string;
-  workerId: string;
+  qp: PayoutsQP & { monthYear: string };
   selectedWorkerName: string;
   summary: Summary | null;
   historyRows: HistoryRow[];
@@ -119,49 +125,59 @@ export default function MonthlyPayoutsManager({
   payouts: PayoutRow[];
 }) {
   const router = useRouter();
+  const [, setState] = useQueryStates(payoutsParsers, {
+    shallow: false,
+  });
   const [pending, startTransition] = React.useTransition();
-  const [selectedWorkerId, setSelectedWorkerId] = React.useState(workerId || "ALL");
-  const [selectedMonthYear, setSelectedMonthYear] = React.useState(monthYear);
+  const [selectedWorkerId, setSelectedWorkerId] = React.useState(qp.workerId || "ALL");
+  const [selectedMonthYear, setSelectedMonthYear] = React.useState(qp.monthYear);
   const [ledgerForm, setLedgerForm] = React.useState({
-    workerId: workerId || workers[0]?.id || "",
-    date: `${monthYear || new Date().toISOString().slice(0, 7)}-01`,
+    workerId: qp.workerId || workers[0]?.id || "",
+    date: `${qp.monthYear || new Date().toISOString().slice(0, 7)}-01`,
     kind: "ADVANCE",
     amount: "",
     notes: "",
   });
   const [settlementForm, setSettlementForm] = React.useState({
-    workerId: summary?.workerId ?? workerId,
-    monthYear: summary?.monthYear ?? monthYear,
+    workerId: summary?.workerId ?? qp.workerId,
+    monthYear: summary?.monthYear ?? qp.monthYear,
     applyAdvances: summary?.applyAdvances ?? true,
     amountPaid: summary ? String(summary.amountPaid) : "",
     notes: summary?.notes ?? "",
   });
 
   React.useEffect(() => {
-    setSelectedWorkerId(workerId || "ALL");
-    setSelectedMonthYear(monthYear);
+    setSelectedWorkerId(qp.workerId || "ALL");
+    setSelectedMonthYear(qp.monthYear);
     setLedgerForm({
-      workerId: workerId || workers[0]?.id || "",
-      date: `${monthYear || new Date().toISOString().slice(0, 7)}-01`,
+      workerId: qp.workerId || workers[0]?.id || "",
+      date: `${qp.monthYear || new Date().toISOString().slice(0, 7)}-01`,
       kind: "ADVANCE",
       amount: "",
       notes: "",
     });
     setSettlementForm({
-      workerId: summary?.workerId ?? workerId,
-      monthYear: summary?.monthYear ?? monthYear,
+      workerId: summary?.workerId ?? qp.workerId,
+      monthYear: summary?.monthYear ?? qp.monthYear,
       applyAdvances: summary?.applyAdvances ?? true,
       amountPaid: summary ? String(summary.amountPaid) : "",
       notes: summary?.notes ?? "",
     });
-  }, [monthYear, summary, workerId, workers]);
+  }, [qp.monthYear, qp.workerId, summary, workers]);
 
   const applyMonthFilter = () => {
-    const params = new URLSearchParams();
-    if (selectedWorkerId !== "ALL") params.set("workerId", selectedWorkerId);
-    if (selectedMonthYear) params.set("monthYear", selectedMonthYear);
-    router.push(`/dashboard/contractors/payouts?${params.toString()}`);
+    void setState({
+      workerId: selectedWorkerId === "ALL" ? "" : selectedWorkerId,
+      monthYear: selectedMonthYear,
+      page: 1,
+    });
   };
+
+  const activeFilters =
+    (qp.workerId ? 1 : 0) +
+    (qp.monthYear ? 1 : 0) +
+    (qp.sort !== "monthYear" ? 1 : 0) +
+    (qp.dir !== "desc" ? 1 : 0);
 
   const addLedgerEntry = () => {
     startTransition(async () => {
@@ -229,6 +245,49 @@ export default function MonthlyPayoutsManager({
             <Button type="button" onClick={applyMonthFilter}>
               Load Summary
             </Button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Select
+              value={`${qp.sort}:${qp.dir}`}
+              onValueChange={(value) => {
+                const [sort, dir] = value.split(":");
+                void setState({
+                  sort: sort as (typeof PayoutSort)[number],
+                  dir: dir as (typeof SortDir)[number],
+                  page: 1,
+                });
+              }}>
+              <SelectTrigger className="w-full md:w-[220px]">
+                <SelectValue placeholder="Sort payouts" />
+              </SelectTrigger>
+              <SelectContent>
+                {PayoutSort.map((sort) => (
+                  <React.Fragment key={sort}>
+                    <SelectItem value={`${sort}:asc`}>{sort} (asc)</SelectItem>
+                    <SelectItem value={`${sort}:desc`}>{sort} (desc)</SelectItem>
+                  </React.Fragment>
+                ))}
+              </SelectContent>
+            </Select>
+            {activeFilters > 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSelectedWorkerId("ALL");
+                  setSelectedMonthYear("");
+                  void setState({
+                    workerId: "",
+                    monthYear: "",
+                    sort: "monthYear",
+                    dir: "desc",
+                    page: 1,
+                  });
+                }}>
+                <X className="mr-2 h-4 w-4" />
+                Reset ({activeFilters})
+              </Button>
+            ) : null}
           </div>
         </CardContent>
       </Card>

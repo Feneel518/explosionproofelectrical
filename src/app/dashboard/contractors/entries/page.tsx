@@ -80,9 +80,7 @@ export default async function Page({
         workers={serializeForClient(
           workers.map((worker) => ({ id: worker.id, name: worker.name, code: worker.code })),
         )}
-        initialWorkerId={effectiveSp.workerId}
-        initialMonthYear={effectiveSp.monthYear}
-        initialQ={effectiveSp.q}
+        qp={effectiveSp}
       />
 
       <DailyEntriesManager

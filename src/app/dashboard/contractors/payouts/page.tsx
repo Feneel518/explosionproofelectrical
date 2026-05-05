@@ -195,8 +195,7 @@ export default async function Page({
 
       <MonthlyPayoutsManager
         workers={serializeForClient(workers)}
-        monthYear={monthYear}
-        workerId={sp.workerId}
+        qp={{ ...sp, monthYear }}
         selectedWorkerName={selectedWorkerName}
         summary={serializeForClient(summary)}
         historyRows={serializeForClient(historyRows)}

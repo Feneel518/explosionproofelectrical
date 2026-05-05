@@ -8,8 +8,6 @@ import {
 } from "@/lib/helpers/RepoHelpers/ContractorRepo";
 import {
   rateCatalogSearchParamsCache,
-  ContractorCatalogStatusOptions,
-  ContractorRoleFilterOptions,
 } from "@/lib/searchParams/dashboard/contractors/rateCatalogSearchParams";
 
 export const dynamic = "force-dynamic";
@@ -86,17 +84,11 @@ export default async function Page({
       </div>
 
       <RateCatalogFilters
-        initialQ={sp.q}
-        initialProductId={sp.productId}
-        initialOperationId={sp.operationId}
-        initialStatus={sp.status}
-        initialRole={sp.role}
+        qp={sp}
         products={serializeForClient(productRows.map((product) => ({ id: product.id, name: product.name })))}
         operations={serializeForClient(
           operationRows.map((operation) => ({ id: operation.id, name: operation.name })),
         )}
-        statuses={ContractorCatalogStatusOptions}
-        roles={ContractorRoleFilterOptions}
       />
 
       <ContractorCatalogManager

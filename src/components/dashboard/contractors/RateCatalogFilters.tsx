@@ -184,6 +184,7 @@ export default function RateCatalogFilters({
                   sort: "createdAt",
                   dir: "desc",
                   page: 1,
+                  pageSize: 25,
                 });
               }}>
               <X className="mr-2 h-4 w-4" />

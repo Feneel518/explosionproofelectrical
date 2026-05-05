@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "nextjs-toploader/app";
+import { useQueryStates } from "nuqs";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   Select,
   SelectContent,
@@ -49,6 +56,7 @@ import {
   CONTRACTOR_WORKER_ROLES,
 } from "@/lib/constants/contractors";
 import { buildContractorRateLabel } from "@/lib/helpers/globalHelpers/contractorLabels";
+import { rateCatalogParsers } from "@/lib/searchParams/dashboard/contractors/rateCatalogSearchParams";
 
 type Product = {
   id: string;
@@ -121,13 +129,27 @@ export default function ContractorCatalogManager({
   products,
   operations,
   rates,
+  totalRates,
+  page,
+  pageSize,
 }: {
   products: Product[];
   operations: Operation[];
   rates: Rate[];
+  totalRates: number;
+  page: number;
+  pageSize: number;
 }) {
   const router = useRouter();
+  const [, setState] = useQueryStates(rateCatalogParsers, {
+    shallow: false,
+  });
   const [pending, startTransition] = React.useTransition();
+  const totalPages = Math.max(1, Math.ceil(totalRates / pageSize));
+  const canPrev = page > 1;
+  const canNext = page < totalPages;
+  const startRow = totalRates === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalRates);
 
   const [productForm, setProductForm] = React.useState<ProductFormState>({
     name: "",
@@ -647,59 +669,79 @@ export default function ContractorCatalogManager({
           <CardHeader>
             <CardTitle>Contractor Products</CardTitle>
           </CardHeader>
-          <CardContent className="rounded-xl border p-2">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-white">Name</TableHead>
-                  <TableHead className="text-white">Status</TableHead>
-                  <TableHead className="text-right text-white">Rates</TableHead>
-                  <TableHead className="text-right text-white">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="font-medium">{product.name}</div>
-                      {product.description ? (
-                        <div className="text-xs text-muted-foreground">
-                          {product.description}
-                        </div>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={product.status === "ACTIVE" ? "default" : "secondary"}>
-                        {product.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{product.rateCount}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openProductEditor(product)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            toggleArchive("product", product.id, !product.deletedAt)
-                          }
-                        >
-                          {product.deletedAt ? "Restore" : "Archive"}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <CardContent className="pt-0">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="contractor-products" className="rounded-xl border px-4">
+                <AccordionTrigger className="hover:no-underline">
+                  <div className="space-y-1">
+                    <div className="text-sm font-semibold">Product List</div>
+                    <div className="text-xs text-muted-foreground">
+                      {products.length} product{products.length === 1 ? "" : "s"} in catalog
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-2">
+                  <div className="rounded-xl border p-2">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-white">Name</TableHead>
+                          <TableHead className="text-white">Status</TableHead>
+                          <TableHead className="text-right text-white">Rates</TableHead>
+                          <TableHead className="text-right text-white">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {products.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell>
+                              <div className="font-medium">{product.name}</div>
+                              {product.description ? (
+                                <div className="text-xs text-muted-foreground">
+                                  {product.description}
+                                </div>
+                              ) : null}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  product.status === "ACTIVE" ? "default" : "secondary"
+                                }
+                              >
+                                {product.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">{product.rateCount}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openProductEditor(product)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    toggleArchive("product", product.id, !product.deletedAt)
+                                  }
+                                >
+                                  {product.deletedAt ? "Restore" : "Archive"}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
         </Card>
 
@@ -707,65 +749,84 @@ export default function ContractorCatalogManager({
           <CardHeader>
             <CardTitle>Operations</CardTitle>
           </CardHeader>
-          <CardContent className="rounded-xl border p-2">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-white">Name</TableHead>
-                  <TableHead className="text-white">Status</TableHead>
-                  <TableHead className="text-right text-white">Rates</TableHead>
-                  <TableHead className="text-right text-white">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {operations.map((operation) => (
-                  <TableRow key={operation.id}>
-                    <TableCell>
-                      <div className="font-medium">{operation.name}</div>
-                      {operation.description ? (
-                        <div className="text-xs text-muted-foreground">
-                          {operation.description}
-                        </div>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={operation.status === "ACTIVE" ? "default" : "secondary"}
-                      >
-                        {operation.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{operation.rateCount}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openOperationEditor(operation)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            toggleArchive(
-                              "operation",
-                              operation.id,
-                              !operation.deletedAt,
-                            )
-                          }
-                        >
-                          {operation.deletedAt ? "Restore" : "Archive"}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <CardContent className="pt-0">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="operations" className="rounded-xl border px-4">
+                <AccordionTrigger className="hover:no-underline">
+                  <div className="space-y-1">
+                    <div className="text-sm font-semibold">Operation List</div>
+                    <div className="text-xs text-muted-foreground">
+                      {operations.length} operation{operations.length === 1 ? "" : "s"} in
+                      catalog
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-2">
+                  <div className="rounded-xl border p-2">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-white">Name</TableHead>
+                          <TableHead className="text-white">Status</TableHead>
+                          <TableHead className="text-right text-white">Rates</TableHead>
+                          <TableHead className="text-right text-white">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {operations.map((operation) => (
+                          <TableRow key={operation.id}>
+                            <TableCell>
+                              <div className="font-medium">{operation.name}</div>
+                              {operation.description ? (
+                                <div className="text-xs text-muted-foreground">
+                                  {operation.description}
+                                </div>
+                              ) : null}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  operation.status === "ACTIVE" ? "default" : "secondary"
+                                }
+                              >
+                                {operation.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">{operation.rateCount}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openOperationEditor(operation)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    toggleArchive(
+                                      "operation",
+                                      operation.id,
+                                      !operation.deletedAt,
+                                    )
+                                  }
+                                >
+                                  {operation.deletedAt ? "Restore" : "Archive"}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
         </Card>
       </div>
@@ -774,73 +835,115 @@ export default function ContractorCatalogManager({
         <CardHeader>
           <CardTitle>Rate Rows</CardTitle>
         </CardHeader>
-        <CardContent className="rounded-xl border p-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-white">Work Row</TableHead>
-                <TableHead className="text-white">Role</TableHead>
-                <TableHead className="text-white">Unit</TableHead>
-                <TableHead className="text-right text-white">Rate</TableHead>
-                <TableHead className="text-white">Status</TableHead>
-                <TableHead className="text-right text-white">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rates.length === 0 ? (
+        <CardContent className="space-y-3">
+          <div className="rounded-xl border p-2">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    No rate rows found for the current filters.
-                  </TableCell>
+                  <TableHead className="text-white">Work Row</TableHead>
+                  <TableHead className="text-white">Role</TableHead>
+                  <TableHead className="text-white">Unit</TableHead>
+                  <TableHead className="text-right text-white">Rate</TableHead>
+                  <TableHead className="text-white">Status</TableHead>
+                  <TableHead className="text-right text-white">Actions</TableHead>
                 </TableRow>
-              ) : (
-                rates.map((rate) => (
-                  <TableRow key={rate.id}>
-                    <TableCell>
-                      <div className="font-medium">
-                        {buildContractorRateLabel({
-                          productName: rate.contractorProduct.name,
-                          operationName: rate.contractorOperation.name,
-                          sideLabel: rate.sideLabel,
-                        })}
-                      </div>
-                      {rate.notes ? (
-                        <div className="text-xs text-muted-foreground">{rate.notes}</div>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>{rate.role ?? "ALL"}</TableCell>
-                    <TableCell>{rate.unit}</TableCell>
-                    <TableCell className="text-right">{money(rate.defaultRate)}</TableCell>
-                    <TableCell>
-                      <Badge variant={rate.status === "ACTIVE" ? "default" : "secondary"}>
-                        {rate.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openRateEditor(rate)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleArchive("rate", rate.id, !rate.deletedAt)}
-                        >
-                          {rate.deletedAt ? "Restore" : "Archive"}
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {rates.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                      No rate rows found for the current filters.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  rates.map((rate) => (
+                    <TableRow key={rate.id}>
+                      <TableCell>
+                        <div className="font-medium">
+                          {buildContractorRateLabel({
+                            productName: rate.contractorProduct.name,
+                            operationName: rate.contractorOperation.name,
+                            sideLabel: rate.sideLabel,
+                          })}
+                        </div>
+                        {rate.notes ? (
+                          <div className="text-xs text-muted-foreground">{rate.notes}</div>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>{rate.role ?? "ALL"}</TableCell>
+                      <TableCell>{rate.unit}</TableCell>
+                      <TableCell className="text-right">{money(rate.defaultRate)}</TableCell>
+                      <TableCell>
+                        <Badge variant={rate.status === "ACTIVE" ? "default" : "secondary"}>
+                          {rate.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openRateEditor(rate)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleArchive("rate", rate.id, !rate.deletedAt)}
+                          >
+                            {rate.deletedAt ? "Restore" : "Archive"}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm text-muted-foreground">
+              Showing {startRow} to {endRow} of {totalRates} rate rows
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={String(pageSize)}
+                onValueChange={(value) =>
+                  void setState({ pageSize: Number(value), page: 1 })
+                }>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Page size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="25">25 / page</SelectItem>
+                  <SelectItem value="50">50 / page</SelectItem>
+                  <SelectItem value="100">100 / page</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!canPrev}
+                onClick={() => void setState({ page: page - 1 })}
+              >
+                Previous
+              </Button>
+              <div className="min-w-[90px] text-center text-sm">
+                Page {page} of {totalPages}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!canNext}
+                onClick={() => void setState({ page: page + 1 })}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

@@ -19,8 +19,9 @@ export default async function Page({
 }) {
   const raw = await searchParams;
   const sp = rateCatalogSearchParamsCache.parse(raw);
+  const pageSize = Math.min(100, Math.max(10, sp.pageSize));
 
-  const [products, operations, rates] = await Promise.all([
+  const [products, operations, rates, totalRates] = await Promise.all([
     prisma.contractorProduct.findMany({
       orderBy: { name: "asc" },
       select: {
@@ -46,8 +47,8 @@ export default async function Page({
     prisma.contractorRate.findMany({
       where: buildRateWhere(sp),
       orderBy: buildRateOrderBy(sp),
-      take: Math.min(100, Math.max(10, sp.pageSize)),
-      skip: (sp.page - 1) * Math.min(100, Math.max(10, sp.pageSize)),
+      take: pageSize,
+      skip: (sp.page - 1) * pageSize,
       select: {
         id: true,
         sideLabel: true,
@@ -62,6 +63,9 @@ export default async function Page({
         contractorProduct: { select: { name: true } },
         contractorOperation: { select: { name: true } },
       },
+    }),
+    prisma.contractorRate.count({
+      where: buildRateWhere(sp),
     }),
   ]);
 
@@ -95,6 +99,9 @@ export default async function Page({
         products={serializeForClient(productRows)}
         operations={serializeForClient(operationRows)}
         rates={serializeForClient(rates)}
+        totalRates={totalRates}
+        page={sp.page}
+        pageSize={pageSize}
       />
     </div>
   );

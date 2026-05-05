@@ -328,6 +328,13 @@ export const finalizeInvoiceAction = async (id: string) => {
           dispatchThrough: draft.header.dispatchThrough ?? null,
           lrNumber: draft.header.lrNumber ?? null,
           ewayBill: draft.header.ewayBill ?? null,
+          transportationPayment:
+            draft.header.transportationPayment === "PAID" ? "PAID" : "TO_PAY",
+          transportationAmount:
+            draft.header.transportationAmount !== null &&
+            draft.header.transportationAmount !== undefined
+              ? toNumber(draft.header.transportationAmount, 0)
+              : null,
           remarks: draft.header.remarks ?? null,
 
           subtotal: toNumber(draft.header.subtotal, 0),

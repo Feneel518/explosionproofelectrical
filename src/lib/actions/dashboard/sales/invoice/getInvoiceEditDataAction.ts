@@ -60,6 +60,8 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
         driverPhone: true,
         dispatchThrough: true,
         lrNumber: true,
+        transportationPayment: true,
+        transportationAmount: true,
         remarks: true,
         ewayBill: true,
         salesOrderId: true,
@@ -150,6 +152,11 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
         grandTotal: Number(invoice.grandTotal ?? 0),
+        transportationAmount:
+          invoice.transportationAmount === null ||
+          invoice.transportationAmount === undefined
+            ? null
+            : Number(invoice.transportationAmount),
         lrCopy,
         draftData,
         pendingItems,

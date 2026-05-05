@@ -114,6 +114,12 @@ export async function detachSalesOrderFromInvoiceDraftAction(
             dispatchThrough: offlinePayload.header.dispatchThrough || null,
             lrNumber: offlinePayload.header.lrNumber || null,
             ewayBill: offlinePayload.header.ewayBill || null,
+            transportationPayment:
+              offlinePayload.header.transportationPayment === "PAID"
+                ? "PAID"
+                : "TO_PAY",
+            transportationAmount:
+              offlinePayload.header.transportationAmount ?? null,
             remarks: offlinePayload.header.remarks || null,
             subtotal: offlinePayload.header.subtotal,
             taxableTotal: offlinePayload.header.taxableTotal,

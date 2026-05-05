@@ -71,6 +71,8 @@ type DraftHeader = {
   dispatchThrough?: string | null;
   lrNumber?: string | null;
   ewayBill?: string | null;
+  transportationPayment?: "PAID" | "TO_PAY";
+  transportationAmount?: number | null;
   remarks?: string | null;
   lrCopy?: DraftMedia[];
   discountType?: "PERCENTAGE" | "AMOUNT";
@@ -86,6 +88,13 @@ function normalizeIdOrNull(value?: string | null) {
   if (!value) return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
+}
+
+function normalizeTransportationAmount(value?: number | null) {
+  if (value === null || value === undefined) return null;
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return Number(amount.toFixed(2));
 }
 
 export type UpdateInvoiceDraftPayload = {
@@ -165,6 +174,13 @@ export async function updateInvoiceDraftAction(
             dispatchThrough: payload.header.dispatchThrough || null,
             lrNumber: payload.header.lrNumber || null,
             ewayBill: payload.header.ewayBill || null,
+            transportationPayment:
+              payload.header.transportationPayment === "PAID"
+                ? "PAID"
+                : "TO_PAY",
+            transportationAmount: normalizeTransportationAmount(
+              payload.header.transportationAmount,
+            ),
             remarks: payload.header.remarks || null,
 
             subtotal: payload.header.subtotal,

@@ -31,6 +31,7 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             citySnapshot: true,
             stateSnapshot: true,
             gstinSnapshot: true,
+            transportationPayment: true,
             items: {
               orderBy: { sortOrder: "asc" },
               select: {
@@ -157,6 +158,8 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             driverPhone: null,
             dispatchThrough: null,
             lrNumber: null,
+            transportationPayment: order.transportationPayment ?? "TO_PAY",
+            transportationAmount: null,
             remarks: null,
             subtotal,
             discountTotal: 0,
@@ -185,6 +188,8 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             citySnapshot: order.citySnapshot ?? null,
             stateSnapshot: order.stateSnapshot ?? null,
             gstinSnapshot: order.gstinSnapshot ?? null,
+            transportationPayment: order.transportationPayment ?? "TO_PAY",
+            transportationAmount: null,
 
             subtotal,
             discountTotal: 0,

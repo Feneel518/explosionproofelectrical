@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { MonthPicker } from "@/components/ui/month-picker";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,9 @@ const InvoiceToolbar: FC<InvoiceToolbarProps> = ({ qp }) => {
   const [state, setState] = useQueryStates(invoiceParsers, {
     shallow: false,
   });
+  const [exportMonth, setExportMonth] = React.useState(
+    new Date().toISOString().slice(0, 7),
+  );
 
   const defaultYear = getFinancialYearStartYear();
   const defaultFy = getFinancialYearLabelFromStartYear(defaultYear);
@@ -262,7 +266,24 @@ const InvoiceToolbar: FC<InvoiceToolbarProps> = ({ qp }) => {
         </Button>
       </div>
 
-      <div className="flex gap-2"></div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="w-full max-w-xs">
+          <h3>Export Month</h3>
+          <MonthPicker
+            value={exportMonth}
+            onChange={(value) =>
+              setExportMonth(value ?? new Date().toISOString().slice(0, 7))
+            }
+            placeholder="Select month"
+          />
+        </div>
+
+        <Button asChild variant="outline">
+          <Link href={`/dashboard/reports/lr-workbook?month=${exportMonth}`}>
+            Export LR Workbook
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 };

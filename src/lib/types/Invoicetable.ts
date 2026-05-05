@@ -1,4 +1,9 @@
-import { Prisma, ProductMedia, ProductMediaKind } from "@prisma/client";
+import {
+  Prisma,
+  ProductMedia,
+  ProductMediaKind,
+  TransportationPayment,
+} from "@prisma/client";
 
 export const invoiceListSelect = {
   id: true,
@@ -32,6 +37,8 @@ export const invoiceListSelect = {
   gstinSnapshot: true,
   poNumber: true,
   poDate: true,
+  transportationPayment: true,
+  transportationAmount: true,
 
   subtotal: true,
   taxableTotal: true,
@@ -166,6 +173,8 @@ export type InvoiceDraftData = {
     dispatchThrough?: string | null;
     lrNumber?: string | null;
     ewayBill?: string | null;
+    transportationPayment?: TransportationPayment | null;
+    transportationAmount?: number | null;
     remarks?: string | null;
     lrCopy?: {
       kind: ProductMediaKind;
@@ -249,6 +258,8 @@ export type InvoiceFormCreationValues = {
     dispatchDate: Date | null;
 
     transporterName: string;
+    transportationPayment: TransportationPayment;
+    transportationAmount: number | null;
     vehicleNumber: string;
     driverName: string;
     driverPhone: string;

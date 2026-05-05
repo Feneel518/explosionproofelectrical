@@ -3,7 +3,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
-import { ProductMediaKind } from "@prisma/client";
+import { ProductMediaKind, TransportationPayment } from "@prisma/client";
 import {
   useFieldArray,
   useForm,
@@ -48,6 +48,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CustomerCombobox } from "@/components/dashboard/global/CustomerCombobox";
 import { ProductVariantCombobox } from "@/components/dashboard/global/ProductVariantCombobox";
 import { SalesOrderCombobox } from "@/components/dashboard/global/SalesOrderCombobox";
@@ -98,6 +105,8 @@ type InvoiceEditData = {
   driverPhone: string | null;
   dispatchThrough: string | null;
   lrNumber: string | null;
+  transportationPayment: TransportationPayment;
+  transportationAmount: number | null;
   remarks: string | null;
   ewayBill: string | null;
   salesOrderId: string | null;
@@ -122,6 +131,8 @@ type InvoiceEditData = {
       driverPhone?: string | null;
       dispatchThrough?: string | null;
       lrNumber?: string | null;
+      transportationPayment?: TransportationPayment | null;
+      transportationAmount?: number | null;
       ewayBill?: string | null;
       remarks?: string | null;
       lrCopy?: MediaItem[];
@@ -229,6 +240,8 @@ const formSchema = z
       driverPhone: z.string().optional(),
       dispatchThrough: z.string().optional(),
       lrNumber: z.string().optional(),
+      transportationPayment: z.nativeEnum(TransportationPayment),
+      transportationAmount: z.coerce.number().min(0).nullable(),
       ewayBill: z.string().optional(),
       remarks: z.string().optional(),
       clientNameSnapshot: z.string().optional(),
@@ -499,6 +512,12 @@ function buildDefaultValues(invoice: InvoiceEditData): FormValues {
       dispatchThrough:
         draftHeader.dispatchThrough ?? invoice.dispatchThrough ?? "",
       lrNumber: draftHeader.lrNumber ?? invoice.lrNumber ?? "",
+      transportationPayment:
+        draftHeader.transportationPayment ??
+        invoice.transportationPayment ??
+        TransportationPayment.TO_PAY,
+      transportationAmount:
+        draftHeader.transportationAmount ?? invoice.transportationAmount ?? null,
       ewayBill: draftHeader.ewayBill ?? invoice.ewayBill ?? "",
       remarks: draftHeader.remarks ?? invoice.remarks ?? "",
       clientNameSnapshot:
@@ -2006,6 +2025,63 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                             {...field}
                             value={field.value ?? ""}
                             placeholder="LR number"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.transportationPayment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>LR Payment</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) =>
+                            field.onChange(value as TransportationPayment)
+                          }>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select LR payment" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={TransportationPayment.PAID}>
+                              Paid
+                            </SelectItem>
+                            <SelectItem value={TransportationPayment.TO_PAY}>
+                              To Pay
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.transportationAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>LR Amount</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={field.value ?? ""}
+                            onChange={(event) =>
+                              field.onChange(
+                                event.target.value === ""
+                                  ? null
+                                  : Number(event.target.value),
+                              )
+                            }
+                            placeholder="0.00"
                           />
                         </FormControl>
                         <FormMessage />

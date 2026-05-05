@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
-import { Prisma } from "@prisma/client";
+import { Prisma, TransportationPayment } from "@prisma/client";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 type ProductMediaKind = string;
@@ -28,6 +28,8 @@ export type InvoiceDraftData = {
     lrNumber?: string | null;
     remarks?: string | null;
     ewayBill?: string | null;
+    transportationPayment?: TransportationPayment | null;
+    transportationAmount?: number | null;
     lrCopy?: MediaItem[];
   };
   items?: Array<{
@@ -105,6 +107,8 @@ export async function getInvoiceByIdAction(invoiceId: string) {
         lrNumber: true,
         remarks: true,
         ewayBill: true,
+        transportationPayment: true,
+        transportationAmount: true,
 
         subtotal: true,
         gstTotal: true,
@@ -342,6 +346,11 @@ export async function getInvoiceByIdAction(invoiceId: string) {
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
         grandTotal: Number(invoice.grandTotal ?? 0),
+        transportationAmount:
+          invoice.transportationAmount === null ||
+          invoice.transportationAmount === undefined
+            ? null
+            : Number(invoice.transportationAmount),
         lrCopy,
         items,
         packages,

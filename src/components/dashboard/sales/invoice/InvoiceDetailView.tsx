@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ProductMediaKind } from "@prisma/client";
+import { ProductMediaKind, TransportationPayment } from "@prisma/client";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
@@ -71,6 +71,10 @@ function getPackingRows(packing: unknown): Array<{
     quantity?: number | null;
     notes?: string | null;
   }>;
+}
+
+function transportationLabel(value?: TransportationPayment | string | null) {
+  return value === TransportationPayment.PAID ? "Paid" : "To Pay";
 }
 
 export default function InvoiceDetailView({ invoice }: Props) {
@@ -408,6 +412,23 @@ export default function InvoiceDetailView({ invoice }: Props) {
           <div>
             <div className="text-xs text-muted-foreground">LR Number</div>
             <div className="font-medium">{invoice.lrNumber || "-"}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">LR Payment</div>
+            <div className="font-medium">
+              {transportationLabel(invoice.transportationPayment)}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">LR Amount</div>
+            <div className="font-medium">
+              {invoice.transportationAmount !== null &&
+              invoice.transportationAmount !== undefined
+                ? fmtMoney(invoice.transportationAmount)
+                : "-"}
+            </div>
           </div>
 
           <div>

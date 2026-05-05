@@ -1,5 +1,6 @@
 "use client";
 
+import { TransportationPayment } from "@prisma/client";
 import {
   invoiceParsers,
   InvoiceQP,
@@ -83,6 +84,10 @@ function paymentBadgeVariant({
   if (isOverdue) return "destructive";
   if (isDueToday) return "outline";
   return "secondary";
+}
+
+function transportationLabel(value?: TransportationPayment | string | null) {
+  return value === TransportationPayment.PAID ? "Paid" : "To Pay";
 }
 
 const InvoiceTable: FC<InvoiceTableProps> = ({
@@ -200,6 +205,18 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                     <div className="text-xs text-muted-foreground">Payment</div>
                     <div>{paymentState.statusText}</div>
                   </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">
+                      LR Payment
+                    </div>
+                    <div>
+                      {transportationLabel(inv.transportationPayment)}
+                      {inv.transportationAmount !== null &&
+                      inv.transportationAmount !== undefined
+                        ? ` • ${formatCurrency(inv.transportationAmount)}`
+                        : ""}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
@@ -267,6 +284,13 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                       </Link>
                       <div className="text-xs text-muted-foreground">
                         {formatDate(inv.invoiceDate || inv.createdAt)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        LR: {transportationLabel(inv.transportationPayment)}
+                        {inv.transportationAmount !== null &&
+                        inv.transportationAmount !== undefined
+                          ? ` • ${formatCurrency(inv.transportationAmount)}`
+                          : ""}
                       </div>
                     </TableCell>
 

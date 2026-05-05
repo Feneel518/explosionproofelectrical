@@ -34,6 +34,8 @@ export async function attachSalesOrderToInvoiceDraftAction(
             lrNumber: true,
             remarks: true,
             ewayBill: true,
+            transportationPayment: true,
+            transportationAmount: true,
             customerId: true,
             draftVersion: true,
             draftData: true,
@@ -78,6 +80,7 @@ export async function attachSalesOrderToInvoiceDraftAction(
             citySnapshot: true,
             stateSnapshot: true,
             gstinSnapshot: true,
+            transportationPayment: true,
             items: {
               orderBy: { sortOrder: "asc" },
               select: {
@@ -202,6 +205,17 @@ export async function attachSalesOrderToInvoiceDraftAction(
             lrNumber: draftData.header?.lrNumber ?? invoice.lrNumber ?? null,
             remarks: draftData.header?.remarks ?? invoice.remarks ?? null,
             ewayBill: draftData.header?.ewayBill ?? invoice.ewayBill ?? null,
+            transportationPayment:
+              draftData.header?.transportationPayment ??
+              invoice.transportationPayment ??
+              order.transportationPayment ??
+              "TO_PAY",
+            transportationAmount:
+              draftData.header?.transportationAmount ??
+              (invoice.transportationAmount !== null &&
+              invoice.transportationAmount !== undefined
+                ? Number(invoice.transportationAmount)
+                : null),
             lrCopy:
               draftData.header?.lrCopy ??
               invoice.lrCopy.map((item) => ({
@@ -231,6 +245,12 @@ export async function attachSalesOrderToInvoiceDraftAction(
             citySnapshot: order.citySnapshot ?? null,
             stateSnapshot: order.stateSnapshot ?? null,
             gstinSnapshot: order.gstinSnapshot ?? null,
+            transportationPayment:
+              nextDraftData.header.transportationPayment === "PAID"
+                ? "PAID"
+                : "TO_PAY",
+            transportationAmount:
+              nextDraftData.header.transportationAmount ?? null,
             subtotal,
             discountTotal: 0,
             taxableTotal: subtotal,

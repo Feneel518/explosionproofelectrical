@@ -169,6 +169,28 @@ model User {
   salesOrderUpdatedBy        SalesOrder[]        @relation("SalesOrderUpdatedBy")
   salesOrderDeletedBy        SalesOrder[]        @relation("SalesOrderDeletedBy")
 
+  // Contractor work tracker audit relations
+  workersCreatedBy           Worker[]            @relation("WorkerCreatedBy")
+  workersUpdatedBy           Worker[]            @relation("WorkerUpdatedBy")
+  workersDeletedBy           Worker[]            @relation("WorkerDeletedBy")
+  contractorProductsCreatedBy  ContractorProduct[]   @relation("ContractorProductCreatedBy")
+  contractorProductsUpdatedBy  ContractorProduct[]   @relation("ContractorProductUpdatedBy")
+  contractorProductsDeletedBy  ContractorProduct[]   @relation("ContractorProductDeletedBy")
+  contractorOperationsCreatedBy ContractorOperation[] @relation("ContractorOperationCreatedBy")
+  contractorOperationsUpdatedBy ContractorOperation[] @relation("ContractorOperationUpdatedBy")
+  contractorOperationsDeletedBy ContractorOperation[] @relation("ContractorOperationDeletedBy")
+  contractorRatesCreatedBy     ContractorRate[]      @relation("ContractorRateCreatedBy")
+  contractorRatesUpdatedBy     ContractorRate[]      @relation("ContractorRateUpdatedBy")
+  contractorRatesDeletedBy     ContractorRate[]      @relation("ContractorRateDeletedBy")
+  workEntriesCreatedBy       WorkEntry[]         @relation("WorkEntryCreatedBy")
+  workEntriesUpdatedBy       WorkEntry[]         @relation("WorkEntryUpdatedBy")
+  workEntriesDeletedBy       WorkEntry[]         @relation("WorkEntryDeletedBy")
+  workerLedgerCreatedBy      WorkerLedgerEntry[] @relation("WorkerLedgerCreatedBy")
+  workerLedgerUpdatedBy      WorkerLedgerEntry[] @relation("WorkerLedgerUpdatedBy")
+  workerLedgerDeletedBy      WorkerLedgerEntry[] @relation("WorkerLedgerDeletedBy")
+  workerPayoutsCreatedBy     WorkerPayout[]      @relation("WorkerPayoutCreatedBy")
+  workerPayoutsUpdatedBy     WorkerPayout[]      @relation("WorkerPayoutUpdatedBy")
+
   @@map("users")
 }
 
@@ -1250,6 +1272,8 @@ model Invoice {
   lrNumber        String?
   remarks         String?
   ewayBill        String?
+  transportationPayment TransportationPayment @default(TO_PAY)
+  transportationAmount  Decimal?              @db.Decimal(12, 2)
 
   totalPackages Int            @default(0)
   lrCopy        ProductMedia[]
@@ -1992,4 +2016,280 @@ model InventorySetting {
   lowStockThreshold  Int     @default(0)
 
   @@map("inventory_settings")
+}
+
+// =====================
+// Contractor Work Tracker
+// =====================
+
+enum WorkerRole {
+  TURNER
+  ASSEMBLY
+  POLISHING
+  PAINTING
+  HELPER
+  OTHER
+}
+
+enum WorkerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ContractorCatalogStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum WorkerLedgerKind {
+  ADVANCE
+  DEDUCTION
+  BONUS
+  PAYOUT
+  ADJUSTMENT
+}
+
+model Worker {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  code     String       @unique
+  name     String
+  role     WorkerRole   @default(TURNER)
+  phone    String?
+  email    String?
+  address  String?
+  joinedAt DateTime?
+  notes    String?
+  status   WorkerStatus @default(ACTIVE)
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("WorkerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("WorkerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  workEntries   WorkEntry[]
+  ledgerEntries WorkerLedgerEntry[]
+  payouts       WorkerPayout[]
+
+  @@index([name])
+  @@index([code])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("workers")
+}
+
+model ContractorProduct {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String                 @unique
+  description String?
+  status      ContractorCatalogStatus @default(ACTIVE)
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ContractorProductDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("ContractorProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("ContractorProductUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  rates ContractorRate[]
+
+  @@index([name])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contractor_products")
+}
+
+model ContractorOperation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String                 @unique
+  description String?
+  status      ContractorCatalogStatus @default(ACTIVE)
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ContractorOperationDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("ContractorOperationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("ContractorOperationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  rates ContractorRate[]
+
+  @@index([name])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contractor_operations")
+}
+
+model ContractorRate {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contractorProductId String
+  contractorProduct   ContractorProduct @relation(fields: [contractorProductId], references: [id], onDelete: Restrict)
+
+  contractorOperationId String
+  contractorOperation   ContractorOperation @relation(fields: [contractorOperationId], references: [id], onDelete: Restrict)
+
+  sideLabel String?
+  unit      String  @default("Nos")
+  defaultRate Decimal @default(0) @db.Decimal(10, 2)
+  role      WorkerRole?
+  status    ContractorCatalogStatus @default(ACTIVE)
+  notes     String?
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ContractorRateDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("ContractorRateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("ContractorRateUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  workEntries WorkEntry[]
+
+  @@unique([contractorProductId, contractorOperationId, sideLabel])
+  @@index([contractorProductId])
+  @@index([contractorOperationId])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contractor_rates")
+}
+
+model WorkEntry {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  date DateTime
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+
+  contractorRateId String?
+  contractorRate   ContractorRate? @relation(fields: [contractorRateId], references: [id], onDelete: SetNull)
+
+  productNameSnapshot   String
+  operationNameSnapshot String
+  sideLabelSnapshot     String?
+  unitSnapshot          String? @default("Nos")
+
+  qty    Int
+  rate   Decimal @db.Decimal(10, 2)
+  amount Decimal @db.Decimal(12, 2)
+
+  notes String?
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("WorkEntryDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("WorkEntryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkEntryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([workerId, date])
+  @@index([contractorRateId])
+  @@index([deletedAt])
+  @@map("work_entries")
+}
+
+model WorkerLedgerEntry {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+
+  date   DateTime
+  kind   WorkerLedgerKind
+  amount Decimal          @db.Decimal(12, 2)
+  notes  String?
+
+  payoutId String?
+  payout   WorkerPayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("WorkerLedgerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("WorkerLedgerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkerLedgerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([workerId, date])
+  @@index([kind])
+  @@index([payoutId])
+  @@index([deletedAt])
+  @@map("worker_ledger_entries")
+}
+
+model WorkerPayout {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+
+  monthYear String // "YYYY-MM"
+
+  earningsTotal   Decimal @default(0) @db.Decimal(14, 2)
+  advancesTotal   Decimal @default(0) @db.Decimal(14, 2)
+  deductionsTotal Decimal @default(0) @db.Decimal(14, 2)
+  bonusTotal      Decimal @default(0) @db.Decimal(14, 2)
+  netPayable      Decimal @default(0) @db.Decimal(14, 2)
+  amountPaid      Decimal @default(0) @db.Decimal(14, 2)
+  carryForward    Decimal @default(0) @db.Decimal(14, 2)
+
+  applyAdvances Boolean   @default(true)
+  paidAt        DateTime?
+  notes         String?
+
+  ledgerEntries WorkerLedgerEntry[]
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("WorkerPayoutCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkerPayoutUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([workerId, monthYear])
+  @@index([monthYear])
+  @@index([workerId])
+  @@map("worker_payouts")
 }

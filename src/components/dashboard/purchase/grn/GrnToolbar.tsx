@@ -1,5 +1,6 @@
 "use client";
 
+import { MonthPicker } from "@/components/ui/month-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,6 +33,9 @@ const FY_YEARS = Array.from(
 
 export default function GrnToolbar({ qp }: { qp: GrnQP }) {
   const [state, setState] = useQueryStates(grnParsers, { shallow: false });
+  const [exportMonth, setExportMonth] = React.useState(
+    new Date().toISOString().slice(0, 7),
+  );
 
   const defaultYear = getFinancialYearStartYear();
   const defaultFy = getFinancialYearLabelFromStartYear(defaultYear);
@@ -53,7 +57,7 @@ export default function GrnToolbar({ qp }: { qp: GrnQP }) {
     (qp.q ? 1 : 0) + (qp.status !== "ALL" ? 1 : 0) + (qp.fy !== defaultFy ? 1 : 0);
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
       <div className="col-span-2">
         <h3>Search</h3>
         <Input
@@ -128,6 +132,15 @@ export default function GrnToolbar({ qp }: { qp: GrnQP }) {
         </Select>
       </div>
 
+      <div>
+        <h3>Export Month</h3>
+        <MonthPicker
+          value={exportMonth}
+          onChange={(value) => setExportMonth(value ?? new Date().toISOString().slice(0, 7))}
+          placeholder="Select month"
+        />
+      </div>
+
       {activeFilters > 0 ? (
         <Button
           variant="outline"
@@ -148,6 +161,15 @@ export default function GrnToolbar({ qp }: { qp: GrnQP }) {
         </Button>
       ) : null}
 
+      <Button
+        asChild
+        variant="outline"
+        className="col-span-2 lg:col-span-1">
+        <Link href={`/dashboard/reports/lr-workbook?month=${exportMonth}`}>
+          Export LR Workbook
+        </Link>
+      </Button>
+
       <Button asChild className="col-span-2 lg:col-span-1">
         <Link href="/dashboard/purchase/grn/new">
           <Plus className="mr-2 h-4 w-4" />
@@ -157,4 +179,3 @@ export default function GrnToolbar({ qp }: { qp: GrnQP }) {
     </div>
   );
 }
-

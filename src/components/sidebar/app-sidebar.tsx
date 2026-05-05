@@ -129,6 +129,29 @@ const data = {
       ],
     },
     {
+      title: "Contractors",
+      url: "#",
+      icon: AudioWaveform,
+      items: [
+        {
+          title: "Workers",
+          url: "/dashboard/contractors/workers",
+        },
+        {
+          title: "Rate Catalog",
+          url: "/dashboard/contractors/rate-catalog",
+        },
+        {
+          title: "Daily Entries",
+          url: "/dashboard/contractors/entries",
+        },
+        {
+          title: "Monthly Payouts",
+          url: "/dashboard/contractors/payouts",
+        },
+      ],
+    },
+    {
       title: "Inventory",
       url: "#",
       icon: Command,

@@ -17,6 +17,8 @@ import { FC } from "react";
 import { ArrowLeft, FileText, Pencil, ReceiptText, Truck } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
+import { cancelSalesOrderAction } from "@/lib/actions/dashboard/sales/order/cancelSalesOrderAction";
+import { completeSalesOrderAction } from "@/lib/actions/dashboard/sales/order/completeSalesOrderAction";
 import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/order/reopenSalesOrderAsDraftAction";
 import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
@@ -81,6 +83,12 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
     "-";
 
   const canEdit = order.status === "DRAFT" || order.status === "CONFIRMED";
+  const canMarkCompleted =
+    order.status !== "DRAFT" &&
+    order.status !== "COMPLETED" &&
+    order.status !== "CANCELLED";
+  const canCancel =
+    order.status !== "COMPLETED" && order.status !== "CANCELLED";
 
   return (
     <div className="space-y-6">
@@ -118,7 +126,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
           {canEdit ? (
             <Button
               onClick={async () => {
-                if (status === "DRAFT") {
+                if (order.status === "DRAFT") {
                   router.push(`/dashboard/sales/orders/${order.id}/edit`);
                   return;
                 }
@@ -136,6 +144,52 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
               className={buttonVariants({ variant: "outline" })}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
+            </Button>
+          ) : null}
+
+          {canMarkCompleted ? (
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!window.confirm("Mark this order as completed?")) return;
+
+                const res = await completeSalesOrderAction(order.id);
+
+                if (!res.ok) {
+                  toast.error(res.message);
+                  return;
+                }
+
+                toast.success(res.message);
+                router.refresh();
+              }}>
+              Complete Order
+            </Button>
+          ) : null}
+
+          {canCancel ? (
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (
+                  !window.confirm(
+                    "Cancel this order? Orders with dispatch or invoice activity cannot be cancelled.",
+                  )
+                ) {
+                  return;
+                }
+
+                const res = await cancelSalesOrderAction(order.id);
+
+                if (!res.ok) {
+                  toast.error(res.message);
+                  return;
+                }
+
+                toast.success(res.message);
+                router.refresh();
+              }}>
+              Cancel Order
             </Button>
           ) : null}
 

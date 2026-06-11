@@ -7,6 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cancelSalesOrderAction } from "@/lib/actions/dashboard/sales/order/cancelSalesOrderAction";
+import { completeSalesOrderAction } from "@/lib/actions/dashboard/sales/order/completeSalesOrderAction";
 import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/order/reopenSalesOrderAsDraftAction";
 import { SalesOrderStatus } from "@prisma/client";
 import { MoreHorizontal } from "lucide-react";
@@ -23,6 +25,14 @@ interface OrderActionProps {
 
 const OrderAction: FC<OrderActionProps> = ({ id, deletedAt, status }) => {
   const router = useRouter();
+  const canMarkCompleted =
+    !deletedAt &&
+    status !== "DRAFT" &&
+    status !== "COMPLETED" &&
+    status !== "CANCELLED";
+  const canCancel =
+    !deletedAt && status !== "COMPLETED" && status !== "CANCELLED";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -56,6 +66,51 @@ const OrderAction: FC<OrderActionProps> = ({ id, deletedAt, status }) => {
               router.refresh();
             }}>
             Edit
+          </DropdownMenuItem>
+        ) : null}
+
+        {canMarkCompleted ? (
+          <DropdownMenuItem
+            onClick={async () => {
+              if (!window.confirm("Mark this order as completed?")) return;
+
+              const res = await completeSalesOrderAction(id);
+
+              if (!res.ok) {
+                toast.error(res.message);
+                return;
+              }
+
+              toast.success(res.message);
+              router.refresh();
+            }}>
+            Mark Completed
+          </DropdownMenuItem>
+        ) : null}
+
+        {canCancel ? (
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={async () => {
+              if (
+                !window.confirm(
+                  "Cancel this order? Orders with dispatch or invoice activity cannot be cancelled.",
+                )
+              ) {
+                return;
+              }
+
+              const res = await cancelSalesOrderAction(id);
+
+              if (!res.ok) {
+                toast.error(res.message);
+                return;
+              }
+
+              toast.success(res.message);
+              router.refresh();
+            }}>
+            Cancel Order
           </DropdownMenuItem>
         ) : null}
 

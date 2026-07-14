@@ -43,10 +43,18 @@ export function buildSalesOrderWhere(sp: OrderQP): Prisma.SalesOrderWhereInput {
   }
 
   if (sp.dateFrom || sp.dateTo) {
+    const fromDate = sp.dateFrom ? new Date(sp.dateFrom) : undefined;
+    const toDate = sp.dateTo ? new Date(sp.dateTo) : undefined;
+
+    if (toDate && !Number.isNaN(toDate.getTime())) {
+      toDate.setHours(23, 59, 59, 999);
+    }
+
     and.push({
       orderDate: {
-        gte: sp.dateFrom ? new Date(sp.dateFrom) : undefined,
-        lte: sp.dateTo ? new Date(sp.dateTo) : undefined,
+        gte:
+          fromDate && !Number.isNaN(fromDate.getTime()) ? fromDate : undefined,
+        lte: toDate && !Number.isNaN(toDate.getTime()) ? toDate : undefined,
       },
     });
   }

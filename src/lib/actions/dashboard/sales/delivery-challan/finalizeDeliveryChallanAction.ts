@@ -1,7 +1,10 @@
 "use server";
 
 import { requireAuth } from "@/lib/check/requireAuth";
+import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
+import { Prisma } from "@prisma/client";
 
 import { revalidatePath } from "next/cache";
 import { DeliveryChallanDraftData } from "./createDraftDeliveryChallanAction";
@@ -110,6 +113,7 @@ export const finalizeDeliveryChallanAction = async (id: string) => {
 
       expectedReturnDate,
       expectedClosureDate,
+      finalizedAt: new Date(),
 
       updatedBy: { connect: { id: session.user.id } },
       finalizedBy: { connect: { id: session.user.id } },
@@ -117,17 +121,18 @@ export const finalizeDeliveryChallanAction = async (id: string) => {
 
     const preparedItems = draft.items.map((it, index) => {
       const qty = toNumber(it.qty, 0);
-      const closedQty = toNumber(it.closedQty, 0);
-      const pendingQty =
-        it.pendingQty == null ? qty - closedQty : toNumber(it.pendingQty, qty);
+      const closedQty = Math.max(0, Math.min(toNumber(it.closedQty, 0), qty));
+      const pendingQty = Math.max(0, qty - closedQty);
 
       const normalizedProductId =
         typeof it.productId === "string" && it.productId.trim().length > 0
           ? it.productId.trim()
           : null;
+      const normalizedItemId =
+        typeof it.id === "string" && it.id.trim().length > 0 ? it.id.trim() : null;
 
       return {
-        id: it.id,
+        id: normalizedItemId,
         deliveryChallanId: id,
 
         kind: it.kind,
@@ -228,37 +233,56 @@ export const finalizeDeliveryChallanAction = async (id: string) => {
         }
 
         for (const item of preparedItems) {
+          const createData: Prisma.DeliveryChallanItemUncheckedCreateInput = {
+            deliveryChallanId: item.deliveryChallanId,
+
+            kind: item.kind,
+            productVariantId: item.productId,
+
+            title: item.title,
+            sku: item.sku,
+            typeNumber: item.typeNumber,
+            description: item.description,
+            hsnCode: item.hsnCode,
+            unit: item.unit,
+
+            qty: item.qty,
+            closedQty: item.closedQty,
+            pendingQty: item.pendingQty,
+            sortOrder: item.sortOrder,
+          };
+
+          if (item.id) {
+            createData.id = item.id;
+          }
+
           await tx.deliveryChallanItem.create({
-            data: {
-              id: item.id ?? "",
-              deliveryChallanId: item.deliveryChallanId,
-
-              kind: item.kind,
-              productVariantId: item.productId,
-
-              title: item.title,
-              sku: item.sku,
-              typeNumber: item.typeNumber,
-              description: item.description,
-              hsnCode: item.hsnCode,
-              unit: item.unit,
-
-              qty: item.qty,
-              closedQty: item.closedQty,
-              pendingQty: item.pendingQty,
-              sortOrder: item.sortOrder,
-            },
+            data: createData,
           });
+
+          if (item.productId && item.qty > 0) {
+            await postStockMovement(tx, {
+              productVariantId: item.productId,
+              movementType: "OUT",
+              referenceType: "DELIVERY_CHALLAN",
+              referenceId: id,
+              referenceNo: challan.challanCode,
+              qty: item.qty,
+              movementDate: challanDate,
+              actorName: session.user.email ?? null,
+              remarks: `Dispatch via delivery challan ${challan.challanCode}`,
+              createdById: session.user.id,
+            });
+          }
         }
       },
-      {
-        timeout: 20000,
-        maxWait: 10000,
-      },
+      FINALIZE_TRANSACTION_OPTIONS,
     );
 
     revalidatePath("/dashboard/sales/delivery-challans");
     revalidatePath(`/dashboard/sales/delivery-challans/${id}`);
+    revalidatePath("/dashboard/inventory/stock");
+    revalidatePath("/dashboard/inventory/movements");
 
     return { ok: true as const, message: "Delivery challan finalized" };
   } catch (error: any) {

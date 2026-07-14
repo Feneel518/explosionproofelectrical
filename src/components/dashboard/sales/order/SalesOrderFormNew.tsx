@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save, Send } from "lucide-react";
 import React, { FC } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
 import { finalizeSalesOrderAction } from "@/lib/actions/dashboard/sales/order/finalizeSalesOrderAction";
@@ -59,8 +59,6 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
   orderNo,
   customers,
 }) => {
-
-
   const router = useRouter();
 
   const [isSaving, setIsSaving] = React.useState(false);
@@ -149,11 +147,11 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
 
   const saveIndicator = (() => {
     if (!salesOrderId) {
-      return <Badge variant="secondary">Creating draft…</Badge>;
+      return <Badge variant="secondary">Creating draft</Badge>;
     }
 
     if (autosave.status === "saving") {
-      return <Badge variant="secondary">Saving…</Badge>;
+      return <Badge variant="secondary">Saving</Badge>;
     }
 
     if (autosave.status === "saved") {
@@ -340,10 +338,24 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
   }
 
   async function applyCustomerToHeader(customerId: string | null) {
+    const previousCustomerId = form.getValues("header.customerId") ?? null;
+    const linkedQuotationId = form.getValues("header.quotationId") ?? "";
+    const hasLinkedQuotation = Boolean(linkedQuotationId);
+    const customerChanged = previousCustomerId !== customerId;
+
     form.setValue("header.customerId", customerId, {
       shouldDirty: true,
       shouldTouch: true,
     });
+
+    if (hasLinkedQuotation && customerChanged) {
+      form.setValue("header.quotationId", "", { shouldDirty: true });
+      form.setValue("header.sourceType", "DIRECT", { shouldDirty: true });
+      form.setValue("header.isConvertedFromQuotation", false, {
+        shouldDirty: true,
+      });
+      toast.info("Quotation link removed because customer was changed");
+    }
 
     if (!customerId) {
       form.setValue("header.clientName", "", { shouldDirty: true });

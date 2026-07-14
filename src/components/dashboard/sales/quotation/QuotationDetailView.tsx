@@ -1,24 +1,27 @@
-"use client";
+﻿"use client";
 
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import QuotationFollowupsSection from "./QuotationFollowupsSection";
 import { reopenQuotationAsDraftAction } from "@/lib/actions/dashboard/sales/quotation/reopenQuotationAsDraftAction";
+import { createDraftSalesOrderAction } from "@/lib/actions/dashboard/sales/order/createDraftSalesOrderAction";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { QuotationDraftData } from "@/lib/types/QuotationType";
+import { useRouter } from "nextjs-toploader/app";
 import { GetQuotationByIdData } from "@/lib/types/QuotationTypes";
 import Image from "next/image";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   quotation: GetQuotationByIdData;
 };
 
 function fmtDate(value?: string | Date | null) {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -27,7 +30,7 @@ function fmtDate(value?: string | Date | null) {
 
 function fmtMoney(value?: number | string | null) {
   const n = Number(value ?? 0);
-  return `₹${n.toFixed(2)}`;
+  return formatCurrencyINR(n);
 }
 
 function statusVariant(status: string) {
@@ -113,11 +116,16 @@ function getSelectedDrawings(item: GetQuotationByIdData["items"][number]) {
 
 export default function QuotationDetailView({ quotation }: Props) {
   const router = useRouter();
+  const [isConvertingToOrder, setIsConvertingToOrder] = React.useState(false);
   const clientName =
     quotation.customer?.companyName ||
     quotation.clientName ||
     quotation.receivedFromName ||
     "Unnamed Client";
+  const canConvertToOrder =
+    !quotation.convertedToOrderAt &&
+    quotation.status !== "LOST" &&
+    quotation.status !== "CANCELLED";
 
   return (
     <div className="space-y-6">
@@ -155,6 +163,34 @@ export default function QuotationDetailView({ quotation }: Props) {
             }}>
             Edit Quotation
           </Button>
+
+          {canConvertToOrder ? (
+            <Button
+              type="button"
+              disabled={isConvertingToOrder}
+              onClick={async () => {
+                setIsConvertingToOrder(true);
+                try {
+                  const res = await createDraftSalesOrderAction(quotation.id);
+                  if (!res.ok) {
+                    toast.error(res.message);
+                    return;
+                  }
+                  router.push(`/dashboard/sales/orders/${res.id}/edit`);
+                } finally {
+                  setIsConvertingToOrder(false);
+                }
+              }}>
+              {isConvertingToOrder ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Convert to Order"
+              )}
+            </Button>
+          ) : null}
         </CardHeader>
 
         <CardContent className="grid gap-4 md:grid-cols-4">
@@ -193,19 +229,19 @@ export default function QuotationDetailView({ quotation }: Props) {
           <div>
             <div className="text-xs text-muted-foreground">Customer</div>
             <div className="font-medium">
-              {quotation.customer?.companyName || "—"}
+              {quotation.customer?.companyName || "-"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Client Name</div>
-            <div className="font-medium">{quotation.clientName || "—"}</div>
+            <div className="font-medium">{quotation.clientName || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">GSTIN</div>
             <div className="font-medium">
-              {quotation.customer?.gstin || "—"}
+              {quotation.customer?.gstin || "-"}
             </div>
           </div>
 
@@ -214,28 +250,28 @@ export default function QuotationDetailView({ quotation }: Props) {
               Received From Name
             </div>
             <div className="font-medium">
-              {quotation.receivedFromName || "—"}
+              {quotation.receivedFromName || "-"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Phone</div>
             <div className="font-medium">
-              {quotation.receivedFromPhone || "—"}
+              {quotation.receivedFromPhone || "-"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Email</div>
             <div className="font-medium break-all">
-              {quotation.receivedFromEmail || "—"}
+              {quotation.receivedFromEmail || "-"}
             </div>
           </div>
 
           <div className="md:col-span-3">
             <div className="text-xs text-muted-foreground">Enquiry Message</div>
             <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
-              {quotation.enquiryMessage || "—"}
+              {quotation.enquiryMessage || "-"}
             </div>
           </div>
         </CardContent>
@@ -249,17 +285,17 @@ export default function QuotationDetailView({ quotation }: Props) {
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div>
             <div className="text-xs text-muted-foreground">GST</div>
-            <div className="font-medium">{quotation.gst || "—"}</div>
+            <div className="font-medium">{quotation.gst || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Packing Charges</div>
-            <div className="font-medium">{quotation.packingCharges || "—"}</div>
+            <div className="font-medium">{quotation.packingCharges || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Payment Terms</div>
-            <div className="font-medium">{quotation.paymentTerms || "—"}</div>
+            <div className="font-medium">{quotation.paymentTerms || "-"}</div>
           </div>
 
           <div>
@@ -267,7 +303,7 @@ export default function QuotationDetailView({ quotation }: Props) {
               Transportation Payment
             </div>
             <div className="font-medium">
-              {quotation.transportationPayment || "—"}
+              {quotation.transportationPayment || "-"}
             </div>
           </div>
 
@@ -278,13 +314,13 @@ export default function QuotationDetailView({ quotation }: Props) {
                 ? typeof quotation.deliveryDate === "string"
                   ? quotation.deliveryDate
                   : fmtDate(quotation.deliveryDate)
-                : "—"}
+                : "-"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Discount</div>
-            <div className="font-medium">{quotation.discount || "—"}</div>
+            <div className="font-medium">{quotation.discount || "-"}</div>
           </div>
 
           <div className="md:col-span-3">
@@ -292,7 +328,7 @@ export default function QuotationDetailView({ quotation }: Props) {
               Additional Notes
             </div>
             <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
-              {quotation.additionalNotes || "—"}
+              {quotation.additionalNotes || "-"}
             </div>
           </div>
         </CardContent>
@@ -323,7 +359,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                       <div className="mt-1 text-sm text-muted-foreground">
                         {[item.sku, item.typeNumber]
                           .filter(Boolean)
-                          .join(" • ") || "—"}
+                          .join("   ") || "-"}
                       </div>
                     </div>
 
@@ -355,7 +391,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground">Unit</div>
-                      <div className="font-medium">{item.unit || "—"}</div>
+                      <div className="font-medium">{item.unit || "-"}</div>
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground">
@@ -370,7 +406,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                         PO Reference
                       </div>
                       <div className="font-medium">
-                        {item.poReference || "—"}
+                        {item.poReference || "-"}
                       </div>
                     </div>
                   </div>
@@ -406,7 +442,7 @@ export default function QuotationDetailView({ quotation }: Props) {
                                 {comp.unit ? (
                                   <span className="text-muted-foreground">
                                     {" "}
-                                    • {comp.unit}
+                                    {comp.unit}
                                   </span>
                                 ) : null}
                               </div>
@@ -495,7 +531,7 @@ export default function QuotationDetailView({ quotation }: Props) {
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Discount</span>
-              <span className="font-medium">{quotation.discount || "—"}</span>
+              <span className="font-medium">{quotation.discount || "-"}</span>
             </div>
 
             <div className="flex items-center justify-between border-t pt-3 text-base">

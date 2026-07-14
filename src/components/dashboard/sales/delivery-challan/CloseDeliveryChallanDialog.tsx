@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
 import { closeDeliveryChallanAction } from "@/lib/actions/dashboard/sales/delivery-challan/closeDeliveryChallanAction";
 

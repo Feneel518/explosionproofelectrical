@@ -62,6 +62,12 @@ export const CustomerSchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  defaultQuotationGst: z.string().trim().default("CGST_SGST_18"),
+  defaultQuotationPackingCharges: z.string().trim().default("INCLUDED"),
+  defaultQuotationTransportationPayment: z.string().trim().default("TO_PAY"),
+  defaultQuotationPaymentTerms: z.string().trim().default("ADVANCE"),
+  defaultQuotationDeliveryDate: z.string().trim().optional().or(z.literal("")),
+
   status: CustomerStatusEnum.default("ACTIVE"),
 });
 

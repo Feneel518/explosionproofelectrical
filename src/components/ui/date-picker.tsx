@@ -40,8 +40,9 @@ export function DatePicker({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
         <Calendar
+          className="w-full"
           mode="single"
           selected={date}
           onSelect={(d) => {

@@ -10,7 +10,7 @@ export type QuotationDraftHeader = {
 
   additionalNotes?: string | null;
   deliveryDate?: string | null;
-  nextFollowupAt?: Date | null;
+  nextFollowupAt?: string | Date | null;
 
   gst?: any;
   packingCharges?: any;

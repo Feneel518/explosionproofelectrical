@@ -48,14 +48,14 @@ export default function CompleteFollowupDialog({
 
   const form = useForm<FormValues>({
     defaultValues: {
-      outcome: "FOLLOWED_UP",
+      outcome: "OTHER",
       note: followup?.note || "",
     },
   });
 
   React.useEffect(() => {
     form.reset({
-      outcome: "FOLLOWED_UP",
+      outcome: "OTHER",
       note: followup?.note || "",
     });
   }, [followup, form]);
@@ -77,6 +77,7 @@ export default function CompleteFollowupDialog({
       }
 
       toast.success("Follow-up completed");
+      window.dispatchEvent(new Event("quotation-followups-changed"));
       onOpenChange(false);
     } finally {
       setIsPending(false);
@@ -105,16 +106,18 @@ export default function CompleteFollowupDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="FOLLOWED_UP">Followed Up</SelectItem>
+                      <SelectItem value="OTHER">Followed Up</SelectItem>
                       <SelectItem value="INTERESTED">Interested</SelectItem>
-                      <SelectItem value="NOT_INTERESTED">
-                        Not Interested
+                      <SelectItem value="NO_RESPONSE">No Response</SelectItem>
+                      <SelectItem value="NEED_DISCOUNT">
+                        Need Discount
                       </SelectItem>
-                      <SelectItem value="REVISED_QUOTE_REQUIRED">
-                        Revised Quote Required
+                      <SelectItem value="NEED_REVISED_QUOTE">
+                        Need Revised Quote
                       </SelectItem>
-                      <SelectItem value="APPROVED">Approved</SelectItem>
-                      <SelectItem value="REJECTED">Rejected</SelectItem>
+                      <SelectItem value="POSTPONED">Postponed</SelectItem>
+                      <SelectItem value="WON">Approved</SelectItem>
+                      <SelectItem value="LOST_TO_COMPETITOR">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>

@@ -1,10 +1,16 @@
 "use server";
 
 import { requireAuth } from "@/lib/check/requireAuth";
+import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { ProductMediaKind } from "@prisma/client";
-import { syncSalesOrderInvoiceProgress } from "@/lib/actions/dashboard/sales/order/syncSalesOrderInvoiceProgress";
+import {
+  refreshSalesOrderInvoiceProgress,
+  rollbackInvoiceEffects,
+} from "./invoiceSettlement";
 
 import { revalidatePath } from "next/cache";
 
@@ -28,7 +34,10 @@ export const finalizeInvoiceAction = async (id: string) => {
       select: {
         id: true,
         status: true,
+        invoiceNo: true,
+        invoiceFy: true,
         salesOrderId: true,
+        customerId: true,
         draftData: true,
       },
     });
@@ -41,15 +50,6 @@ export const finalizeInvoiceAction = async (id: string) => {
       return { ok: false as const, message: "Invoice already finalized" };
     }
 
-    if (!invoice.salesOrderId) {
-      return {
-        ok: false as const,
-        message: "Legacy invoice is not linked to a sales order",
-      };
-    }
-
-    const salesOrderId = invoice.salesOrderId;
-
     const draft = invoice.draftData as InvoiceDraftData | null;
 
     if (!draft) {
@@ -60,6 +60,8 @@ export const finalizeInvoiceAction = async (id: string) => {
       return { ok: false as const, message: "Add at least one invoice item" };
     }
 
+    const isOrderLinked = Boolean(invoice.salesOrderId);
+
     const preparedItems = draft.items.map((it, index) => {
       const qty = toNumber(it.qty, 0);
       const unitPrice = toNumber(it.unitPrice, 0);
@@ -68,6 +70,7 @@ export const finalizeInvoiceAction = async (id: string) => {
       return {
         draftItemId: it.id,
         salesOrderItemId: it.salesOrderItemId,
+        isManual: Boolean(it.isManual),
         productId: it.productId ?? null,
         variantId: it.variantId ?? null,
         title: it.title?.trim() ?? "",
@@ -85,7 +88,9 @@ export const finalizeInvoiceAction = async (id: string) => {
         lineGstTotal: toNumber(it.lineGstTotal, 0),
         lineGrandTotal: lineSubtotal + toNumber(it.lineGstTotal, 0),
         sortOrder: toNumber(it.sortOrder, index),
-        productPicture: Array.isArray(it.productPicture) ? it.productPicture : [],
+        productPicture: Array.isArray(it.productPicture)
+          ? it.productPicture
+          : [],
       };
     });
 
@@ -102,43 +107,68 @@ export const finalizeInvoiceAction = async (id: string) => {
     }
 
     await prisma.$transaction(async (tx) => {
-      const orderState = await tx.salesOrder.findUnique({
-        where: { id: salesOrderId },
-        select: { status: true },
-      });
+      if (invoice.salesOrderId) {
+        const linkedOrder = await tx.salesOrder.findUnique({
+          where: { id: invoice.salesOrderId },
+          select: { status: true },
+        });
 
-      if (!orderState) {
-        throw new Error("Sales order not found");
+        if (!linkedOrder) {
+          throw new Error("Linked sales order not found");
+        }
+        if (linkedOrder.status === "CANCELLED") {
+          throw new Error("Cancelled order cannot be invoiced");
+        }
+        if (linkedOrder.status === "COMPLETED") {
+          throw new Error("Completed order cannot be invoiced");
+        }
       }
 
-      if (orderState.status === "CANCELLED") {
-        throw new Error("Cancelled order cannot be invoiced");
+        await rollbackInvoiceEffects(tx, {
+          invoiceId: invoice.id,
+          salesOrderId: invoice.salesOrderId ?? null,
+          rollbackSalesOrder: false,
+        });
+
+      const liveMap = new Map<
+        string,
+        {
+          id: string;
+          productId: string | null;
+          variantId: string | null;
+          qty: number;
+          invoicedQty: number;
+          dispatchedQty: number;
+        }
+      >();
+
+      if (isOrderLinked && invoice.salesOrderId) {
+        const liveOrderItems = await tx.salesOrderItem.findMany({
+          where: { salesOrderId: invoice.salesOrderId },
+          select: {
+            id: true,
+            productId: true,
+            variantId: true,
+            qty: true,
+            invoicedQty: true,
+            dispatchedQty: true,
+          },
+        });
+
+        for (const liveOrderItem of liveOrderItems) {
+          liveMap.set(liveOrderItem.id, liveOrderItem);
+        }
       }
-
-      if (orderState.status === "COMPLETED") {
-        throw new Error("Completed order cannot be invoiced");
-      }
-
-      // Repair any stale cached quantities before validating this invoice.
-      await syncSalesOrderInvoiceProgress(
-        tx,
-        salesOrderId,
-        session.user.id,
-      );
-
-      const liveOrderItems = await tx.salesOrderItem.findMany({
-        where: { salesOrderId },
-        select: {
-          id: true,
-          qty: true,
-          invoicedQty: true,
-          dispatchedQty: true,
-        },
-      });
-
-      const liveMap = new Map(liveOrderItems.map((item) => [item.id, item]));
 
       for (const item of preparedItems) {
+        if (!item.salesOrderItemId) {
+          item.salesOrderItemId = item.draftItemId || crypto.randomUUID();
+        }
+
+        if (!isOrderLinked || item.isManual) {
+          continue;
+        }
+
         const live = liveMap.get(item.salesOrderItemId);
 
         if (!live) {
@@ -154,6 +184,124 @@ export const finalizeInvoiceAction = async (id: string) => {
             `Invoice qty exceeds remaining quantity for ${item.title}`,
           );
         }
+
+        if (!item.productId && live.productId) {
+          item.productId = live.productId;
+        }
+        if (!item.variantId && live.variantId) {
+          item.variantId = live.variantId;
+        }
+      }
+
+      const movementDate =
+        toDateOrNull(draft.header.dispatchDate) ??
+        toDateOrNull(draft.header.invoiceDate) ??
+        new Date();
+      const referenceNo = formatFinancialDocumentNumber(
+        invoice.invoiceFy,
+        invoice.invoiceNo,
+      );
+
+      const variantIds = Array.from(
+        new Set(
+          preparedItems
+            .map((item) => item.variantId)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      );
+
+      const bomRows =
+        variantIds.length > 0
+          ? await tx.variantBom.findMany({
+              where: {
+                variantId: { in: variantIds },
+                isActive: true,
+              },
+              include: {
+                items: {
+                  select: {
+                    componentType: true,
+                    rawMaterialId: true,
+                    castingMasterId: true,
+                    qtyPerUnit: true,
+                  },
+                },
+              },
+            })
+          : [];
+
+      const bomByVariantId = new Map(
+        bomRows.map((row) => [row.variantId, row]),
+      );
+
+      const rawConsumption = new Map<string, number>();
+      const castingConsumption = new Map<string, number>();
+
+      for (const item of preparedItems) {
+        if (!item.variantId) continue;
+
+        const bom = bomByVariantId.get(item.variantId);
+        if (!bom || !bom.items?.length) continue;
+
+        for (const bomItem of bom.items) {
+          const qtyPerUnit = Math.max(
+            0,
+            Math.trunc(Number(bomItem.qtyPerUnit || 0)),
+          );
+          if (qtyPerUnit <= 0) continue;
+
+          const consumeQty =
+            qtyPerUnit * Math.max(0, Math.trunc(Number(item.qty || 0)));
+          if (consumeQty <= 0) continue;
+
+          if (
+            bomItem.componentType === "RAW_MATERIAL" &&
+            bomItem.rawMaterialId
+          ) {
+            const current = rawConsumption.get(bomItem.rawMaterialId) ?? 0;
+            rawConsumption.set(bomItem.rawMaterialId, current + consumeQty);
+          } else if (
+            bomItem.componentType === "CASTING" &&
+            bomItem.castingMasterId
+          ) {
+            const current =
+              castingConsumption.get(bomItem.castingMasterId) ?? 0;
+            castingConsumption.set(
+              bomItem.castingMasterId,
+              current + consumeQty,
+            );
+          }
+        }
+      }
+
+      for (const [rawMaterialId, qty] of rawConsumption) {
+        await postStockMovement(tx, {
+          rawMaterialId,
+          movementType: "OUT",
+          referenceType: "INVOICE",
+          referenceId: invoice.id,
+          referenceNo,
+          qty,
+          movementDate,
+          actorName: session.user.email || null,
+          remarks: `BOM consumption via invoice ${referenceNo}`,
+          createdById: session.user.id,
+        });
+      }
+
+      for (const [castingMasterId, qty] of castingConsumption) {
+        await postStockMovement(tx, {
+          castingMasterId,
+          movementType: "OUT",
+          referenceType: "INVOICE",
+          referenceId: invoice.id,
+          referenceNo,
+          qty,
+          movementDate,
+          actorName: session.user.email || null,
+          remarks: `BOM consumption via invoice ${referenceNo}`,
+          createdById: session.user.id,
+        });
       }
 
       await tx.productMedia.deleteMany({
@@ -180,7 +328,7 @@ export const finalizeInvoiceAction = async (id: string) => {
         data: {
           invoiceDate: toDateOrNull(draft.header.invoiceDate) ?? new Date(),
 
-          customerId: draft.header.customerId ?? null,
+          customerId: draft.header.customerId ?? invoice.customerId ?? null,
           poNumber: draft.header.poNumber ?? null,
           poDate: toDateOrNull(draft.header.poDate),
 
@@ -197,6 +345,13 @@ export const finalizeInvoiceAction = async (id: string) => {
           dispatchThrough: draft.header.dispatchThrough ?? null,
           lrNumber: draft.header.lrNumber ?? null,
           ewayBill: draft.header.ewayBill ?? null,
+          transportationPayment:
+            draft.header.transportationPayment === "PAID" ? "PAID" : "TO_PAY",
+          transportationAmount:
+            draft.header.transportationAmount !== null &&
+            draft.header.transportationAmount !== undefined
+              ? toNumber(draft.header.transportationAmount, 0)
+              : null,
           remarks: draft.header.remarks ?? null,
 
           subtotal: toNumber(draft.header.subtotal, 0),
@@ -235,7 +390,8 @@ export const finalizeInvoiceAction = async (id: string) => {
         const createdInvoiceItem = await tx.invoiceItem.create({
           data: {
             invoiceId: id,
-            salesOrderItemId: item.salesOrderItemId,
+            salesOrderItemId:
+              isOrderLinked && !item.isManual ? item.salesOrderItemId : null,
             productId: item.productId,
             variantId: item.variantId,
             title: item.title,
@@ -257,12 +413,17 @@ export const finalizeInvoiceAction = async (id: string) => {
           select: { id: true },
         });
 
-        invoiceItemIdBySalesOrderItemId.set(
-          item.salesOrderItemId,
-          createdInvoiceItem.id,
-        );
+        if (item.salesOrderItemId) {
+          invoiceItemIdBySalesOrderItemId.set(
+            item.salesOrderItemId,
+            createdInvoiceItem.id,
+          );
+        }
         if (item.draftItemId) {
-          invoiceItemIdByDraftItemId.set(item.draftItemId, createdInvoiceItem.id);
+          invoiceItemIdByDraftItemId.set(
+            item.draftItemId,
+            createdInvoiceItem.id,
+          );
         }
 
         const pictureRows = (item.productPicture ?? [])
@@ -325,7 +486,8 @@ export const finalizeInvoiceAction = async (id: string) => {
 
         const mergedPackageItemsMap = new Map<string, number>();
         for (const packageItem of packageItems) {
-          const existingQty = mergedPackageItemsMap.get(packageItem.invoiceItemId) ?? 0;
+          const existingQty =
+            mergedPackageItemsMap.get(packageItem.invoiceItemId) ?? 0;
           mergedPackageItemsMap.set(
             packageItem.invoiceItemId,
             existingQty + packageItem.qty,
@@ -383,16 +545,41 @@ export const finalizeInvoiceAction = async (id: string) => {
         }
       }
 
-      await syncSalesOrderInvoiceProgress(
-        tx,
-        salesOrderId,
-        session.user.id,
-      );
-    });
+      if (isOrderLinked && invoice.salesOrderId) {
+        for (const item of preparedItems) {
+          if (item.isManual || !item.salesOrderItemId) continue;
+
+          const live = liveMap.get(item.salesOrderItemId);
+          if (!live) continue;
+
+          const newInvoicedQty = live.invoicedQty + item.qty;
+          const newDispatchedQty = newInvoicedQty;
+          const newPendingQty = Math.max(live.qty - newInvoicedQty, 0);
+
+          await tx.salesOrderItem.update({
+            where: { id: item.salesOrderItemId },
+            data: {
+              invoicedQty: newInvoicedQty,
+              dispatchedQty: newDispatchedQty,
+              pendingQty: newPendingQty,
+            },
+          });
+        }
+
+        await refreshSalesOrderInvoiceProgress(tx, {
+          salesOrderId: invoice.salesOrderId,
+          updatedById: session.user.id,
+        });
+      }
+    }, FINALIZE_TRANSACTION_OPTIONS);
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${id}`);
-    revalidatePath(`/dashboard/sales/orders/${salesOrderId}`);
+    if (invoice.salesOrderId) {
+      revalidatePath(`/dashboard/sales/orders/${invoice.salesOrderId}`);
+    }
+    revalidatePath("/dashboard/inventory/stock");
+    revalidatePath("/dashboard/inventory/movements");
 
     return { ok: true as const, message: "Invoice finalized" };
   } catch (error) {

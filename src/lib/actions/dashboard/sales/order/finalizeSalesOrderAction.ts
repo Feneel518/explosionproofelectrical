@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { SalesOrderDraftData } from "@/lib/types/SalesOrderTypes";
 import { ProductMediaKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -52,7 +53,10 @@ export const finalizeSalesOrderAction = async (id: string) => {
 
     console.log(draft);
 
-    const quotationId = draft.header?.quotationId ?? null;
+    let quotationId = draft.header?.quotationId ?? null;
+    const draftCustomerId = draft.header?.customerId ?? null;
+    let quotationToUnlink: { id: string; nextFollowupAt: Date | null } | null =
+      null;
 
     const invalidItem = draft.items.find(
       (it) =>
@@ -136,9 +140,11 @@ export const finalizeSalesOrderAction = async (id: string) => {
         where: { id: quotationId },
         select: {
           id: true,
+          customerId: true,
           status: true,
           deletedAt: true,
           convertedToOrderAt: true,
+          nextFollowupAt: true,
         },
       });
 
@@ -154,6 +160,14 @@ export const finalizeSalesOrderAction = async (id: string) => {
           ok: false as const,
           message: "Quotation is already converted to an order",
         };
+      }
+
+      if ((quotation.customerId ?? null) !== (draftCustomerId ?? null)) {
+        quotationToUnlink = {
+          id: quotation.id,
+          nextFollowupAt: quotation.nextFollowupAt ?? null,
+        };
+        quotationId = null;
       }
     }
 
@@ -172,7 +186,10 @@ export const finalizeSalesOrderAction = async (id: string) => {
           customerId: draft.header?.customerId ?? null,
           clientName: draft.header?.clientName ?? null,
           clientNameSnapshot: draft.header?.clientName ?? null,
-          quotationId: draft.header?.quotationId ?? null,
+          quotationId,
+          sourceType: quotationId ? "QUOTATION" : "DIRECT",
+          isConvertedFromQuotation: Boolean(quotationId),
+          convertedFromQuotationAt: quotationId ? new Date() : null,
           receivedFromName: draft.header?.receivedFromName ?? null,
           receivedFromPhone: draft.header?.receivedFromPhone ?? null,
           receivedFromEmail: draft.header?.receivedFromEmail ?? null,
@@ -212,12 +229,28 @@ export const finalizeSalesOrderAction = async (id: string) => {
         },
       });
 
+      if (quotationToUnlink) {
+        const revertQuotationStatus = quotationToUnlink.nextFollowupAt
+          ? "FOLLOWUP"
+          : "SENT";
+
+        await tx.quotation.update({
+          where: { id: quotationToUnlink.id },
+          data: {
+            status: revertQuotationStatus,
+            convertedToOrderAt: null,
+            updatedById: session.user.id,
+          },
+        });
+      }
+
       if (quotationId) {
         await tx.quotation.update({
           where: { id: quotationId },
           data: {
             status: "WON",
             convertedToOrderAt: new Date(),
+            nextFollowupAt: null,
             updatedById: session.user.id,
           },
         });
@@ -298,9 +331,16 @@ export const finalizeSalesOrderAction = async (id: string) => {
           },
         });
       }
-    });
+    }, FINALIZE_TRANSACTION_OPTIONS);
 
     revalidatePath("/dashboard/sales/orders");
+    revalidatePath("/dashboard/sales/quotations");
+    if (quotationId) {
+      revalidatePath(`/dashboard/sales/quotations/${quotationId}`);
+    }
+    if (quotationToUnlink) {
+      revalidatePath(`/dashboard/sales/quotations/${quotationToUnlink.id}`);
+    }
 
     return { ok: true as const, message: "Order finalized" };
   } catch (error) {
@@ -309,6 +349,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
     return {
       ok: false as const,
       message: "Failed to finalize order",
+      error: error,
     };
   }
 };

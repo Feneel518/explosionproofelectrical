@@ -2,17 +2,27 @@ import { redirect } from "next/navigation";
 import { FC } from "react";
 
 import { createDraftInvoiceAction } from "@/lib/actions/dashboard/sales/invoice/createDraftInvoiceAction";
+import { createOfflineDraftInvoiceAction } from "@/lib/actions/dashboard/sales/invoice/createOfflineDraftInvoiceAction";
 import CreateInvoiceLauncher from "@/components/dashboard/sales/invoice/CreateInvoiceLauncher";
 
 interface PageProps {
   searchParams: Promise<{
     orderId?: string;
+    offline?: string;
   }>;
 }
 
 const page: FC<PageProps> = async ({ searchParams }) => {
   const sp = await searchParams;
   const orderId = sp.orderId?.trim();
+  const offline = sp.offline?.trim() === "1";
+
+  if (offline) {
+    const res = await createOfflineDraftInvoiceAction();
+    if (res.ok) {
+      redirect(`/dashboard/sales/invoices/${res.id}/edit`);
+    }
+  }
 
   if (orderId) {
     const res = await createDraftInvoiceAction(orderId);

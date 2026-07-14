@@ -1,26 +1,38 @@
 "use client";
 
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { ProductMediaKind, TransportationPayment } from "@prisma/client";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
+import { FileUpload } from "@/components/dashboard/global/FileUpload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { reopenInvoiceAsDraftAction } from "@/lib/actions/dashboard/sales/invoice/reopenInvoiceAsDraftAction";
-import PdfPreviewCard from "../../global/PDFPreviewCard";
+import { updateInvoiceLrCopyAction } from "@/lib/actions/dashboard/sales/invoice/updateInvoiceLrCopyAction";
 import InvoicePackingStickerDialog from "@/components/customerCopy/invoice/InvoicePackingStickerDialog";
 import InvoiceTestCertificateDialog from "@/components/customerCopy/invoice/InvoiceTestCertificateDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import InvoicePaymentReminderCard from "./InvoicePaymentReminderCard";
+import InvoiceDispatchDetailsEmailDialog from "./InvoiceDispatchDetailsEmailDialog";
+import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 
 type Props = {
   invoice: any;
 };
 
+type LrCopyFile = {
+  kind: ProductMediaKind;
+  url: string;
+  title?: string | null;
+};
+
 function fmtDate(value?: string | Date | null) {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -29,7 +41,7 @@ function fmtDate(value?: string | Date | null) {
 
 function fmtMoney(value?: number | string | null) {
   const n = Number(value ?? 0);
-  return `₹${n.toFixed(2)}`;
+  return `${formatCurrencyINR(n)}`;
 }
 
 function statusVariant(status: string) {
@@ -61,15 +73,97 @@ function getPackingRows(packing: unknown): Array<{
   }>;
 }
 
+function transportationLabel(value?: TransportationPayment | string | null) {
+  return value === TransportationPayment.PAID ? "Paid" : "To Pay";
+}
+
 export default function InvoiceDetailView({ invoice }: Props) {
   const router = useRouter();
+  const [isSavingLrCopy, startSavingLrCopy] = React.useTransition();
+  const [lrCopyFiles, setLrCopyFiles] = React.useState<LrCopyFile[]>([]);
 
+  React.useEffect(() => {
+    const nextFiles: LrCopyFile[] = Array.isArray(invoice.lrCopy)
+      ? invoice.lrCopy
+          .map((file: any) => {
+            const url =
+              typeof file?.url === "string" ? file.url.trim() : undefined;
+            if (!url) return null;
+
+            return {
+              kind:
+                file?.kind === ProductMediaKind.IMAGE
+                  ? ProductMediaKind.IMAGE
+                  : ProductMediaKind.DRAWING,
+              url,
+              title:
+                typeof file?.title === "string" && file.title.trim().length > 0
+                  ? file.title.trim()
+                  : null,
+            } satisfies LrCopyFile;
+          })
+          .filter((file: LrCopyFile | null): file is LrCopyFile =>
+            Boolean(file),
+          )
+      : [];
+
+    setLrCopyFiles(nextFiles);
+  }, [invoice.id, invoice.lrCopy]);
+
+  const customer = invoice.salesOrder?.customer || invoice.customer;
+  const companyName = customer?.companyName || "-";
   const clientName =
     invoice.clientNameSnapshot ||
-    formatFinancialDocumentNumber(
-      invoice.salesOrder.orderFy,
-      invoice.salesOrder.orderNo,
-    );
+    invoice.salesOrder?.clientNameSnapshot ||
+    customer?.companyName ||
+    invoice.salesOrder?.receivedFromName ||
+    "-";
+
+  const city =
+    invoice.citySnapshot ||
+    invoice.salesOrder?.citySnapshot ||
+    customer?.city ||
+    "-";
+  const state =
+    invoice.stateSnapshot ||
+    invoice.salesOrder?.stateSnapshot ||
+    customer?.state ||
+    "-";
+  const gstin =
+    invoice.gstinSnapshot ||
+    invoice.salesOrder?.gstinSnapshot ||
+    customer?.gstin ||
+    "-";
+  const contactName = invoice.salesOrder?.receivedFromName || "-";
+  const contactPhone =
+    invoice.salesOrder?.receivedFromPhone || customer?.companyPhone || "-";
+  const contactEmail =
+    invoice.salesOrder?.receivedFromEmail || customer?.companyEmail || "-";
+
+  const dispatchEmailDefault =
+    invoice.salesOrder?.receivedFromEmail || customer?.companyEmail || "";
+
+  const addressLines = [
+    customer?.addressLine1,
+    customer?.addressLine2,
+    [customer?.city, customer?.state, customer?.country]
+      .filter(Boolean)
+      .join(", "),
+    customer?.pincode ? `PIN: ${customer.pincode}` : null,
+  ].filter(Boolean);
+
+  const displayAddress = addressLines.length ? addressLines.join("\n") : "-";
+
+  const salesOrderNumber = invoice.salesOrder
+    ? formatFinancialDocumentNumber(
+        invoice.salesOrder.orderFy,
+        invoice.salesOrder.orderNo,
+      )
+    : "-";
+
+  const displayClientHeading =
+    clientName && clientName !== "-" ? clientName : salesOrderNumber;
+
   const printableItems = (invoice.items ?? []).map((item: any) => ({
     id: item.id,
     title: item.title ?? "Item",
@@ -97,6 +191,28 @@ export default function InvoiceDetailView({ invoice }: Props) {
       : [],
   }));
 
+  const onLrCopyChange = (nextFiles: LrCopyFile[]) => {
+    if (invoice.status !== "FINALIZED") {
+      toast.error("Finalize invoice first to update LR copy");
+      return;
+    }
+
+    const previousFiles = lrCopyFiles;
+    setLrCopyFiles(nextFiles);
+
+    startSavingLrCopy(async () => {
+      const res = await updateInvoiceLrCopyAction(invoice.id, nextFiles);
+      if (!res.ok) {
+        setLrCopyFiles(previousFiles);
+        toast.error(res.message);
+        return;
+      }
+
+      toast.success(res.message);
+      router.refresh();
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -109,7 +225,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                   invoice.invoiceNo,
                 )}
               </CardTitle>
-              <p className="text-muted-foreground">{clientName}</p>
+              <p className="text-muted-foreground">{displayClientHeading}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -157,6 +273,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                   }
                   toast.success(res.message);
                   router.push(`/dashboard/sales/invoices/${invoice.id}/edit`);
+                  router.refresh();
                 }}>
                 Reopen For Edit
               </Button>
@@ -177,18 +294,13 @@ export default function InvoiceDetailView({ invoice }: Props) {
 
           <div>
             <div className="text-xs text-muted-foreground">Sales Order</div>
-            <div className="font-medium">
-              {formatFinancialDocumentNumber(
-                invoice.salesOrder.orderFy,
-                invoice.salesOrder.orderNo,
-              )}
-            </div>
+            <div className="font-medium">{salesOrderNumber}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">PO Number</div>
             <div className="font-medium">
-              {invoice.poNumber || invoice.salesOrder.poNumber || "—"}
+              {invoice.poNumber || invoice.salesOrder?.poNumber || "-"}
             </div>
           </div>
         </CardContent>
@@ -200,25 +312,43 @@ export default function InvoiceDetailView({ invoice }: Props) {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div>
+            <div className="text-xs text-muted-foreground">Company Name</div>
+            <div className="font-medium">{companyName}</div>
+          </div>
+
+          <div>
             <div className="text-xs text-muted-foreground">Client Name</div>
-            <div className="font-medium">
-              {invoice.clientNameSnapshot || "—"}
-            </div>
+            <div className="font-medium">{clientName}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">Contact Name</div>
+            <div className="font-medium">{contactName}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">Contact Phone</div>
+            <div className="font-medium">{contactPhone}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">Contact Email</div>
+            <div className="font-medium break-all">{contactEmail}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">City</div>
-            <div className="font-medium">{invoice.citySnapshot || "—"}</div>
+            <div className="font-medium">{city}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">State</div>
-            <div className="font-medium">{invoice.stateSnapshot || "—"}</div>
+            <div className="font-medium">{state}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">GSTIN</div>
-            <div className="font-medium">{invoice.gstinSnapshot || "—"}</div>
+            <div className="font-medium">{gstin}</div>
           </div>
 
           <div>
@@ -226,55 +356,84 @@ export default function InvoiceDetailView({ invoice }: Props) {
             <div className="font-medium">{fmtDate(invoice.poDate)}</div>
           </div>
 
-          <div>
+          <div className="md:col-span-3">
+            <div className="text-xs text-muted-foreground">Billing Address</div>
+            <div className="whitespace-pre-wrap rounded-lg border p-3 text-sm">
+              {displayAddress}
+            </div>
+          </div>
+
+          <div className="md:col-span-3">
             <div className="text-xs text-muted-foreground">Remarks</div>
-            <div className="font-medium">{invoice.remarks || "—"}</div>
+            <div className="font-medium">{invoice.remarks || "-"}</div>
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
           <CardTitle>Dispatch Details</CardTitle>
+          <InvoiceDispatchDetailsEmailDialog
+            invoiceId={invoice.id}
+            defaultEmail={dispatchEmailDefault}
+            disabled={invoice.status !== "FINALIZED"}
+          />
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div>
             <div className="text-xs text-muted-foreground">
               Transporter Name
             </div>
-            <div className="font-medium">{invoice.transporterName || "—"}</div>
+            <div className="font-medium">{invoice.transporterName || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">
               Dispatch Through
             </div>
-            <div className="font-medium">{invoice.dispatchThrough || "—"}</div>
+            <div className="font-medium">{invoice.dispatchThrough || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Vehicle Number</div>
-            <div className="font-medium">{invoice.vehicleNumber || "—"}</div>
+            <div className="font-medium">{invoice.vehicleNumber || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Driver Name</div>
-            <div className="font-medium">{invoice.driverName || "—"}</div>
+            <div className="font-medium">{invoice.driverName || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">Driver Phone</div>
-            <div className="font-medium">{invoice.driverPhone || "—"}</div>
+            <div className="font-medium">{invoice.driverPhone || "-"}</div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">LR Number</div>
-            <div className="font-medium">{invoice.lrNumber || "—"}</div>
+            <div className="font-medium">{invoice.lrNumber || "-"}</div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">LR Payment</div>
+            <div className="font-medium">
+              {transportationLabel(invoice.transportationPayment)}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">LR Amount</div>
+            <div className="font-medium">
+              {invoice.transportationAmount !== null &&
+              invoice.transportationAmount !== undefined
+                ? fmtMoney(invoice.transportationAmount)
+                : "-"}
+            </div>
           </div>
 
           <div>
             <div className="text-xs text-muted-foreground">E-Way Bill</div>
-            <div className="font-medium">{invoice.ewayBill || "—"}</div>
+            <div className="font-medium">{invoice.ewayBill || "-"}</div>
           </div>
         </CardContent>
       </Card>
@@ -308,7 +467,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                           item.serialNumber,
                         ]
                           .filter(Boolean)
-                          .join(" • ") || "—"}
+                          .join("   ") || "-"}
                       </div>
                     </div>
 
@@ -350,7 +509,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
 
                     <div>
                       <div className="text-xs text-muted-foreground">Unit</div>
-                      <div className="font-medium">{item.unit || "—"}</div>
+                      <div className="font-medium">{item.unit || "-"}</div>
                     </div>
 
                     <div>
@@ -366,7 +525,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                       <div className="text-xs text-muted-foreground">
                         HSN Code
                       </div>
-                      <div className="font-medium">{item.hsnCode || "—"}</div>
+                      <div className="font-medium">{item.hsnCode || "-"}</div>
                     </div>
 
                     <div>
@@ -374,7 +533,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                         Type Number
                       </div>
                       <div className="font-medium">
-                        {item.typeNumber || "—"}
+                        {item.typeNumber || "-"}
                       </div>
                     </div>
 
@@ -383,7 +542,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                         CIMFR Number
                       </div>
                       <div className="font-medium">
-                        {item.cimfrNumber || "—"}
+                        {item.cimfrNumber || "-"}
                       </div>
                     </div>
 
@@ -392,7 +551,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                         Serial Number
                       </div>
                       <div className="font-medium">
-                        {item.serialNumber || "—"}
+                        {item.serialNumber || "-"}
                       </div>
                     </div>
                   </div>
@@ -409,7 +568,7 @@ export default function InvoiceDetailView({ invoice }: Props) {
                               Box: {box.boxNumber || `#${boxIndex + 1}`}
                             </div>
                             <div className="mt-1 text-sm text-muted-foreground">
-                              Qty: {box.quantity ?? "—"}
+                              Qty: {box.quantity ?? "-"}
                             </div>
                             {box.notes ? (
                               <div className="mt-1 text-sm text-muted-foreground">
@@ -460,6 +619,8 @@ export default function InvoiceDetailView({ invoice }: Props) {
         </CardContent>
       </Card>
 
+      <InvoicePaymentReminderCard invoice={invoice} />
+
       <Card>
         <CardHeader>
           <CardTitle>Packaging</CardTitle>
@@ -471,25 +632,31 @@ export default function InvoiceDetailView({ invoice }: Props) {
             </div>
           ) : (
             invoice.packages.map((pkg: any, index: number) => (
-              <div key={pkg.id ?? index} className="rounded-xl border p-4 space-y-2">
+              <div
+                key={pkg.id ?? index}
+                className="rounded-xl border p-4 space-y-2">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                  <div className="font-medium">Package #{pkg.packageNo || index + 1}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Type: {pkg.packageType || "—"}
+                  <div className="font-medium">
+                    Package #{pkg.packageNo || index + 1}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Label: {pkg.label || "—"}
+                    Type: {pkg.packageType || "-"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Gross: {pkg.grossWeight ?? "—"}
+                    Label: {pkg.label || "-"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Net: {pkg.netWeight ?? "—"}
+                    Gross: {pkg.grossWeight ?? "-"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Net: {pkg.netWeight ?? "-"}
                   </div>
                 </div>
 
                 {pkg.remarks ? (
-                  <div className="text-sm text-muted-foreground">{pkg.remarks}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {pkg.remarks}
+                  </div>
                 ) : null}
 
                 {Array.isArray(pkg.items) && pkg.items.length > 0 ? (
@@ -504,7 +671,9 @@ export default function InvoiceDetailView({ invoice }: Props) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">No items in this package.</div>
+                  <div className="text-sm text-muted-foreground">
+                    No items in this package.
+                  </div>
                 )}
               </div>
             ))
@@ -517,47 +686,48 @@ export default function InvoiceDetailView({ invoice }: Props) {
           <CardTitle>LR Copy</CardTitle>
         </CardHeader>
         <CardContent>
-          {invoice.lrCopy.length === 0 ? (
+          {invoice.status === "FINALIZED" ? (
+            <div className="space-y-2">
+              <FileUpload
+                endpoint="productDrawing"
+                kind={ProductMediaKind.DRAWING}
+                label="Upload LR Copy"
+                hint="Upload LR copy PDF or image. This will be used in dispatch details email."
+                value={lrCopyFiles}
+                onChange={onLrCopyChange}
+              />
+              {isSavingLrCopy ? (
+                <div className="text-xs text-muted-foreground">
+                  Saving LR copy...
+                </div>
+              ) : null}
+            </div>
+          ) : lrCopyFiles.length === 0 ? (
             <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
-              No LR copy uploaded.
+              No LR copy uploaded. Finalize invoice first, then upload from this
+              page.
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {invoice.lrCopy.map((file: any) => {
-                const isPdf = file.url.toLowerCase().includes(".pdf");
-
-                if (isPdf) {
-                  return (
-                    <PdfPreviewCard
-                      key={file.id}
-                      url={file.url}
-                      title={file.title || "LR Copy"}
-                      height={420}
-                    />
-                  );
-                }
-
-                return (
-                  <a
-                    key={file.id}
-                    href={file.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group overflow-hidden rounded-xl border bg-background">
-                    <div className="relative h-72 w-full overflow-hidden bg-white">
-                      <Image
-                        src={file.url}
-                        alt={file.title || "LR Copy"}
-                        fill
-                        className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
-                      />
-                    </div>
-                    <div className="truncate border-t px-3 py-2 text-xs text-muted-foreground">
-                      {file.title || "LR Copy"}
-                    </div>
-                  </a>
-                );
-              })}
+            <div className="space-y-3">
+              <div className="rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground">
+                LR copy is available. Finalize invoice first to update it from
+                this page.
+              </div>
+              <div className="rounded-xl border p-4 text-sm">
+                <div className="mb-2 font-medium">Existing Files</div>
+                <div className="space-y-1">
+                  {lrCopyFiles.map((file, index) => (
+                    <a
+                      key={`${file.url}-${index}`}
+                      href={file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block truncate text-primary underline">
+                      {file.title || `LR Copy ${index + 1}`}
+                    </a>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

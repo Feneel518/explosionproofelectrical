@@ -26,24 +26,22 @@ export function useQuotationDraftAutosave({
   const timerRef = React.useRef<number | null>(null);
   const inflightRef = React.useRef(false);
 
-  const triggerSave = React.useCallback(() => {
-    if (!enabled) return;
-    if (inflightRef.current) return;
+  const runSave = React.useCallback(async () => {
+    if (!enabled) return { ok: false as const, skipped: true as const };
+    if (inflightRef.current) {
+      return { ok: false as const, skipped: true as const };
+    }
 
-    if (timerRef.current) window.clearTimeout(timerRef.current);
+    inflightRef.current = true;
+    setStatus("saving");
 
-    timerRef.current = window.setTimeout(async () => {
-      inflightRef.current = true;
-      setStatus("saving");
-
+    try {
       const draft = getDraft();
       const res = await saveQuotationDraftSnapshotAction({
-        quotationId: quotationId,
+        quotationId,
         draft,
         clientVersion: version,
       });
-
-      inflightRef.current = false;
 
       if (!res.ok) {
         if ((res as any).code === "VERSION_CONFLICT") {
@@ -51,14 +49,35 @@ export function useQuotationDraftAutosave({
         } else {
           setStatus("error");
         }
-        return;
+        return res;
       }
 
       setVersion(res.serverVersion);
       setSavedAt(res.savedAt);
       setStatus("saved");
+      return res;
+    } finally {
+      inflightRef.current = false;
+    }
+  }, [enabled, getDraft, quotationId, version]);
+
+  const triggerSave = React.useCallback(() => {
+    if (!enabled) return;
+
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+
+    timerRef.current = window.setTimeout(() => {
+      runSave();
     }, debounceMs);
-  }, [enabled, debounceMs, getDraft, version]);
+  }, [enabled, debounceMs, runSave]);
+
+  const flushSave = React.useCallback(async () => {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    return await runSave();
+  }, [runSave]);
 
   // optional cleanup
   React.useEffect(() => {
@@ -67,5 +86,13 @@ export function useQuotationDraftAutosave({
     };
   }, []);
 
-  return { triggerSave, status, savedAt, version, setVersion, setStatus };
+  return {
+    triggerSave,
+    flushSave,
+    status,
+    savedAt,
+    version,
+    setVersion,
+    setStatus,
+  };
 }

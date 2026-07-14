@@ -30,6 +30,7 @@ interface QuotationTableProps {
   page: number;
   pageSize: number;
   qp: QuotationQP;
+  categories: { id: string; name: string }[];
 }
 
 type Item = {
@@ -96,6 +97,7 @@ const QuotationTable: FC<QuotationTableProps> = ({
   page,
   pageSize,
   qp,
+  categories,
 }) => {
   const [, setState] = useQueryStates(quotationParsers, {
     shallow: false,
@@ -129,7 +131,7 @@ const QuotationTable: FC<QuotationTableProps> = ({
 
   return (
     <div className="space-y-4">
-      <QuotationToolbar qp={qp} />
+      <QuotationToolbar qp={qp} categories={categories} />
 
       {/* ✅ MOBILE CARDS */}
       <div className="space-y-3 md:hidden">

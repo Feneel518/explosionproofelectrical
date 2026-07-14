@@ -9,6 +9,13 @@ export type CustomerSearchItem = {
   companyEmail: string | null;
   companyPhone: string | null;
   city: string | null;
+  state: string | null;
+  gstin: string | null;
+  defaultQuotationGst: string;
+  defaultQuotationPackingCharges: string;
+  defaultQuotationTransportationPayment: string;
+  defaultQuotationPaymentTerms: string;
+  defaultQuotationDeliveryDate: string | null;
 };
 
 export type CustomerSearchResponse = {
@@ -56,9 +63,14 @@ export const searchCustomersForSelectAction = async ({
       gstin: true,
       city: true,
       state: true,
+      defaultQuotationGst: true,
+      defaultQuotationPackingCharges: true,
+      defaultQuotationTransportationPayment: true,
+      defaultQuotationPaymentTerms: true,
+      defaultQuotationDeliveryDate: true,
     },
     orderBy: [{ companyName: "asc" }, { id: "asc" }],
-    take: take + 1,
+    take: takeQty + 1,
     ...(cursor
       ? {
           cursor: { id: cursor },
@@ -67,8 +79,8 @@ export const searchCustomersForSelectAction = async ({
       : {}),
   });
 
-  const hasMore = rows.length > take;
-  const items = hasMore ? rows.slice(0, take) : rows;
+  const hasMore = rows.length > takeQty;
+  const items = hasMore ? rows.slice(0, takeQty) : rows;
   const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null;
 
   return { items, nextCursor };

@@ -34,14 +34,15 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
         </TableHeader>
         <TableBody>
           {quotationItems.map((items, index) => {
+            console.log("items", items);
             return (
               <TableRow key={items.id} className="">
                 <TableCell className="font-medium">
                   {pageItemsStartIndex + index + 1}
                 </TableCell>
-                <TableCell className="">
+                <TableCell className="max-w-[300px]!">
                   <div className="text-wrap">
-                    <strong>"ExEC"</strong>
+                    <strong>&quot;ExEC&quot;</strong>
                     make <strong>{items.title}</strong> suitable for
                     installation in Hazardous location zone-1 & 2 as per IS:
                     5572/94.
@@ -151,13 +152,20 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                     <div className="flex ">
                       <p className="w-[120px] ">Components</p>
                       <div className="flex flex-col">
-                        {items.ComponentsOfProductInQuotation.map((com) => {
-                          return (
-                            <p className="w-[300px]">
-                              :{com.componentsOfQuotation.item}
-                            </p>
-                          );
-                        })}
+                        {items.ComponentsOfProductInQuotation.map(
+                          (com, comIndex) => {
+                            return (
+                              <p
+                                key={`${items.id}-custom-component-${comIndex}`}
+                                className="w-[300px]">
+                                :{com.componentsOfQuotation.item}
+                                {com.componentsOfQuotation.unit
+                                  ? ` - ${com.componentsOfQuotation.unit}`
+                                  : ""}
+                              </p>
+                            );
+                          },
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -167,9 +175,11 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                       <div className="flex ">
                         <p className="w-[120px] ">Components</p>
                         <div className="flex flex-col">
-                          {items.variant.components.map((com) => {
+                          {items.variant.components.map((com, comIndex) => {
                             return (
-                              <p className="w-[300px]">
+                              <p
+                                key={`${items.id}-variant-component-${comIndex}`}
+                                className="w-[300px]">
                                 :{com.component.item} - {com.component.unit}
                               </p>
                             );
@@ -285,8 +295,8 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                   )}
                   {items.cableEntry ? (
                     <div className="flex ">
-                      <p className="w-[120px]">CableEntry</p>
-                      <p>:{items.cableEntry}</p>
+                      <p className="min-w-[120px]">CableEntry</p>
+                      <p className="text-wrap">:{items.cableEntry}</p>
                     </div>
                   ) : (
                     items.variant?.cableEntry && (
@@ -341,9 +351,9 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                       <p className="w-[120px]">Drawing</p>
                       <a
                         href={
-                          items.variantDrawingsSnapshot
+                          Array.isArray(items.variantDrawingsSnapshot)
                             ? // @ts-ignore
-                              items.variantDrawingsSnapshot[0]?.url
+                              items.variantDrawingsSnapshot[0]?.url || ""
                             : ""
                         }
                         target="_blank"

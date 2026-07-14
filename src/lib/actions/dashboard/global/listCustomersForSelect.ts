@@ -9,6 +9,11 @@ export type CustomerSelectItem = {
   gstin: string | null;
   companyPhone: string | null;
   companyEmail: string | null;
+  defaultQuotationGst: string;
+  defaultQuotationPackingCharges: string;
+  defaultQuotationTransportationPayment: string;
+  defaultQuotationPaymentTerms: string;
+  defaultQuotationDeliveryDate: string | null;
 };
 export const listCustomersForSelect = async () => {
   await requireAuth();
@@ -26,6 +31,11 @@ export const listCustomersForSelect = async () => {
       city: true,
       state: true,
       gstin: true,
+      defaultQuotationGst: true,
+      defaultQuotationPackingCharges: true,
+      defaultQuotationTransportationPayment: true,
+      defaultQuotationPaymentTerms: true,
+      defaultQuotationDeliveryDate: true,
     },
     orderBy: { companyName: "asc" },
     take: 500, // keep it sane

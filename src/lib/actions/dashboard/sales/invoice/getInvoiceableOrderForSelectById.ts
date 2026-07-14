@@ -40,7 +40,7 @@ export async function getInvoiceableOrderForSelectById(
 
   if (!row) return null;
   if (row.deletedAt) return null;
-  if (row.status === "CANCELLED") return null;
+  if (row.status === "CANCELLED" || row.status === "COMPLETED") return null;
   if (row.isFullyInvoiced) return null;
 
   const hasPending = row.items.some(

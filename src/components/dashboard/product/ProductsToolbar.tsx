@@ -13,19 +13,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  CustomerSort,
-  customersParsers,
-  CustomersQP,
-  CustomerStatus,
+  ProductSort,
+  ProductStatus,
+  ProductsParsers,
+  ProductsQP,
   TrashFilter,
-} from "@/lib/searchParams/dashboard/customers/customersSearchParams";
+} from "@/lib/searchParams/dashboard/products/productsSearchParams";
 import { Plus, X } from "lucide-react";
 import React from "react";
 import { useDebouncedValue } from "@/hooks/useDebounce";
-import {
-  ProductsParsers,
-  ProductsQP,
-} from "@/lib/searchParams/dashboard/products/productsSearchParams";
 
 export default function ProductsToolbar({
   qp,
@@ -45,7 +41,7 @@ export default function ProductsToolbar({
   // update URL when debounced value changes
   React.useEffect(() => {
     setState({ q: debouncedSearch, page: 1 });
-  }, [debouncedSearch]);
+  }, [debouncedSearch, setState]);
 
   const activeFilters =
     (qp.q ? 1 : 0) +
@@ -87,7 +83,7 @@ export default function ProductsToolbar({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            {CustomerStatus.map((s) => (
+            {ProductStatus.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
               </SelectItem>
@@ -120,7 +116,7 @@ export default function ProductsToolbar({
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent>
-            {CustomerSort.map((s) => (
+            {ProductSort.map((s) => (
               <div key={s}>
                 <SelectItem key={`${s}-asc`} value={`${s}:asc`}>
                   Sort: {s} (asc)
@@ -139,7 +135,7 @@ export default function ProductsToolbar({
             onClick={() =>
               setState({
                 q: "",
-
+                categoryId: "ALL",
                 status: "ALL",
                 trash: "EXCLUDE",
                 sort: "createdAt",

@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
 import { revalidatePath } from "next/cache";
 
@@ -65,6 +66,15 @@ export const finalizeQuotationAction = async (id: string) => {
     }
 
     const nextFollowupAt = toDateOrNull((draft.header as any)?.nextFollowupAt);
+    const customerId = draft.header?.customerId ?? null;
+    const headerGst = (draft.header?.gst as any) ?? "CGST_SGST_18";
+    const headerPackingCharges =
+      (draft.header?.packingCharges as any) ?? "INCLUDED";
+    const headerPaymentTerms =
+      (draft.header?.paymentTerms as any) ?? "ADVANCE";
+    const headerTransportationPayment =
+      (draft.header?.transportationPayment as any) ?? "TO_PAY";
+    const headerDeliveryDate = draft.header?.deliveryDate ?? null;
 
     // Prepare quotation update data OUTSIDE transaction
     const quotationUpdateData = {
@@ -74,7 +84,7 @@ export const finalizeQuotationAction = async (id: string) => {
 
       platform: draft.header?.platform ?? "OTHER",
 
-      customerId: draft.header?.customerId ?? null,
+      customerId,
       clientName: draft.header?.clientName ?? null,
 
       receivedFromName: draft.header?.receivedFromName ?? null,
@@ -83,13 +93,13 @@ export const finalizeQuotationAction = async (id: string) => {
       enquiryMessage: draft.header?.enquiryMessage ?? null,
 
       additionalNotes: draft.header?.additionalNotes ?? null,
-      deliveryDate: draft.header?.deliveryDate ?? null,
 
-      gst: draft.header?.gst ?? "CGST_SGST_18",
-      packingCharges: draft.header?.packingCharges ?? null,
-      paymentTerms: draft.header?.paymentTerms ?? null,
-      transportationPayment: draft.header?.transportationPayment ?? null,
+      gst: headerGst,
+      packingCharges: headerPackingCharges,
+      paymentTerms: headerPaymentTerms,
+      transportationPayment: headerTransportationPayment,
       discount: draft.header?.discount ?? null,
+      deliveryDate: headerDeliveryDate,
       nextFollowupAt,
 
       updatedById: session.user.id,
@@ -154,6 +164,18 @@ export const finalizeQuotationAction = async (id: string) => {
           where: { id },
           data: quotationUpdateData,
         });
+        if (customerId) {
+          await tx.customer.update({
+            where: { id: customerId },
+            data: {
+              defaultQuotationGst: headerGst,
+              defaultQuotationPackingCharges: headerPackingCharges,
+              defaultQuotationPaymentTerms: headerPaymentTerms,
+              defaultQuotationTransportationPayment: headerTransportationPayment,
+              defaultQuotationDeliveryDate: headerDeliveryDate,
+            },
+          });
+        }
 
         // 2) fetch existing item ids
         const existingItems = await tx.quotationItem.findMany({
@@ -295,10 +317,7 @@ export const finalizeQuotationAction = async (id: string) => {
           }
         }
       },
-      {
-        timeout: 20000,
-        maxWait: 10000,
-      },
+      FINALIZE_TRANSACTION_OPTIONS,
     );
 
     revalidatePath("/dashboard/sales/quotations");

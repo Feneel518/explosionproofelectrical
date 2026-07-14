@@ -16,8 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { catgeoryQP } from "@/lib/searchParams/dashboard/categories/categoriesSearchParams";
-import { customersParsers } from "@/lib/searchParams/dashboard/customers/customersSearchParams";
+import {
+  catgeoryParsers,
+  catgeoryQP,
+} from "@/lib/searchParams/dashboard/categories/categoriesSearchParams";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import CategoriesToolbar from "./CategoriesToolbar";
@@ -46,7 +48,7 @@ export default function CategoriesTable({
   pageSize: number;
   qp: catgeoryQP;
 }) {
-  const [, setState] = useQueryStates(customersParsers, {
+  const [, setState] = useQueryStates(catgeoryParsers, {
     shallow: false,
   });
 

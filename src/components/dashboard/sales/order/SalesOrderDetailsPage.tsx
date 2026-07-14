@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -14,29 +14,21 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FC } from "react";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  FileText,
-  Pencil,
-  ReceiptText,
-  Truck,
-  XCircle,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowLeft, FileText, Pencil, ReceiptText, Truck } from "lucide-react";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
+import { cancelSalesOrderAction } from "@/lib/actions/dashboard/sales/order/cancelSalesOrderAction";
+import { completeSalesOrderAction } from "@/lib/actions/dashboard/sales/order/completeSalesOrderAction";
 import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/order/reopenSalesOrderAsDraftAction";
 import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
 import WorkOrderCopyModal from "@/components/customerCopy/sales-order/WorkOrderCopyDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
-import {
-  cancelSalesOrderAction,
-  completeSalesOrderManuallyAction,
-} from "@/lib/actions/dashboard/sales/order/updateSalesOrderStatusAction";
+import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
+import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
 
 interface SalesOrderDetailsPageProps {
-  order: GetSalesOrderByIdData;
+  order: ClientSafe<GetSalesOrderByIdData>;
 }
 
 function formatDate(value?: Date | string | null) {
@@ -60,39 +52,6 @@ function formatCurrency(value?: number | string | null) {
   }).format(n);
 }
 
-function getStatusVariant(status: string) {
-  switch (status) {
-    case "COMPLETED":
-    case "INVOICED":
-    case "DISPATCHED":
-      return "default";
-    case "CANCELLED":
-      return "destructive";
-    case "IN_PRODUCTION":
-    case "PARTIALLY_DISPATCHED":
-    case "PARTIALLY_INVOICED":
-      return "outline";
-    case "CONFIRMED":
-      return "secondary";
-    case "DRAFT":
-    default:
-      return "secondary";
-  }
-}
-
-function getStatusClassName(status: string) {
-  switch (status) {
-    case "COMPLETED":
-      return "border-emerald-600 bg-emerald-600 text-white";
-    case "CONFIRMED":
-      return "border-blue-600 bg-blue-600 text-white";
-    case "DRAFT":
-      return "border-slate-300 bg-white text-slate-900 shadow-sm dark:border-slate-300 dark:bg-white dark:text-slate-900";
-    default:
-      return undefined;
-  }
-}
-
 function getInvoiceStatusVariant(status: string) {
   switch (status) {
     case "FINALIZED":
@@ -110,7 +69,11 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
   console.log(order.poFile.length > 0);
 
   const router = useRouter();
-  const orderLabel = formatFinancialDocumentNumber(order.orderFy, order.orderNo);
+  const orderLabel = formatFinancialDocumentNumber(
+    order.orderFy,
+    order.orderNo,
+  );
+  const statusBadge = getSalesOrderStatusBadge(order.status);
 
   const clientName =
     order.clientNameSnapshot ||
@@ -120,7 +83,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
     "-";
 
   const canEdit = order.status === "DRAFT" || order.status === "CONFIRMED";
-  const canComplete =
+  const canMarkCompleted =
     order.status !== "DRAFT" &&
     order.status !== "COMPLETED" &&
     order.status !== "CANCELLED";
@@ -145,18 +108,10 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             </h1>
 
             <Badge
-              variant={getStatusVariant(order.status) as any}
-              className={getStatusClassName(order.status)}>
+              variant={statusBadge.variant}
+              className={statusBadge.className}>
               {order.status}
             </Badge>
-
-            {order.status === "COMPLETED" && order.completionType ? (
-              <Badge variant="outline">
-                {order.completionType === "MANUAL"
-                  ? "MANUALLY CLOSED"
-                  : "FULLY INVOICED"}
-              </Badge>
-            ) : null}
 
             <Badge variant="outline">{order.sourceType}</Badge>
           </div>
@@ -192,25 +147,23 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             </Button>
           ) : null}
 
-          {canComplete ? (
+          {canMarkCompleted ? (
             <Button
               variant="outline"
               onClick={async () => {
-                if (
-                  !window.confirm(
-                    "Complete this order manually without requiring a full invoice?",
-                  )
-                ) {
+                if (!window.confirm("Mark this order as completed?")) return;
+
+                const res = await completeSalesOrderAction(order.id);
+
+                if (!res.ok) {
+                  toast.error(res.message);
                   return;
                 }
 
-                const res = await completeSalesOrderManuallyAction(order.id);
-                if (res.ok) toast.success(res.message);
-                else toast.error(res.message);
-                if (res.ok) router.refresh();
+                toast.success(res.message);
+                router.refresh();
               }}>
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Complete Manually
+              Complete Order
             </Button>
           ) : null}
 
@@ -218,14 +171,24 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             <Button
               variant="destructive"
               onClick={async () => {
-                if (!window.confirm("Cancel this sales order?")) return;
+                if (
+                  !window.confirm(
+                    "Cancel this order? Orders with dispatch or invoice activity cannot be cancelled.",
+                  )
+                ) {
+                  return;
+                }
 
                 const res = await cancelSalesOrderAction(order.id);
-                if (res.ok) toast.success(res.message);
-                else toast.error(res.message);
-                if (res.ok) router.refresh();
+
+                if (!res.ok) {
+                  toast.error(res.message);
+                  return;
+                }
+
+                toast.success(res.message);
+                router.refresh();
               }}>
-              <XCircle className="mr-2 h-4 w-4" />
               Cancel Order
             </Button>
           ) : null}
@@ -234,6 +197,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             orderId={order.id}
             items={order.items.map((item, index) => ({
               id: item.id,
+              productName: item.product?.name,
               itemName: item.variant?.variant,
               description: item.description,
               qty: item.qty,

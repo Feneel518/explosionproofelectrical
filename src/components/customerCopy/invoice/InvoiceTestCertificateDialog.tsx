@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { FC, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { FileCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,9 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
 
   const toggleItem = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id],
+      prev.includes(id)
+        ? prev.filter((itemId) => itemId !== id)
+        : [...prev, id],
     );
   };
 
@@ -124,7 +126,8 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
                   </div>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {[item.sku, item.typeNumber].filter(Boolean).join(" • ") || "—"}
+                    {[item.sku, item.typeNumber].filter(Boolean).join("   ") ||
+                      "-"}
                   </p>
                 </div>
               </label>
@@ -137,4 +140,3 @@ const InvoiceTestCertificateDialog: FC<InvoiceTestCertificateDialogProps> = ({
 };
 
 export default InvoiceTestCertificateDialog;
-

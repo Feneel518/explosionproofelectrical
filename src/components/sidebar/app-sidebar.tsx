@@ -3,21 +3,15 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
   Bot,
+  ChartColumnIncreasing,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
   SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
-import { NavProjects } from "@/components/sidebar/nav-projects";
 import { NavUser } from "@/components/sidebar/nav-user";
-import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -28,14 +22,14 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+export type AppSidebarUser = {
+  name: string;
+  email: string;
+  avatar?: string | null;
+  role?: string | null;
+};
 
+const data = {
   navMain: [
     {
       title: "Master",
@@ -48,12 +42,24 @@ const data = {
           url: "/dashboard/customers",
         },
         {
+          title: "Suppliers",
+          url: "/dashboard/suppliers",
+        },
+        {
           title: "Categories",
           url: "/dashboard/categories",
         },
         {
           title: "Products",
           url: "/dashboard/products",
+        },
+        {
+          title: "Raw Materials",
+          url: "/dashboard/raw-materials",
+        },
+        {
+          title: "Casting Masters",
+          url: "/dashboard/casting-masters",
         },
       ],
     },
@@ -75,78 +81,115 @@ const data = {
           url: "/dashboard/sales/orders",
         },
         {
+          title: "Pending Orders",
+          url: "/dashboard/sales/pending",
+        },
+        {
           title: "Invoicing",
           url: "/dashboard/sales/invoices",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Purchase",
       url: "#",
-      icon: BookOpen,
+      icon: GalleryVerticalEnd,
       items: [
         {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "GRN",
+          url: "/dashboard/purchase/grn",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "Manufacturing",
       url: "#",
-      icon: Settings2,
+      icon: AudioWaveform,
       items: [
         {
-          title: "General",
-          url: "#",
+          title: "Material Issues",
+          url: "/dashboard/manufacturing/material-issues",
         },
         {
-          title: "Team",
-          url: "#",
+          title: "BOM",
+          url: "/dashboard/manufacturing/bom",
         },
         {
-          title: "Billing",
-          url: "#",
+          title: "Casting Jobs",
+          url: "/dashboard/manufacturing/casting-jobs",
         },
         {
-          title: "Limits",
-          url: "#",
+          title: "Worker Ledger",
+          url: "/dashboard/manufacturing/worker-ledger",
+        },
+        {
+          title: "Production Planning",
+          url: "/dashboard/manufacturing/planning",
         },
       ],
     },
-  ],
-  projects: [
     {
-      name: "Design Engineering",
+      title: "Contractors",
       url: "#",
-      icon: Frame,
+      icon: AudioWaveform,
+      items: [
+        {
+          title: "Workers",
+          url: "/dashboard/contractors/workers",
+        },
+        {
+          title: "Rate Catalog",
+          url: "/dashboard/contractors/rate-catalog",
+        },
+        {
+          title: "Daily Entries",
+          url: "/dashboard/contractors/entries",
+        },
+        {
+          title: "Monthly Payouts",
+          url: "/dashboard/contractors/payouts",
+        },
+      ],
     },
     {
-      name: "Sales & Marketing",
+      title: "Inventory",
       url: "#",
-      icon: PieChart,
+      icon: Command,
+      items: [
+        {
+          title: "Stock Summary",
+          url: "/dashboard/inventory/stock",
+        },
+        {
+          title: "Stock Movements",
+          url: "/dashboard/inventory/movements",
+        },
+        {
+          title: "Stock Adjustments",
+          url: "/dashboard/inventory/adjustments",
+        },
+      ],
     },
     {
-      name: "Travel",
+      title: "Website",
       url: "#",
-      icon: Map,
+      icon: ChartColumnIncreasing,
+      items: [
+        {
+          title: "Visitor Analytics",
+          url: "/dashboard/website-analytics",
+        },
+      ],
     },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  user,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  user: AppSidebarUser;
+}) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="border-b">
@@ -163,10 +206,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

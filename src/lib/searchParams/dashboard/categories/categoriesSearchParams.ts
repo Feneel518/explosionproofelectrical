@@ -6,7 +6,7 @@ import {
 } from "nuqs/server";
 
 export const CategoryStatus = ["ALL", "ACTIVE", "INACTIVE"];
-export const CategorySort = ["createdAt", "name", "staus"];
+export const CategorySort = ["createdAt", "name", "status"];
 export const SortDir = ["asc", "desc"];
 export const TrashFilter = ["EXCLUDE", "ONLY", "INCLUDE"];
 

@@ -13,36 +13,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  CustomerSort,
-  customersParsers,
-  CustomersQP,
-  CustomerStatus,
+  CategorySort,
+  catgeoryParsers,
+  catgeoryQP,
+  CategoryStatus,
   TrashFilter,
-} from "@/lib/searchParams/dashboard/customers/customersSearchParams";
+} from "@/lib/searchParams/dashboard/categories/categoriesSearchParams";
 import { Plus, X } from "lucide-react";
 import React from "react";
 import { useDebouncedValue } from "@/hooks/useDebounce";
-import {
-  CategorySort,
-  CategoryStatus,
-  catgeoryQP,
-} from "@/lib/searchParams/dashboard/categories/categoriesSearchParams";
 
 export default function CategoriesToolbar({ qp }: { qp: catgeoryQP }) {
-  const [state, setState] = useQueryStates(customersParsers, {
+  const [state, setState] = useQueryStates(catgeoryParsers, {
     shallow: false,
   });
-  // local controlled inputs
-  const [search, setSearch] = React.useState(state.q ?? "");
 
+  const [search, setSearch] = React.useState(state.q ?? "");
   const debouncedSearch = useDebouncedValue(search, 500);
 
-  // update URL when debounced value changes
   React.useEffect(() => {
     setState({ q: debouncedSearch, page: 1 });
-  }, [debouncedSearch]);
+  }, [debouncedSearch, setState]);
 
-  const activeFilters = (qp.q ? 1 : 0) + (qp.status !== "ALL" ? 1 : 0);
+  const activeFilters =
+    (qp.q ? 1 : 0) +
+    (qp.status !== "ALL" ? 1 : 0) +
+    (qp.trash !== "EXCLUDE" ? 1 : 0);
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -51,7 +47,7 @@ export default function CategoriesToolbar({ qp }: { qp: catgeoryQP }) {
           className="md:max-w-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name / phone / email / GSTIN…"
+          placeholder="Search name / slug / description..."
         />
 
         <Select
@@ -113,7 +109,6 @@ export default function CategoriesToolbar({ qp }: { qp: catgeoryQP }) {
             onClick={() =>
               setState({
                 q: "",
-                city: "",
                 status: "ALL",
                 trash: "EXCLUDE",
                 sort: "createdAt",
@@ -129,7 +124,7 @@ export default function CategoriesToolbar({ qp }: { qp: catgeoryQP }) {
 
       <Button asChild>
         <Link href="/dashboard/categories/new">
-          <Plus></Plus>New Categories
+          <Plus />New Categories
         </Link>
       </Button>
     </div>

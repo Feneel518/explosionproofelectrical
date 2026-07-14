@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -7,15 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cancelSalesOrderAction } from "@/lib/actions/dashboard/sales/order/cancelSalesOrderAction";
+import { completeSalesOrderAction } from "@/lib/actions/dashboard/sales/order/completeSalesOrderAction";
 import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/order/reopenSalesOrderAsDraftAction";
-import {
-  cancelSalesOrderAction,
-  completeSalesOrderManuallyAction,
-} from "@/lib/actions/dashboard/sales/order/updateSalesOrderStatusAction";
 import { SalesOrderStatus } from "@prisma/client";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import React, { FC } from "react";
 import { toast } from "sonner";
 
@@ -27,7 +25,7 @@ interface OrderActionProps {
 
 const OrderAction: FC<OrderActionProps> = ({ id, deletedAt, status }) => {
   const router = useRouter();
-  const canComplete =
+  const canMarkCompleted =
     !deletedAt &&
     status !== "DRAFT" &&
     status !== "COMPLETED" &&
@@ -71,46 +69,54 @@ const OrderAction: FC<OrderActionProps> = ({ id, deletedAt, status }) => {
           </DropdownMenuItem>
         ) : null}
 
-        {!deletedAt ? (
-          <DropdownMenuItem asChild>
-            <Link href={`/sales-orders/${id}/view`}>View Customer Copy</Link>
-          </DropdownMenuItem>
-        ) : null}
-
-        {canComplete ? (
+        {canMarkCompleted ? (
           <DropdownMenuItem
-            onSelect={async (event) => {
-              event.preventDefault();
-              if (
-                !window.confirm(
-                  "Complete this order manually without requiring a full invoice?",
-                )
-              ) {
+            onClick={async () => {
+              if (!window.confirm("Mark this order as completed?")) return;
+
+              const res = await completeSalesOrderAction(id);
+
+              if (!res.ok) {
+                toast.error(res.message);
                 return;
               }
 
-              const res = await completeSalesOrderManuallyAction(id);
-              if (res.ok) toast.success(res.message);
-              else toast.error(res.message);
-              if (res.ok) router.refresh();
+              toast.success(res.message);
+              router.refresh();
             }}>
-            Mark as Completed
+            Mark Completed
           </DropdownMenuItem>
         ) : null}
 
         {canCancel ? (
           <DropdownMenuItem
-            variant="destructive"
-            onSelect={async (event) => {
-              event.preventDefault();
-              if (!window.confirm("Cancel this sales order?")) return;
+            className="text-destructive focus:text-destructive"
+            onClick={async () => {
+              if (
+                !window.confirm(
+                  "Cancel this order? Orders with dispatch or invoice activity cannot be cancelled.",
+                )
+              ) {
+                return;
+              }
 
               const res = await cancelSalesOrderAction(id);
-              if (res.ok) toast.success(res.message);
-              else toast.error(res.message);
-              if (res.ok) router.refresh();
+
+              if (!res.ok) {
+                toast.error(res.message);
+                return;
+              }
+
+              toast.success(res.message);
+              router.refresh();
             }}>
             Cancel Order
+          </DropdownMenuItem>
+        ) : null}
+
+        {!deletedAt ? (
+          <DropdownMenuItem asChild>
+            <Link href={`/sales-orders/${id}/view`}>View Customer Copy</Link>
           </DropdownMenuItem>
         ) : null}
       </DropdownMenuContent>

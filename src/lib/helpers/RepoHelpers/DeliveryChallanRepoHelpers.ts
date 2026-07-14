@@ -42,8 +42,20 @@ export function buildDeliveryChallanWhere(
 
   if (sp.dateFrom || sp.dateTo) {
     where.date = {};
-    if (sp.dateFrom) where.date.gte = new Date(sp.dateFrom);
-    if (sp.dateTo) where.date.lte = new Date(sp.dateTo);
+    if (sp.dateFrom) {
+      const fromDate = new Date(sp.dateFrom);
+      if (!Number.isNaN(fromDate.getTime())) {
+        where.date.gte = fromDate;
+      }
+    }
+
+    if (sp.dateTo) {
+      const toDate = new Date(sp.dateTo);
+      if (!Number.isNaN(toDate.getTime())) {
+        toDate.setHours(23, 59, 59, 999);
+        where.date.lte = toDate;
+      }
+    }
   }
 
   if (sp.trash === "EXCLUDE") {

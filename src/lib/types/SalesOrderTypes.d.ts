@@ -2,6 +2,7 @@ import {
   GST,
   PackingCharges,
   PaymentTerms,
+  SalesOrderSourceType,
   TransportationPayment,
 } from "@prisma/client";
 
@@ -85,6 +86,8 @@ export type SalesOrderDraftHeader = {
   paymentTerms: PaymentTerms;
   transportationPayment: TransportationPayment;
   discount?: string | null;
+  sourceType?: SalesOrderSourceType;
+  isConvertedFromQuotation?: boolean;
 };
 
 export type SalesOrderDraftData = {

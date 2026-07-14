@@ -42,6 +42,17 @@ export const createCustomerAction = async (values: CustomerSchemaRequest) => {
         country: String(data.country || "").trim(),
         pincode: String(data.pincode || "").trim(),
         gstin: data.gstin ? String(data.gstin).trim() : null,
+        defaultQuotationGst:
+          (data.defaultQuotationGst as any) || "CGST_SGST_18",
+        defaultQuotationPackingCharges:
+          (data.defaultQuotationPackingCharges as any) || "INCLUDED",
+        defaultQuotationTransportationPayment:
+          (data.defaultQuotationTransportationPayment as any) || "TO_PAY",
+        defaultQuotationPaymentTerms:
+          (data.defaultQuotationPaymentTerms as any) || "ADVANCE",
+        defaultQuotationDeliveryDate: data.defaultQuotationDeliveryDate
+          ? String(data.defaultQuotationDeliveryDate).trim()
+          : null,
         status: (data.status as any) ?? "ACTIVE",
       },
     });
@@ -79,6 +90,12 @@ export const createCustomerAction = async (values: CustomerSchemaRequest) => {
         gstin: response.gstin,
         companyPhone: response.companyPhone,
         companyEmail: response.companyEmail,
+        defaultQuotationGst: response.defaultQuotationGst,
+        defaultQuotationPackingCharges: response.defaultQuotationPackingCharges,
+        defaultQuotationTransportationPayment:
+          response.defaultQuotationTransportationPayment,
+        defaultQuotationPaymentTerms: response.defaultQuotationPaymentTerms,
+        defaultQuotationDeliveryDate: response.defaultQuotationDeliveryDate,
       },
     };
   } catch (error: any) {

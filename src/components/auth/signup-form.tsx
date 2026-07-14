@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import React from "react";
 import { Spinner } from "../ui/spinner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { signUpEmailAction } from "@/lib/actions/auth/sign-up-email.action";
 
 export function SignupForm({

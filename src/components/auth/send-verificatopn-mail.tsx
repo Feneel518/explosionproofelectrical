@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { cn } from "@/lib/utils";
 import React, { FC } from "react";
@@ -16,7 +16,7 @@ import { Spinner } from "../ui/spinner";
 import Link from "next/link";
 import { toast } from "sonner";
 import { sendVerificationEmail } from "@/lib/auth/authClient";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
 interface SendVerificationMailProps {}
 

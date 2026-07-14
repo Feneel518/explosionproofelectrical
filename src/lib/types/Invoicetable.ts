@@ -1,4 +1,9 @@
-import { Prisma, ProductMedia, ProductMediaKind } from "@prisma/client";
+import {
+  Prisma,
+  ProductMedia,
+  ProductMediaKind,
+  TransportationPayment,
+} from "@prisma/client";
 
 export const invoiceListSelect = {
   id: true,
@@ -7,6 +12,7 @@ export const invoiceListSelect = {
   status: true,
 
   invoiceDate: true,
+  dispatchDate: true,
 
   customerId: true,
   customer: {
@@ -23,6 +29,7 @@ export const invoiceListSelect = {
       orderNo: true,
       orderFy: true,
       status: true,
+      paymentTerms: true,
     },
   },
 
@@ -30,6 +37,8 @@ export const invoiceListSelect = {
   gstinSnapshot: true,
   poNumber: true,
   poDate: true,
+  transportationPayment: true,
+  transportationAmount: true,
 
   subtotal: true,
   taxableTotal: true,
@@ -37,6 +46,10 @@ export const invoiceListSelect = {
   grandTotal: true,
 
   emailedAt: true,
+  paymentReceived: true,
+  paymentReceivedAt: true,
+  paymentReminderLastSentAt: true,
+  paymentReminderCount: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.InvoiceSelect;
@@ -138,7 +151,7 @@ export type InvoiceCreateSalesOrder = Prisma.SalesOrderGetPayload<{
 
 export type InvoiceDraftData = {
   header: {
-    salesOrderId: string;
+    salesOrderId: string | null;
     customerId: string | null;
 
     invoiceDate: string | null;
@@ -160,6 +173,8 @@ export type InvoiceDraftData = {
     dispatchThrough?: string | null;
     lrNumber?: string | null;
     ewayBill?: string | null;
+    transportationPayment?: TransportationPayment | null;
+    transportationAmount?: number | null;
     remarks?: string | null;
     lrCopy?: {
       kind: ProductMediaKind;
@@ -177,6 +192,7 @@ export type InvoiceDraftData = {
   items: {
     id: string;
     salesOrderItemId: string;
+    isManual?: boolean;
     productId: string | null;
     variantId: string | null;
 
@@ -242,6 +258,8 @@ export type InvoiceFormCreationValues = {
     dispatchDate: Date | null;
 
     transporterName: string;
+    transportationPayment: TransportationPayment;
+    transportationAmount: number | null;
     vehicleNumber: string;
     driverName: string;
     driverPhone: string;

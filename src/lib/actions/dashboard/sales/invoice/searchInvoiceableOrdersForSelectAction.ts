@@ -32,7 +32,7 @@ export async function searchInvoiceableOrdersForSelectAction({
   const where: Prisma.SalesOrderWhereInput = {
     deletedAt: null,
     status: {
-      not: "CANCELLED",
+      notIn: ["CANCELLED", "COMPLETED"],
     },
 
     items: {

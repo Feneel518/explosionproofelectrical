@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay, addDays } from "date-fns";
 
 export async function getQuotationFollowupRemindersAction() {
@@ -11,12 +12,18 @@ export async function getQuotationFollowupRemindersAction() {
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
   const upcomingEnd = endOfDay(addDays(now, 3));
+  const activeQuotationWhere: Prisma.QuotationWhereInput = {
+    deletedAt: null,
+    convertedToOrderAt: null,
+    status: {
+      notIn: ["WON", "LOST", "CANCELLED"],
+    },
+  };
 
   const [overdue, today, upcoming] = await Promise.all([
     prisma.quotation.findMany({
       where: {
-        deletedAt: null,
-        status: { in: ["SENT", "FOLLOWUP", "EXPIRED"] },
+        ...activeQuotationWhere,
         nextFollowupAt: {
           lt: now,
         },
@@ -42,8 +49,7 @@ export async function getQuotationFollowupRemindersAction() {
 
     prisma.quotation.findMany({
       where: {
-        deletedAt: null,
-        status: { in: ["SENT", "FOLLOWUP", "EXPIRED"] },
+        ...activeQuotationWhere,
         nextFollowupAt: {
           gte: todayStart,
           lte: todayEnd,
@@ -70,8 +76,7 @@ export async function getQuotationFollowupRemindersAction() {
 
     prisma.quotation.findMany({
       where: {
-        deletedAt: null,
-        status: { in: ["SENT", "FOLLOWUP", "EXPIRED"] },
+        ...activeQuotationWhere,
         nextFollowupAt: {
           gt: todayEnd,
           lte: upcomingEnd,

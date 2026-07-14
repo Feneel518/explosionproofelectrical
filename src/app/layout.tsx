@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { EB_Garamond, Poppins } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import FrontendVisitTracker from "@/components/analytics/FrontendVisitTracker";
+import NextTopLoader from "nextjs-toploader";
+import { SITE_DESCRIPTION, SITE_TITLE_DEFAULT, SITE_URL } from "@/lib/seo/site";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -20,9 +23,19 @@ const garamond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "ExEC | Explosion Proof Electrical Control",
-  description:
-    "Flameproof and explosion-proof electrical equipment engineered in Vapi, Gujarat.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE_DEFAULT,
+    template: "%s | ExEC",
+  },
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -34,10 +47,24 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${poppins.variable} ${garamond.variable} antialiased font-sans no-scrollbar`}>
+        <NextTopLoader
+          color="#1f7aec"
+          height={3}
+          zIndex={2147483647}
+          showSpinner={false}
+          initialPosition={0.1}
+          crawlSpeed={180}
+          easing="ease"
+          speed={220}
+          shadow={false}
+        />
         <NuqsAdapter>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <FrontendVisitTracker />
+            {children}
+          </TooltipProvider>
         </NuqsAdapter>
-        <Toaster richColors />
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

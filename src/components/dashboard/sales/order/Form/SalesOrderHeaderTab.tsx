@@ -97,6 +97,16 @@ const SalesOrderHeaderTab: FC<SalesOrderHeaderTabProps> = ({
           mode="create"
           onCreated={(customer) => {
             const customerId = customer.id;
+            const previousCustomerId = form.getValues("header.customerId") ?? null;
+            const linkedQuotationId = form.getValues("header.quotationId") ?? "";
+
+            if (linkedQuotationId && previousCustomerId !== customerId) {
+              form.setValue("header.quotationId", "", { shouldDirty: true });
+              form.setValue("header.sourceType", "DIRECT", { shouldDirty: true });
+              form.setValue("header.isConvertedFromQuotation", false, {
+                shouldDirty: true,
+              });
+            }
 
             form.setValue("header.customerId", customerId, {
               shouldDirty: true,

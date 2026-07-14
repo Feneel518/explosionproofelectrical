@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { FC, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Package } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

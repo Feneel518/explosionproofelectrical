@@ -4,6 +4,7 @@ import { Prisma, ProductMediaKind } from "@prisma/client";
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import type { InvoiceDraftData } from "@/lib/types/Invoicetable";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 function normalizeInvoiceDraftData(
   value: Prisma.JsonValue,
@@ -59,9 +60,12 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
         driverPhone: true,
         dispatchThrough: true,
         lrNumber: true,
+        transportationPayment: true,
+        transportationAmount: true,
         remarks: true,
         ewayBill: true,
         salesOrderId: true,
+        customerId: true,
         subtotal: true,
         gstTotal: true,
         grandTotal: true,
@@ -110,15 +114,8 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
       return { ok: false as const, message: "Invoice not found" };
     }
 
-    if (!invoice.salesOrderId || !invoice.salesOrder) {
-      return {
-        ok: false as const,
-        message: "Legacy invoice is not linked to a sales order",
-      };
-    }
-
-    const pendingItems = invoice.salesOrder.items
-      .map((item) => {
+    const pendingItems = invoice.salesOrder?.items
+      ?.map((item) => {
         const qty = Number(item.qty ?? 0);
         const invoicedQty = Number(item.invoicedQty ?? 0);
         const dispatchedQty = Number(item.dispatchedQty ?? 0);
@@ -135,7 +132,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
           remainingQty,
         };
       })
-      .filter((item) => item.remainingQty > 0);
+      .filter((item) => item.remainingQty > 0) ?? [];
 
     const lrCopy: MediaItem[] = invoice.lrCopy
       .filter((item) => item.kind && item.url)
@@ -150,17 +147,20 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
 
     return {
       ok: true as const,
-      invoice: {
+      invoice: serializeForClient({
         ...invoice,
-        salesOrderId: invoice.salesOrderId,
-        salesOrder: invoice.salesOrder,
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
         grandTotal: Number(invoice.grandTotal ?? 0),
+        transportationAmount:
+          invoice.transportationAmount === null ||
+          invoice.transportationAmount === undefined
+            ? null
+            : Number(invoice.transportationAmount),
         lrCopy,
         draftData,
         pendingItems,
-      },
+      }),
     };
   } catch (error) {
     console.error("getInvoiceEditDataAction", error);

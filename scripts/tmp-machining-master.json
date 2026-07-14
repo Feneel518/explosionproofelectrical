@@ -1,0 +1,514 @@
+[
+    {
+        "rowNumber":  2,
+        "name":  "100 Dia Junction Box Body",
+        "operation":  "Thread",
+        "rate":  8,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  3,
+        "name":  "100 Dia Junction Box Cover",
+        "operation":  "Thread",
+        "rate":  8,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  4,
+        "name":  "2 X 36 Bulkhead Body",
+        "operation":  "Face",
+        "rate":  40,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  5,
+        "name":  "200 x 250 Body",
+        "operation":  "Face",
+        "rate":  15,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  6,
+        "name":  "200 x 250 Cover",
+        "operation":  "Face",
+        "rate":  15,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  7,
+        "name":  "200 X 400 Body Clock Small",
+        "operation":  "Face",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  8,
+        "name":  "200 X 400 Cover Clock Small",
+        "operation":  "Face",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  9,
+        "name":  "250 Dia Junction Box Body",
+        "operation":  "Thread",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  10,
+        "name":  "250 Dia Junction Box Body Boltin",
+        "operation":  "Bore",
+        "rate":  20,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  11,
+        "name":  "250 Dia Junction Box Cover",
+        "operation":  "Thread",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  12,
+        "name":  "250 Dia Junction Box Cover Boltin",
+        "operation":  "Bore",
+        "rate":  20,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  13,
+        "name":  "250 X 300 Body",
+        "operation":  "Face",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  14,
+        "name":  "250 X 300 Cover",
+        "operation":  "Face",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  15,
+        "name":  "250 x 500 Body Clock",
+        "operation":  "Face",
+        "rate":  40,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  16,
+        "name":  "250 x 500 Cover Clock",
+        "operation":  "Face",
+        "rate":  40,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  17,
+        "name":  "350 Dia Junction Box Body",
+        "operation":  "Thread",
+        "rate":  35,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  18,
+        "name":  "350 Dia Junction Box Cover",
+        "operation":  "Thread",
+        "rate":  0,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  19,
+        "name":  "410 X 410 Body",
+        "operation":  "Face",
+        "rate":  40,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  20,
+        "name":  "410 X 410 Cover",
+        "operation":  "Face",
+        "rate":  40,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  21,
+        "name":  "ACK Body Middle Operation",
+        "operation":  "Face",
+        "rate":  0,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  22,
+        "name":  "ACK Body Top Bottom Operation",
+        "operation":  "Face",
+        "rate":  0,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  23,
+        "name":  "Big Control Body",
+        "operation":  "Bore",
+        "rate":  40,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  24,
+        "name":  "Bottom Openable Body",
+        "operation":  "Face",
+        "rate":  30,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  25,
+        "name":  "Bottom Openable Ring",
+        "operation":  "Face",
+        "rate":  30,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  26,
+        "name":  "Control Body",
+        "operation":  "Bore",
+        "rate":  30,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  27,
+        "name":  "Control Cover Small",
+        "operation":  "Face",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  28,
+        "name":  "Ferol Tubelight",
+        "operation":  "Face",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  29,
+        "name":  "Heat Sink",
+        "operation":  "Face",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  30,
+        "name":  "MCB Body",
+        "operation":  "Face",
+        "rate":  15,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  31,
+        "name":  "MCB Cover",
+        "operation":  "Face",
+        "rate":  15,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  32,
+        "name":  "Plain Cover Push Button",
+        "operation":  "Face",
+        "rate":  3,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  33,
+        "name":  "Push Cover",
+        "operation":  "Face",
+        "rate":  3,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  34,
+        "name":  "Reactor Vessel Lamp Cable Box",
+        "operation":  "Thread",
+        "rate":  12,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  35,
+        "name":  "Reactor Vessel Lamp Camera Ring",
+        "operation":  "Thread",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  36,
+        "name":  "Reactor Vessel Lamp RIng",
+        "operation":  "Thread",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  37,
+        "name":  "Small Flood Light Cable Box",
+        "operation":  "Bore",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  38,
+        "name":  "Small Flood Light Cover",
+        "operation":  "Face",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  39,
+        "name":  "Small Limit switch Body",
+        "operation":  "Thread",
+        "rate":  8,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  40,
+        "name":  "Small Limit Switch Cover",
+        "operation":  "Thread",
+        "rate":  8,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  41,
+        "name":  "Spindal",
+        "operation":  "Cut",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  42,
+        "name":  "Square Bulkhead Body",
+        "operation":  "Face",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  43,
+        "name":  "Street Light Body",
+        "operation":  "Face",
+        "rate":  20,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  44,
+        "name":  "Street Light Ring",
+        "operation":  "Face",
+        "rate":  20,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  45,
+        "name":  "Switch Socket Cover",
+        "operation":  "Thread",
+        "rate":  8,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  46,
+        "name":  "Switch Socket Top",
+        "operation":  "Final",
+        "rate":  16,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  47,
+        "name":  "Top Openable Datta Round",
+        "operation":  "Face",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  48,
+        "name":  "Top Openable Ring (Glass)",
+        "operation":  "Face",
+        "rate":  30,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  49,
+        "name":  "Tubelight Rod",
+        "operation":  "Thread",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  50,
+        "name":  "Well Glass Body Cover Side",
+        "operation":  "Thread",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  51,
+        "name":  "Well Glass Body Ring Side",
+        "operation":  "Thread",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  52,
+        "name":  "Well Glass Cover",
+        "operation":  "Thread",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  53,
+        "name":  "Small Flood Light Ring",
+        "operation":  "Thread",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  54,
+        "name":  "Control Cover Big",
+        "operation":  "Face",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  55,
+        "name":  "Reactor Vessel Lamp Body",
+        "operation":  "Thread Final",
+        "rate":  16,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  56,
+        "name":  "Reactor Vessel Lamp Cover",
+        "operation":  "Thread",
+        "rate":  8,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  57,
+        "name":  "Square Bulkhead Cable Box",
+        "operation":  "Face",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  58,
+        "name":  "Switch Socket Collar",
+        "operation":  "Face",
+        "rate":  13,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  59,
+        "name":  "Bottom Openable Bulkhead Cablebox Cover",
+        "operation":  "Face",
+        "rate":  5,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  60,
+        "name":  "Push Button Body",
+        "operation":  "Bore",
+        "rate":  7,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  61,
+        "name":  "Bottom Openable Bulkhead Cablebox",
+        "operation":  "Bore",
+        "rate":  10,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  62,
+        "name":  "Small Flood Light Body",
+        "operation":  "Thread",
+        "rate":  25,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  63,
+        "name":  "Heater Cable Box",
+        "operation":  "Thread",
+        "rate":  16,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  64,
+        "name":  "350 Dia Junction Box Boltin Body",
+        "operation":  "Bore",
+        "rate":  30,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    },
+    {
+        "rowNumber":  65,
+        "name":  "350 Dia Junction Box Boltin Cover",
+        "operation":  "Bore",
+        "rate":  30,
+        "role":  "TURNER",
+        "status":  "ACTIVE"
+    }
+]

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import Link from "next/link";
 import React, { FC } from "react";
 import { closeDeliveryChallanAction } from "../../../../lib/actions/dashboard/sales/delivery-challan/closeDeliveryChallanAction";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import CloseDeliveryChallanDialog from "./CloseDeliveryChallanDialog";
 import { reopenDeliveryChallanAsDraftAction } from "@/lib/actions/dashboard/sales/delivery-challan/reopenDeliveryChallanAsDraftAction";
 

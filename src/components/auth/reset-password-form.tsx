@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -6,7 +6,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { resetPassword } from "@/lib/auth/authClient";

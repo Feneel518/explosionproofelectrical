@@ -1,16 +1,10 @@
 "use server";
 
 import transporter from "@/lib/email/nodemailer";
-import { link } from "fs";
-import { tr } from "zod/v4/locales";
-
-const styles = {
-  container:
-    "max-width:500px;margin:20px auto;padding:20px;border:1px solid #DDD;border-radius:px",
-  header: "font-size:24px;font-weight:bold;margin-bottom:10px;color:#333",
-  paragraph: "font-size:16px;margin-bottom:20px;color:#555",
-  link: "display:inline-block;padding:10px 15px;background-color:#007BFF;color:#FFF;text-decoration:none;border-radius:5px;margin-top:15px",
-};
+import {
+  escapeEmailHtml,
+  renderThemedEmailLayout,
+} from "@/lib/email/themeTemplate";
 
 export const sendEmail = async (
   to: string,
@@ -20,15 +14,26 @@ export const sendEmail = async (
     link: string;
   },
 ) => {
+  const safeDescription = escapeEmailHtml(meta.description);
+  const safeLink = escapeEmailHtml(meta.link);
+
+  const html = renderThemedEmailLayout({
+    title: subject,
+    preheader: meta.description,
+    bodyHtml: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#334155;">${safeDescription}</p>
+      <div style="margin:0 0 18px;">
+        <a href="${safeLink}" style="display:inline-block;padding:10px 16px;border-radius:8px;background:#0f4c81;color:#ffffff;font-weight:600;text-decoration:none;">Open Secure Link</a>
+      </div>
+      <p style="margin:0;font-size:13px;color:#64748b;">If the button does not work, copy and open this URL in your browser:<br/><span style="word-break:break-all;color:#1d4c72;">${safeLink}</span></p>
+    `,
+  });
+
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.SMTP_FROM || process.env.EMAIL_USER,
     to,
-    subject: `${subject}`,
-    html: `<div style="${styles.container}">
-        <div style="${styles.header}">${subject}</div>
-        <div style="${styles.paragraph}">${meta.description}</div>
-        <a href="${meta.link}" style="${styles.link}">Click Here</a>
-      </div>`,
+    subject,
+    html,
   };
 
   try {

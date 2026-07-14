@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 export const getDeliveryChallanByIdAction = async (id: string) => {
   await requireAuth();
@@ -110,6 +111,6 @@ export const getDeliveryChallanByIdAction = async (id: string) => {
 
   return {
     ok: true as const,
-    deliveryChallan,
+    deliveryChallan: serializeForClient(deliveryChallan),
   };
 };

@@ -1,10 +1,15 @@
 ﻿"use client";
 
 import * as React from "react";
-import { format, sub } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { ProductMediaKind } from "@prisma/client";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { format } from "date-fns";
+import { CalendarIcon, Plus } from "lucide-react";
+import { ProductMediaKind, TransportationPayment } from "@prisma/client";
+import {
+  useFieldArray,
+  useForm,
+  useWatch,
+  type Resolver,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -32,16 +37,36 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CustomerCombobox } from "@/components/dashboard/global/CustomerCombobox";
+import { ProductVariantCombobox } from "@/components/dashboard/global/ProductVariantCombobox";
+import { SalesOrderCombobox } from "@/components/dashboard/global/SalesOrderCombobox";
 import { updateInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/updateInvoiceDraftData";
 import { finalizeInvoiceAction } from "@/lib/actions/dashboard/sales/invoice/finalizeInvoiceAction";
-import { useRouter } from "next/navigation";
+import { attachSalesOrderToInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/attachSalesOrderToInvoiceDraftAction";
+import { detachSalesOrderFromInvoiceDraftAction } from "@/lib/actions/dashboard/sales/invoice/detachSalesOrderFromInvoiceDraftAction";
+import { useRouter } from "nextjs-toploader/app";
 import { MediaItem } from "@/lib/actions/dashboard/sales/invoice/getInvoiceEditDataAction";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import { getCustomerForSelectById } from "@/lib/actions/dashboard/global/getCustomerForSelectById";
+import type { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
 
 type PendingItem = {
   id: string;
@@ -80,14 +105,22 @@ type InvoiceEditData = {
   driverPhone: string | null;
   dispatchThrough: string | null;
   lrNumber: string | null;
+  transportationPayment: TransportationPayment;
+  transportationAmount: number | null;
   remarks: string | null;
   ewayBill: string | null;
-  salesOrderId: string;
+  salesOrderId: string | null;
+  customerId: string | null;
   subtotal: number;
   gstTotal: number;
   grandTotal: number;
   draftData?: {
     header?: {
+      customerId?: string | null;
+      clientNameSnapshot?: string | null;
+      citySnapshot?: string | null;
+      stateSnapshot?: string | null;
+      gstinSnapshot?: string | null;
       invoiceNo?: number | null;
       invoiceDate?: string | null;
       dispatchDate?: string | null;
@@ -98,16 +131,24 @@ type InvoiceEditData = {
       driverPhone?: string | null;
       dispatchThrough?: string | null;
       lrNumber?: string | null;
+      transportationPayment?: TransportationPayment | null;
+      transportationAmount?: number | null;
       ewayBill?: string | null;
       remarks?: string | null;
       lrCopy?: MediaItem[];
     };
     items?: Array<{
+      id?: string;
       salesOrderItemId: string;
+      isManual?: boolean;
+      productId?: string | null;
+      variantId?: string | null;
       selected?: boolean;
       title?: string | null;
       sku?: string | null;
       typeNumber?: string | null;
+      description?: string | null;
+      hsnCode?: string | null;
       unit?: string | null;
       orderedQty?: number;
       alreadyInvoiced?: number;
@@ -128,6 +169,10 @@ type InvoiceEditData = {
   pendingItems: PendingItem[];
 };
 
+type DraftInvoiceItem = NonNullable<
+  NonNullable<InvoiceEditData["draftData"]>["items"]
+>[number];
+
 const mediaSchema = z.object({
   kind: z.nativeEnum(ProductMediaKind),
   url: z.string(),
@@ -136,11 +181,16 @@ const mediaSchema = z.object({
 
 const itemSchema = z.object({
   salesOrderItemId: z.string(),
+  isManual: z.boolean().default(false),
+  productId: z.string().nullable().optional(),
+  variantId: z.string().nullable().optional(),
   selected: z.boolean().default(false),
 
   title: z.string(),
   sku: z.string().nullable().optional(),
   typeNumber: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  hsnCode: z.string().nullable().optional(),
   unit: z.string().nullable().optional(),
 
   orderedQty: z.number(),
@@ -179,6 +229,7 @@ const packageSchema = z.object({
 const formSchema = z
   .object({
     header: z.object({
+      customerId: z.string().nullable().optional(),
       invoiceNo: z.coerce.number().int().min(1, "Invoice number is required"),
       invoiceDate: z.date("Invoice date is required"),
       dispatchDate: z.date().nullable().optional(),
@@ -189,8 +240,14 @@ const formSchema = z
       driverPhone: z.string().optional(),
       dispatchThrough: z.string().optional(),
       lrNumber: z.string().optional(),
+      transportationPayment: z.nativeEnum(TransportationPayment),
+      transportationAmount: z.coerce.number().min(0).nullable(),
       ewayBill: z.string().optional(),
       remarks: z.string().optional(),
+      clientNameSnapshot: z.string().optional(),
+      citySnapshot: z.string().optional(),
+      stateSnapshot: z.string().optional(),
+      gstinSnapshot: z.string().optional(),
       lrCopy: z.array(mediaSchema).default([]),
     }),
     items: z.array(itemSchema),
@@ -200,10 +257,15 @@ const formSchema = z
     data.items.forEach((item, index) => {
       if (!item.selected) return;
 
-      const maxQty = Math.max(
-        0,
-        Math.min(Number(item.remainingQty || 0), Number(item.orderedQty || 0)),
-      );
+      const maxQty = item.isManual
+        ? Number.POSITIVE_INFINITY
+        : Math.max(
+            0,
+            Math.min(
+              Number(item.remainingQty || 0),
+              Number(item.orderedQty || 0),
+            ),
+          );
 
       if (item.qty <= 0) {
         ctx.addIssue({
@@ -213,7 +275,7 @@ const formSchema = z
         });
       }
 
-      if (item.qty > maxQty) {
+      if (Number.isFinite(maxQty) && item.qty > maxQty) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["items", index, "qty"],
@@ -239,7 +301,8 @@ const formSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["packages", pkgIndex, "items", itemIndex, "qty"],
-            message: "Package allocation item must be selected in invoice items",
+            message:
+              "Package allocation item must be selected in invoice items",
           });
           return;
         }
@@ -276,7 +339,7 @@ function toDate(value?: string | Date | null) {
 
 function displayValue(
   value: string | number | null | undefined,
-  placeholder = "â€”",
+  placeholder = "-",
 ) {
   if (value === null || value === undefined) return placeholder;
   if (typeof value === "string" && value.trim() === "") return placeholder;
@@ -335,16 +398,327 @@ function round2(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+function createManualInvoiceItem(index: number): FormValues["items"][number] {
+  const id = crypto.randomUUID();
+  return {
+    salesOrderItemId: id,
+    isManual: true,
+    productId: null,
+    variantId: null,
+    selected: true,
+    title: "",
+    sku: null,
+    typeNumber: null,
+    description: null,
+    hsnCode: null,
+    unit: "Nos",
+    orderedQty: 1,
+    alreadyInvoiced: 0,
+    alreadyDispatched: 0,
+    remainingQty: 1,
+    qty: 1,
+    cimfrNumber: null,
+    pesoNumber: null,
+    serialNumber: null,
+    productPicture: [],
+    unitPrice: 0,
+    lineSubtotal: 0,
+    sortOrder: index,
+  };
+}
+
+function mapDraftItemToForm(
+  item: DraftInvoiceItem,
+  fallbackIndex: number,
+): FormValues["items"][number] {
+  const qty = Math.max(0, Number(item.qty ?? 0));
+  const unitPrice = Number(item.unitPrice ?? 0);
+  const itemKey = item.salesOrderItemId || item.id || crypto.randomUUID();
+
+  return {
+    salesOrderItemId: itemKey,
+    isManual: item.isManual ?? true,
+    productId: item.productId ?? null,
+    variantId: item.variantId ?? null,
+    selected: typeof item.selected === "boolean" ? item.selected : true,
+    title: item.title ?? "",
+    sku: item.sku ?? null,
+    typeNumber: item.typeNumber ?? null,
+    description: item.description ?? null,
+    hsnCode: item.hsnCode ?? null,
+    unit: item.unit ?? "Nos",
+    orderedQty: Number((item.orderedQty ?? qty) || 0),
+    alreadyInvoiced: Number(item.alreadyInvoiced ?? 0),
+    alreadyDispatched: Number(item.alreadyDispatched ?? 0),
+    remainingQty: Number((item.remainingQty ?? qty) || 0),
+    qty,
+    cimfrNumber: item.cimfrNumber ?? null,
+    pesoNumber: item.pesoNumber ?? null,
+    serialNumber: item.serialNumber ?? null,
+    productPicture: item.productPicture ?? [],
+    unitPrice,
+    lineSubtotal: qty * unitPrice,
+    sortOrder: Number(item.sortOrder ?? fallbackIndex),
+  };
+}
+
+function buildDefaultValues(invoice: InvoiceEditData): FormValues {
+  const draftHeader = invoice.draftData?.header ?? {};
+  const draftItems = Array.isArray(invoice.draftData?.items)
+    ? invoice.draftData.items
+    : [];
+  const draftPackages = Array.isArray(invoice.draftData?.packages)
+    ? invoice.draftData.packages
+    : [];
+
+  const draftItemIdToSalesOrderItemId = new Map(
+    draftItems
+      .map((item) => {
+        const draftItemId =
+          typeof (item as { id?: unknown }).id === "string"
+            ? ((item as { id?: string }).id ?? null)
+            : null;
+
+        const salesOrderItemId =
+          typeof item.salesOrderItemId === "string"
+            ? item.salesOrderItemId
+            : null;
+
+        if (!draftItemId || !salesOrderItemId) return null;
+
+        return [draftItemId, salesOrderItemId] as const;
+      })
+      .filter((row): row is readonly [string, string] => Boolean(row)),
+  );
+
+  return {
+    header: {
+      customerId: draftHeader.customerId ?? invoice.customerId ?? null,
+      invoiceNo: Number(draftHeader.invoiceNo ?? invoice.invoiceNo ?? 1),
+      invoiceDate:
+        toDate(draftHeader.invoiceDate) ??
+        toDate(invoice.invoiceDate) ??
+        new Date(),
+      dispatchDate:
+        toDate(draftHeader.dispatchDate) ??
+        toDate(invoice.dispatchDate) ??
+        null,
+      poNumber: draftHeader.poNumber ?? invoice.poNumber ?? "",
+      transporterName:
+        draftHeader.transporterName ?? invoice.transporterName ?? "",
+      vehicleNumber: draftHeader.vehicleNumber ?? invoice.vehicleNumber ?? "",
+      driverName: draftHeader.driverName ?? invoice.driverName ?? "",
+      driverPhone: draftHeader.driverPhone ?? invoice.driverPhone ?? "",
+      dispatchThrough:
+        draftHeader.dispatchThrough ?? invoice.dispatchThrough ?? "",
+      lrNumber: draftHeader.lrNumber ?? invoice.lrNumber ?? "",
+      transportationPayment:
+        draftHeader.transportationPayment ??
+        invoice.transportationPayment ??
+        TransportationPayment.TO_PAY,
+      transportationAmount:
+        draftHeader.transportationAmount ?? invoice.transportationAmount ?? null,
+      ewayBill: draftHeader.ewayBill ?? invoice.ewayBill ?? "",
+      remarks: draftHeader.remarks ?? invoice.remarks ?? "",
+      clientNameSnapshot:
+        draftHeader.clientNameSnapshot ?? invoice.clientNameSnapshot ?? "",
+      citySnapshot: draftHeader.citySnapshot ?? invoice.citySnapshot ?? "",
+      stateSnapshot: draftHeader.stateSnapshot ?? invoice.stateSnapshot ?? "",
+      gstinSnapshot: draftHeader.gstinSnapshot ?? invoice.gstinSnapshot ?? "",
+      lrCopy: draftHeader.lrCopy ?? invoice.lrCopy ?? [],
+    },
+
+    items: (() => {
+      const pendingMapped = invoice.pendingItems.map((item, index) => {
+        const existing = draftItems.find((d) => d.salesOrderItemId === item.id);
+
+        const maxQty = Math.max(
+          0,
+          Math.min(Number(item.remainingQty ?? 0), Number(item.qty ?? 0)),
+        );
+
+        const rawQty = Number(existing?.qty ?? maxQty);
+        const safeQty = Math.max(0, Math.min(rawQty, maxQty));
+        const unitPrice = Number(existing?.unitPrice ?? item.unitPrice ?? 0);
+
+        return {
+          salesOrderItemId: item.id,
+          isManual: Boolean(existing?.isManual),
+          productId: existing?.productId ?? item.productId ?? null,
+          variantId: existing?.variantId ?? item.variantId ?? null,
+          selected:
+            typeof existing?.selected === "boolean"
+              ? existing.selected
+              : Boolean(existing),
+
+          title: item.title ?? "",
+          sku: item.sku ?? null,
+          typeNumber: existing?.typeNumber ?? item.typeNumber ?? null,
+          description: existing?.description ?? item.description ?? null,
+          hsnCode: existing?.hsnCode ?? item.hsnCode ?? null,
+          unit: item.unit ?? null,
+
+          orderedQty: Number(item.qty ?? 0),
+          alreadyInvoiced: Number(item.invoicedQty ?? 0),
+          alreadyDispatched: Number(item.dispatchedQty ?? 0),
+          remainingQty: Number(item.remainingQty ?? 0),
+
+          qty: safeQty,
+
+          cimfrNumber: existing?.cimfrNumber ?? null,
+          pesoNumber: existing?.pesoNumber ?? null,
+          serialNumber: existing?.serialNumber ?? null,
+
+          productPicture: existing?.productPicture ?? [],
+
+          unitPrice,
+          lineSubtotal: safeQty * unitPrice,
+          sortOrder: existing?.sortOrder ?? item.sortOrder ?? index,
+        };
+      });
+
+      const pendingIds = new Set(
+        pendingMapped.map((item) => item.salesOrderItemId),
+      );
+
+      const manualOrExtraDraftItems = draftItems
+        .filter(
+          (item) =>
+            Boolean(item.isManual) || !pendingIds.has(item.salesOrderItemId),
+        )
+        .map((item, index) =>
+          mapDraftItemToForm(item, pendingMapped.length + index),
+        );
+
+      const merged = [...pendingMapped, ...manualOrExtraDraftItems]
+        .filter((item) => Boolean(item.salesOrderItemId))
+        .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+
+      if (merged.length > 0) {
+        return merged;
+      }
+
+      if (draftItems.length > 0) {
+        return draftItems
+          .map((item, index) => mapDraftItemToForm(item, index))
+          .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+      }
+
+      return [createManualInvoiceItem(0)];
+    })(),
+    packages: draftPackages
+      .map((pkg, index) => {
+        if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) return null;
+
+        const row = pkg as {
+          packageNo?: unknown;
+          packageType?: unknown;
+          label?: unknown;
+          remarks?: unknown;
+          grossWeight?: unknown;
+          netWeight?: unknown;
+          items?: unknown;
+        };
+
+        const packageItemsRaw = Array.isArray(row.items) ? row.items : [];
+
+        const items = packageItemsRaw
+          .map((item) => {
+            if (!item || typeof item !== "object" || Array.isArray(item))
+              return null;
+
+            const packageItem = item as {
+              salesOrderItemId?: unknown;
+              invoiceItemDraftId?: unknown;
+              qty?: unknown;
+            };
+
+            const salesOrderItemIdDirect =
+              typeof packageItem.salesOrderItemId === "string"
+                ? packageItem.salesOrderItemId
+                : null;
+            const draftItemId =
+              typeof packageItem.invoiceItemDraftId === "string"
+                ? packageItem.invoiceItemDraftId
+                : null;
+
+            const salesOrderItemId =
+              salesOrderItemIdDirect ??
+              (draftItemId
+                ? (draftItemIdToSalesOrderItemId.get(draftItemId) ?? null)
+                : null);
+
+            if (!salesOrderItemId) return null;
+
+            return {
+              salesOrderItemId,
+              qty: Number(packageItem.qty ?? 0),
+            };
+          })
+          .filter(
+            (
+              item,
+            ): item is {
+              salesOrderItemId: string;
+              qty: number;
+            } => Boolean(item),
+          );
+
+        const packageNo =
+          typeof row.packageNo === "string" && row.packageNo.trim()
+            ? row.packageNo
+            : String(index + 1);
+
+        return {
+          packageNo,
+          packageType:
+            typeof row.packageType === "string" ? row.packageType : "",
+          label: typeof row.label === "string" ? row.label : "",
+          remarks: typeof row.remarks === "string" ? row.remarks : "",
+          grossWeight:
+            row.grossWeight === null || row.grossWeight === undefined
+              ? ""
+              : String(row.grossWeight),
+          netWeight:
+            row.netWeight === null || row.netWeight === undefined
+              ? ""
+              : String(row.netWeight),
+          items,
+        };
+      })
+      .filter(
+        (
+          pkg,
+        ): pkg is {
+          packageNo: string;
+          packageType: string;
+          label: string;
+          remarks: string;
+          grossWeight: string;
+          netWeight: string;
+          items: { salesOrderItemId: string; qty: number }[];
+        } => Boolean(pkg),
+      ),
+  };
+}
+
 function buildInvoiceDraftPayload(values: FormValues) {
   const selected = values.items
     .filter((item) => item.selected)
     .map((item) => {
-      const maxQty = Math.max(
-        0,
-        Math.min(Number(item.remainingQty || 0), Number(item.orderedQty || 0)),
-      );
+      const maxQty = item.isManual
+        ? Number.POSITIVE_INFINITY
+        : Math.max(
+            0,
+            Math.min(
+              Number(item.remainingQty || 0),
+              Number(item.orderedQty || 0),
+            ),
+          );
 
-      const safeQty = Math.max(0, Math.min(Number(item.qty || 0), maxQty));
+      const safeQty = Number.isFinite(maxQty)
+        ? Math.max(0, Math.min(Number(item.qty || 0), maxQty))
+        : Math.max(0, Number(item.qty || 0));
       const lineSubtotal = round2(safeQty * Number(item.unitPrice || 0));
 
       return {
@@ -401,8 +775,9 @@ function buildInvoiceDraftPayload(values: FormValues) {
             qty: safeQty,
           };
         })
-        .filter((pkgItem): pkgItem is { salesOrderItemId: string; qty: number } =>
-          Boolean(pkgItem),
+        .filter(
+          (pkgItem): pkgItem is { salesOrderItemId: string; qty: number } =>
+            Boolean(pkgItem),
         );
 
       const grossWeight = trimOrNull(pkg.grossWeight)
@@ -452,6 +827,17 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [isFinalizing, setIsFinalizing] = React.useState(false);
+  const [isSwitchingToOrder, setIsSwitchingToOrder] = React.useState(false);
+  const [isSwitchingToOffline, setIsSwitchingToOffline] = React.useState(false);
+  const [isApplyingCustomerDefaults, setIsApplyingCustomerDefaults] =
+    React.useState(false);
+  const [currentSalesOrderId, setCurrentSalesOrderId] = React.useState<
+    string | null
+  >(invoice.salesOrderId ?? null);
+  const [selectedSalesOrderId, setSelectedSalesOrderId] = React.useState<
+    string | null
+  >(invoice.salesOrderId ?? null);
+  const isOfflineInvoice = !currentSalesOrderId;
   const draftHeader = invoice.draftData?.header ?? {};
   const draftItems = Array.isArray(invoice.draftData?.items)
     ? invoice.draftData.items
@@ -482,6 +868,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
   const defaultValues: FormValues = {
     header: {
+      customerId: draftHeader.customerId ?? invoice.customerId ?? null,
       invoiceNo: Number(draftHeader.invoiceNo ?? invoice.invoiceNo ?? 1),
       invoiceDate:
         toDate(draftHeader.invoiceDate) ??
@@ -500,53 +887,100 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       dispatchThrough:
         draftHeader.dispatchThrough ?? invoice.dispatchThrough ?? "",
       lrNumber: draftHeader.lrNumber ?? invoice.lrNumber ?? "",
+      transportationPayment:
+        draftHeader.transportationPayment ??
+        invoice.transportationPayment ??
+        TransportationPayment.TO_PAY,
+      transportationAmount:
+        draftHeader.transportationAmount ?? invoice.transportationAmount ?? null,
       ewayBill: draftHeader.ewayBill ?? invoice.ewayBill ?? "",
       remarks: draftHeader.remarks ?? invoice.remarks ?? "",
+      clientNameSnapshot:
+        draftHeader.clientNameSnapshot ?? invoice.clientNameSnapshot ?? "",
+      citySnapshot: draftHeader.citySnapshot ?? invoice.citySnapshot ?? "",
+      stateSnapshot: draftHeader.stateSnapshot ?? invoice.stateSnapshot ?? "",
+      gstinSnapshot: draftHeader.gstinSnapshot ?? invoice.gstinSnapshot ?? "",
       lrCopy: draftHeader.lrCopy ?? invoice.lrCopy ?? [],
     },
 
-    items: invoice.pendingItems.map((item, index) => {
-      const existing = draftItems.find((d) => d.salesOrderItemId === item.id);
+    items: (() => {
+      const pendingMapped = invoice.pendingItems.map((item, index) => {
+        const existing = draftItems.find((d) => d.salesOrderItemId === item.id);
 
-      const maxQty = Math.max(
-        0,
-        Math.min(Number(item.remainingQty ?? 0), Number(item.qty ?? 0)),
+        const maxQty = Math.max(
+          0,
+          Math.min(Number(item.remainingQty ?? 0), Number(item.qty ?? 0)),
+        );
+
+        const rawQty = Number(existing?.qty ?? maxQty);
+        const safeQty = Math.max(0, Math.min(rawQty, maxQty));
+        const unitPrice = Number(existing?.unitPrice ?? item.unitPrice ?? 0);
+
+        return {
+          salesOrderItemId: item.id,
+          isManual: Boolean(existing?.isManual),
+          productId: existing?.productId ?? item.productId ?? null,
+          variantId: existing?.variantId ?? item.variantId ?? null,
+          selected:
+            typeof existing?.selected === "boolean"
+              ? existing.selected
+              : Boolean(existing),
+
+          title: item.title ?? "",
+          sku: item.sku ?? null,
+          typeNumber: existing?.typeNumber ?? item.typeNumber ?? null,
+          description: existing?.description ?? item.description ?? null,
+          hsnCode: existing?.hsnCode ?? item.hsnCode ?? null,
+          unit: item.unit ?? null,
+
+          orderedQty: Number(item.qty ?? 0),
+          alreadyInvoiced: Number(item.invoicedQty ?? 0),
+          alreadyDispatched: Number(item.dispatchedQty ?? 0),
+          remainingQty: Number(item.remainingQty ?? 0),
+
+          qty: safeQty,
+
+          cimfrNumber: existing?.cimfrNumber ?? null,
+          pesoNumber: existing?.pesoNumber ?? null,
+          serialNumber: existing?.serialNumber ?? null,
+
+          productPicture: existing?.productPicture ?? [],
+
+          unitPrice,
+          lineSubtotal: safeQty * unitPrice,
+          sortOrder: existing?.sortOrder ?? item.sortOrder ?? index,
+        };
+      });
+
+      const pendingIds = new Set(
+        pendingMapped.map((item) => item.salesOrderItemId),
       );
 
-      const rawQty = Number(existing?.qty ?? maxQty);
-      const safeQty = Math.max(0, Math.min(rawQty, maxQty));
-      const unitPrice = Number(existing?.unitPrice ?? item.unitPrice ?? 0);
+      const manualOrExtraDraftItems = draftItems
+        .filter(
+          (item) =>
+            Boolean(item.isManual) || !pendingIds.has(item.salesOrderItemId),
+        )
+        .map((item, index) =>
+          mapDraftItemToForm(item, pendingMapped.length + index),
+        );
 
-      return {
-        salesOrderItemId: item.id,
-        selected:
-          typeof existing?.selected === "boolean"
-            ? existing.selected
-            : Boolean(existing),
+      const merged = [...pendingMapped, ...manualOrExtraDraftItems]
+        .filter((item) => Boolean(item.salesOrderItemId))
+        .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
 
-        title: item.title ?? "",
-        sku: item.sku ?? null,
-        typeNumber: existing?.typeNumber ?? item.typeNumber ?? null,
-        unit: item.unit ?? null,
+      if (merged.length > 0) {
+        return merged;
+      }
 
-        orderedQty: Number(item.qty ?? 0),
-        alreadyInvoiced: Number(item.invoicedQty ?? 0),
-        alreadyDispatched: Number(item.dispatchedQty ?? 0),
-        remainingQty: Number(item.remainingQty ?? 0),
+      if (draftItems.length > 0) {
+        return draftItems
+          .map((item, index) => mapDraftItemToForm(item, index))
+          .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+      }
 
-        qty: safeQty,
-
-        cimfrNumber: existing?.cimfrNumber ?? null,
-        pesoNumber: existing?.pesoNumber ?? null,
-        serialNumber: existing?.serialNumber ?? null,
-
-        productPicture: existing?.productPicture ?? [],
-
-        unitPrice,
-        lineSubtotal: safeQty * unitPrice,
-        sortOrder: existing?.sortOrder ?? item.sortOrder ?? index,
-      };
-    }),
+      return [createManualInvoiceItem(0)];
+    })(),
     packages: draftPackages
       .map((pkg, index) => {
         if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) return null;
@@ -586,7 +1020,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
             const salesOrderItemId =
               salesOrderItemIdDirect ??
               (draftItemId
-                ? draftItemIdToSalesOrderItemId.get(draftItemId) ?? null
+                ? (draftItemIdToSalesOrderItemId.get(draftItemId) ?? null)
                 : null);
 
             if (!salesOrderItemId) return null;
@@ -643,7 +1077,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as Resolver<FormValues>,
     defaultValues,
     mode: "onChange",
   });
@@ -655,6 +1089,15 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   const packages = useWatch({
     control: form.control,
     name: "packages",
+  });
+
+  const {
+    fields: itemFields,
+    append: appendItem,
+    remove: removeItem,
+  } = useFieldArray({
+    control: form.control,
+    name: "items",
   });
 
   const {
@@ -672,6 +1115,11 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   const [splitItemId, setSplitItemId] = React.useState("");
 
   React.useEffect(() => {
+    setCurrentSalesOrderId(invoice.salesOrderId ?? null);
+    setSelectedSalesOrderId(invoice.salesOrderId ?? null);
+  }, [invoice.salesOrderId]);
+
+  React.useEffect(() => {
     if (selectedItems.length === 0) {
       if (splitItemId !== "") setSplitItemId("");
       return;
@@ -686,6 +1134,9 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
   }, [selectedItems, splitItemId]);
 
   function getMaxQty(item: FormValues["items"][number]) {
+    if (item.isManual) {
+      return Number.MAX_SAFE_INTEGER;
+    }
     return Math.max(
       0,
       Math.min(Number(item.remainingQty || 0), Number(item.orderedQty || 0)),
@@ -730,7 +1181,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     }
   }
 
-  function getPackageAllocationQty(packageIndex: number, salesOrderItemId: string) {
+  function getPackageAllocationQty(
+    packageIndex: number,
+    salesOrderItemId: string,
+  ) {
     const packageRows = packages ?? [];
     const packageRow = packageRows[packageIndex];
     if (!packageRow) return 0;
@@ -748,7 +1202,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     qty: number,
     maxQty: number,
   ) {
-    const safeQty = Math.max(0, Math.min(Number(qty || 0), Number(maxQty || 0)));
+    const safeQty = Math.max(
+      0,
+      Math.min(Number(qty || 0), Number(maxQty || 0)),
+    );
     const existing = form.getValues(`packages.${packageIndex}.items`) ?? [];
 
     const next = [...existing];
@@ -795,6 +1252,124 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       grossWeight: "",
       netWeight: "",
       items: [],
+    });
+  }
+
+  function addManualItemRow() {
+    appendItem(createManualInvoiceItem(itemFields.length));
+  }
+
+  function removeManualItemRow(index: number) {
+    removeItem(index);
+  }
+
+  async function applyCustomerToHeader(customerId: string | null) {
+    form.setValue("header.customerId", customerId, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
+    if (!customerId) {
+      form.setValue("header.clientNameSnapshot", "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      form.setValue("header.citySnapshot", "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      form.setValue("header.stateSnapshot", "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      form.setValue("header.gstinSnapshot", "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      return;
+    }
+
+    setIsApplyingCustomerDefaults(true);
+    try {
+      const customer = await getCustomerForSelectById(customerId);
+      if (!customer) return;
+
+      form.setValue("header.clientNameSnapshot", customer.companyName ?? "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      form.setValue("header.citySnapshot", customer.city ?? "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      form.setValue("header.stateSnapshot", customer.state ?? "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      form.setValue("header.gstinSnapshot", customer.gstin ?? "", {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    } finally {
+      setIsApplyingCustomerDefaults(false);
+    }
+  }
+
+  function applyOfflineVariantToItem(
+    index: number,
+    variant: ProductVariantSearchItem | null,
+  ) {
+    if (!variant) {
+      form.setValue(`items.${index}.productId`, null, { shouldDirty: true });
+      form.setValue(`items.${index}.variantId`, null, { shouldDirty: true });
+      form.setValue(`items.${index}.title`, "", { shouldDirty: true });
+      form.setValue(`items.${index}.sku`, null, { shouldDirty: true });
+      form.setValue(`items.${index}.typeNumber`, null, { shouldDirty: true });
+      form.setValue(`items.${index}.description`, null, { shouldDirty: true });
+      form.setValue(`items.${index}.hsnCode`, null, { shouldDirty: true });
+      return;
+    }
+
+    form.setValue(`items.${index}.productId`, variant.productId, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(`items.${index}.variantId`, variant.id, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(`items.${index}.title`, variant.title ?? "", {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(`items.${index}.sku`, variant.sku ?? null, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(`items.${index}.typeNumber`, variant.typeNumber ?? null, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(`items.${index}.description`, variant.description ?? null, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(`items.${index}.hsnCode`, variant.hsnCode ?? null, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    form.setValue(
+      `items.${index}.unit`,
+      form.getValues(`items.${index}.unit`) || "Nos",
+      {
+        shouldDirty: true,
+      },
+    );
+    form.setValue(`items.${index}.selected`, true, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
     });
   }
 
@@ -1004,6 +1579,72 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       setIsFinalizing(false);
     }
   }
+
+  async function attachSalesOrderToDraft() {
+    if (!selectedSalesOrderId) {
+      toast.error("Please select a sales order");
+      return;
+    }
+
+    try {
+      setIsSwitchingToOrder(true);
+
+      const res = await attachSalesOrderToInvoiceDraftAction(
+        invoice.id,
+        selectedSalesOrderId,
+      );
+
+      if (!res.ok) {
+        toast.error(res.message ?? "Failed to link sales order");
+        return;
+      }
+
+      if (res.invoice) {
+        form.reset(buildDefaultValues(res.invoice));
+        setCurrentSalesOrderId(
+          res.invoice.salesOrderId ?? selectedSalesOrderId,
+        );
+        setSelectedSalesOrderId(
+          res.invoice.salesOrderId ?? selectedSalesOrderId,
+        );
+      }
+
+      toast.success("Invoice converted to sales-order draft");
+      router.refresh();
+    } finally {
+      setIsSwitchingToOrder(false);
+    }
+  }
+
+  async function detachSalesOrderFromDraft() {
+    try {
+      setIsSwitchingToOffline(true);
+
+      const values = form.getValues();
+      const payload = buildInvoiceDraftPayload(values);
+      const res = await detachSalesOrderFromInvoiceDraftAction(
+        invoice.id,
+        payload,
+      );
+
+      if (!res.ok) {
+        toast.error(res.message ?? "Failed to convert invoice to offline");
+        return;
+      }
+
+      if (res.invoice) {
+        form.reset(buildDefaultValues(res.invoice));
+        setCurrentSalesOrderId(null);
+        setSelectedSalesOrderId(null);
+      }
+
+      toast.success("Invoice converted to offline draft");
+      router.refresh();
+    } finally {
+      setIsSwitchingToOffline(false);
+    }
+  }
+
   async function onSubmit(values: FormValues) {
     await handleSaveDraft(values);
   }
@@ -1015,7 +1656,9 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
           <div className="space-y-1">
             <div className="text-xl font-semibold">Edit Invoice</div>
             <div className="text-sm text-muted-foreground">
-              Select pending items, fill dispatch details and save draft.
+              {isOfflineInvoice
+                ? "You can keep this as an offline invoice or attach a sales order."
+                : "This invoice is linked to a sales order, or you can convert it back to offline."}
             </div>
           </div>
 
@@ -1046,12 +1689,97 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
               <CardHeader>
                 <CardTitle>Invoice Details</CardTitle>
                 <CardDescription>
-                  Invoice numbering, dates and dispatch details
+                  {isOfflineInvoice
+                    ? "Invoice numbering, customer details and optional sales-order attachment"
+                    : "Invoice numbering, dates, dispatch details, and linked sales-order controls"}
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4">
+                {isOfflineInvoice ? (
+                  <div className="rounded-xl border border-dashed p-4">
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                      <div className="space-y-2">
+                        <FormLabel>Convert From Sales Order</FormLabel>
+                        <SalesOrderCombobox
+                          value={selectedSalesOrderId}
+                          onChange={setSelectedSalesOrderId}
+                          disabled={
+                            isSaving || isFinalizing || isSwitchingToOrder
+                          }
+                          placeholder="Search sales order / PO number"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Select a sales order if this draft should be created
+                          from a purchase order instead of staying offline.
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={attachSalesOrderToDraft}
+                        className="my-auto"
+                        disabled={
+                          !selectedSalesOrderId ||
+                          isSaving ||
+                          isFinalizing ||
+                          isSwitchingToOrder
+                        }>
+                        {isSwitchingToOrder
+                          ? "Switching..."
+                          : "Use Selected Sales Order"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {!isOfflineInvoice ? (
+                  <div className="rounded-xl border border-dashed p-4">
+                    <div className="flex flex-wrap items-end justify-between gap-4">
+                      <div className="space-y-1">
+                        <FormLabel>Convert To Offline Invoice</FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          This removes the sales-order link and keeps the
+                          current draft items as manual offline lines.
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        className="my-auto"
+                        variant="outline"
+                        onClick={detachSalesOrderFromDraft}
+                        disabled={
+                          isSaving ||
+                          isFinalizing ||
+                          isSwitchingToOrder ||
+                          isSwitchingToOffline
+                        }>
+                        {isSwitchingToOffline
+                          ? "Switching..."
+                          : "Convert To Offline"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <FormLabel>Customer</FormLabel>
+                    <CustomerCombobox
+                      value={form.watch("header.customerId")}
+                      onChange={(customerId) => {
+                        void applyCustomerToHeader(customerId);
+                      }}
+                    />
+                    {isApplyingCustomerDefaults ? (
+                      <p className="text-xs text-muted-foreground">
+                        Loading customer details...
+                      </p>
+                    ) : null}
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="header.invoiceNo"
@@ -1123,6 +1851,78 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                             {...field}
                             value={field.value ?? ""}
                             placeholder="Enter PO number"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.clientNameSnapshot"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="Client / Company name"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.citySnapshot"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>City</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="City"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.stateSnapshot"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>State</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="State"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.gstinSnapshot"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GSTIN</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="GSTIN"
                           />
                         </FormControl>
                         <FormMessage />
@@ -1240,6 +2040,63 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
                   <FormField
                     control={form.control}
+                    name="header.transportationPayment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>LR Payment</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) =>
+                            field.onChange(value as TransportationPayment)
+                          }>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select LR payment" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={TransportationPayment.PAID}>
+                              Paid
+                            </SelectItem>
+                            <SelectItem value={TransportationPayment.TO_PAY}>
+                              To Pay
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.transportationAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>LR Amount</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={field.value ?? ""}
+                            onChange={(event) =>
+                              field.onChange(
+                                event.target.value === ""
+                                  ? null
+                                  : Number(event.target.value),
+                              )
+                            }
+                            placeholder="0.00"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="header.ewayBill"
                     render={({ field }) => (
                       <FormItem>
@@ -1295,16 +2152,32 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Select Pending Items</CardTitle>
-                <CardDescription>
-                  Choose the sales order items to invoice
-                </CardDescription>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <CardTitle>
+                      {isOfflineInvoice
+                        ? "Invoice Items"
+                        : "Select Pending Items"}
+                    </CardTitle>
+                    <CardDescription>
+                      {isOfflineInvoice
+                        ? "Add item lines manually for offline invoice creation"
+                        : "Choose order items or add manual lines like sales order"}
+                    </CardDescription>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addManualItemRow}>
+                    Add Item
+                  </Button>
+                </div>
               </CardHeader>
 
               <CardContent className="space-y-3">
                 {items?.length === 0 ? (
                   <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-                    No pending items found.
+                    No item lines yet. Click Add Item.
                   </div>
                 ) : (
                   items.map((item, index) => {
@@ -1328,11 +2201,27 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                               {displayValue(item.title, "Untitled Product")}
                             </p>
 
-                            <div className="text-right text-sm">
-                              <p className="font-medium">
-                                {formatCurrency(item.unitPrice)}
-                              </p>
-                              <p className="text-muted-foreground">per unit</p>
+                            <div className="flex items-center gap-2">
+                              <div className="text-right text-sm">
+                                <p className="font-medium">
+                                  {formatCurrency(item.unitPrice)}
+                                </p>
+                                <p className="text-muted-foreground">
+                                  per unit
+                                </p>
+                              </div>
+                              {item.isManual ? (
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    removeManualItemRow(index);
+                                  }}>
+                                  Remove
+                                </Button>
+                              ) : null}
                             </div>
                           </div>
 
@@ -1356,7 +2245,10 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                             <span>
                               Remaining: {displayValue(item.remainingQty, "0")}
                             </span>
-                            <span>Max Invoice Qty: {maxQty}</span>
+                            <span>
+                              Max Invoice Qty:{" "}
+                              {Number.isFinite(maxQty) ? maxQty : "No limit"}
+                            </span>
                           </div>
                         </div>
                       </label>
@@ -1381,184 +2273,393 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                   if (!item.selected) return null;
 
                   const maxQty = getMaxQty(item);
-                  const safeQty = Math.max(
-                    0,
-                    Math.min(Number(item.qty || 0), maxQty),
-                  );
+                  const safeQty = Number.isFinite(maxQty)
+                    ? Math.max(0, Math.min(Number(item.qty || 0), maxQty))
+                    : Math.max(0, Number(item.qty || 0));
                   const lineTotal = safeQty * Number(item.unitPrice || 0);
 
                   return (
-                    <Card key={item.salesOrderItemId} className="rounded-2xl">
-                      <CardHeader>
-                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                          <div>
-                            <CardTitle className="text-base">
-                              {displayValue(item.title, "Untitled Product")}
-                            </CardTitle>
-                            <CardDescription>
-                              Remaining qty:{" "}
-                              {displayValue(item.remainingQty, "0")}{" "}
-                              {displayValue(item.unit, "Nos")}
-                            </CardDescription>
+                    <Card
+                      key={item.salesOrderItemId}
+                      className="overflow-hidden rounded-2xl border border-white">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        defaultValue={`item-${index}`}>
+                        <AccordionItem
+                          value={`item-${index}`}
+                          className="border-none">
+                          <div className="px-5 pt-5">
+                            <AccordionTrigger className="rounded-xl border bg-muted/30 px-4 py-3 hover:no-underline">
+                              <div className="flex w-full flex-col gap-3 text-left md:flex-row md:items-center md:justify-between">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-3">
+                                    <h3 className="truncate text-base font-semibold">
+                                      {displayValue(
+                                        item.title,
+                                        "Untitled Product",
+                                      )}
+                                    </h3>
+                                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                                      #{index + 1}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    Qty: {safeQty} · Unit Price:{" "}
+                                    {formatCurrency(item.unitPrice)} · Total:{" "}
+                                    {formatCurrency(lineTotal)}
+                                  </p>
+                                </div>
+                              </div>
+                            </AccordionTrigger>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3 rounded-xl border p-3 text-sm md:min-w-[260px]">
-                            <div>
-                              <p className="text-muted-foreground">
-                                Unit Price
-                              </p>
-                              <p className="font-medium">
-                                {formatCurrency(item.unitPrice)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">
-                                Line Total
-                              </p>
-                              <p className="font-medium">
-                                {formatCurrency(lineTotal)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">
-                                Ordered Qty
-                              </p>
-                              <p className="font-medium">{item.orderedQty}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Max Qty</p>
-                              <p className="font-medium">{maxQty}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
+                          <AccordionContent className="pb-0">
+                            <CardContent className="space-y-6 pt-4">
+                              <div className="grid grid-cols-2 gap-3 rounded-xl border p-3 text-sm md:max-w-[420px]">
+                                <div>
+                                  <p className="text-muted-foreground">
+                                    Item Type
+                                  </p>
+                                  <p className="font-medium">
+                                    {item.isManual
+                                      ? "Manual line item"
+                                      : "Order item"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">
+                                    Remaining Qty
+                                  </p>
+                                  <p className="font-medium">
+                                    {item.isManual
+                                      ? "No limit"
+                                      : `${displayValue(item.remainingQty, "0")} ${displayValue(item.unit, "Nos")}`}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">
+                                    Ordered Qty
+                                  </p>
+                                  <p className="font-medium">
+                                    {item.orderedQty}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">
+                                    Max Qty
+                                  </p>
+                                  <p className="font-medium">
+                                    {Number.isFinite(maxQty)
+                                      ? maxQty
+                                      : "No limit"}
+                                  </p>
+                                </div>
+                              </div>
 
-                      <CardContent className="space-y-6">
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.qty`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Invoice Qty</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    min={1}
-                                    max={maxQty}
-                                    placeholder="Enter qty"
-                                    value={field.value ?? 0}
-                                    onChange={(e) => {
-                                      const raw = Number(e.target.value || 0);
-                                      const safe = Math.max(
-                                        0,
-                                        Math.min(raw, maxQty),
-                                      );
-                                      field.onChange(safe);
-                                    }}
-                                    onBlur={() => sanitizeQty(index)}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                                {item.isManual ? (
+                                  <>
+                                    <div className="space-y-2 xl:col-span-2">
+                                      <FormLabel>Product Variant</FormLabel>
+                                      <ProductVariantCombobox
+                                        value={
+                                          form.watch(
+                                            `items.${index}.variantId`,
+                                          ) ?? null
+                                        }
+                                        onChange={(variant) => {
+                                          applyOfflineVariantToItem(
+                                            index,
+                                            variant,
+                                          );
+                                        }}
+                                      />
+                                    </div>
 
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.cimfrNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>CIMFR Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter CIMFR number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.title`}
+                                      render={({ field }) => (
+                                        <FormItem className="xl:col-span-2">
+                                          <FormLabel>Item Title</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Enter item title"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
 
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.pesoNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>PESO Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter PESO number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.sku`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>SKU</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="SKU"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
 
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.serialNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Serial Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter serial number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.typeNumber`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Type Number</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Type Number"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
 
-                          <FormField
-                            control={form.control}
-                            name={`items.${index}.typeNumber`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Type Number</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    placeholder="Enter type number"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.hsnCode`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>HSN Code</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="HSN Code"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
 
-                        <Separator />
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.description`}
+                                      render={({ field }) => (
+                                        <FormItem className="xl:col-span-2">
+                                          <FormLabel>Description</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Description"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
 
-                        <FileUpload
-                          endpoint="productImage"
-                          kind={ProductMediaKind.IMAGE}
-                          label="Product Picture"
-                          hint="Upload delivered product image(s)"
-                          value={
-                            form.watch(`items.${index}.productPicture`) || []
-                          }
-                          onChange={(files) =>
-                            form.setValue(
-                              `items.${index}.productPicture`,
-                              files,
-                              {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              },
-                            )
-                          }
-                        />
-                      </CardContent>
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.unit`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Unit</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              placeholder="Nos / Kg / Mtr"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                      control={form.control}
+                                      name={`items.${index}.unitPrice`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Unit Price</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              value={field.value ?? 0}
+                                              onChange={(event) =>
+                                                field.onChange(
+                                                  Math.max(
+                                                    0,
+                                                    Number(
+                                                      event.target.value || 0,
+                                                    ),
+                                                  ),
+                                                )
+                                              }
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </>
+                                ) : null}
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.qty`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Invoice Qty</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          min={1}
+                                          max={
+                                            Number.isFinite(maxQty)
+                                              ? maxQty
+                                              : undefined
+                                          }
+                                          placeholder="Enter qty"
+                                          value={field.value ?? 0}
+                                          onChange={(e) => {
+                                            const raw = Number(
+                                              e.target.value || 0,
+                                            );
+                                            const safe = Number.isFinite(maxQty)
+                                              ? Math.max(
+                                                  0,
+                                                  Math.min(raw, maxQty),
+                                                )
+                                              : Math.max(0, raw);
+                                            field.onChange(safe);
+                                          }}
+                                          onBlur={() => sanitizeQty(index)}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.cimfrNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>CIMFR Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter CIMFR number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.pesoNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>PESO Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter PESO number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.serialNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Serial Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter serial number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.typeNumber`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Type Number</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value ?? ""}
+                                          placeholder="Enter type number"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+
+                              <Separator />
+
+                              <FileUpload
+                                endpoint="productImage"
+                                kind={ProductMediaKind.IMAGE}
+                                label="Product Picture"
+                                hint="Upload delivered product image(s)"
+                                value={
+                                  form.watch(`items.${index}.productPicture`) ||
+                                  []
+                                }
+                                onChange={(files) =>
+                                  form.setValue(
+                                    `items.${index}.productPicture`,
+                                    files,
+                                    {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    },
+                                  )
+                                }
+                              />
+                              <div className="flex justify-end">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={addManualItemRow}>
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Add Item
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     </Card>
                   );
                 })}
@@ -1835,16 +2936,21 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                 className="grid gap-3 rounded-lg border p-3 md:grid-cols-[1fr_140px_140px] md:items-center">
                                 <div>
                                   <div className="text-sm font-medium">
-                                    {displayValue(item.title, "Untitled Product")}
+                                    {displayValue(
+                                      item.title,
+                                      "Untitled Product",
+                                    )}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    Invoice Qty: {maxQty} {displayValue(item.unit, "Nos")}
+                                    Invoice Qty: {maxQty}{" "}
+                                    {displayValue(item.unit, "Nos")}
                                   </div>
                                 </div>
 
                                 <div className="text-xs text-muted-foreground">
                                   Allocated Total:{" "}
-                                  {totalAllocatedForItem(item.salesOrderItemId)} / {maxQty}
+                                  {totalAllocatedForItem(item.salesOrderItemId)}{" "}
+                                  / {maxQty}
                                 </div>
 
                                 <Input
@@ -1889,7 +2995,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                           invoice.invoiceFy,
                           form.watch("header.invoiceNo"),
                         )
-                      : "â€”"}
+                      : "-"}
                   </span>
                 </div>
 
@@ -1925,4 +3031,3 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     </div>
   );
 }
-

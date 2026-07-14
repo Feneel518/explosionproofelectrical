@@ -108,46 +108,45 @@ export function FileUpload({
       {value.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
           {value.map((m, idx) => {
-            console.log(isPdf(m.url));
-
-            if (kind === "DRAWING") {
+            if (isPdf(m.url)) {
               return (
                 <PdfPreviewCard
+                  key={`${m.url}-${idx}`}
                   url={m.url}
                   title={m.title}
                   height={160} // smaller for grid
                 />
               );
-            } else {
-              return (
-                <div
-                  key={`${m.url}-${idx}`}
-                  className="overflow-hidden rounded-2xl border bg-card">
-                  <div className="relative aspect-square">
-                    <Image
-                      src={m.url}
-                      alt={m.title ?? "Uploaded"}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 border-t p-2">
-                    <p className="truncate text-[11px] text-muted-foreground">
-                      {m.title ?? "File"}
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeAt(idx)}
-                      disabled={busy}>
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              );
             }
+
+            return (
+              <div
+                key={`${m.url}-${idx}`}
+                className="overflow-hidden rounded-2xl border bg-card">
+                <div className="relative aspect-square">
+                  <Image
+                    src={m.url}
+                    alt={m.title ?? "Uploaded"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-2 border-t p-2">
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {m.title ?? "File"}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => removeAt(idx)}
+                    disabled={busy}>
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            );
           })}
         </div>
       ) : null}

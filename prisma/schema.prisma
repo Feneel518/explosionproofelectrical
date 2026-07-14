@@ -19,6 +19,26 @@ enum CustomerStatus {
   INACTIVE
 }
 
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RawMaterialStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CastingMasterStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BomComponentType {
+  RAW_MATERIAL
+  CASTING
+}
+
 enum CategoryStatus {
   ACTIVE
   INACTIVE
@@ -126,6 +146,12 @@ model User {
   customerCreatedBy          Customer[]          @relation("CustomerCreatedBy")
   customerDeletedBy          Customer[]          @relation("CustomerDeletedBy")
   customerUpdatedBy          Customer[]          @relation("CustomerUpdatedBy")
+  supplierCreatedBy          Supplier[]          @relation("SupplierCreatedBy")
+  supplierDeletedBy          Supplier[]          @relation("SupplierDeletedBy")
+  supplierUpdatedBy          Supplier[]          @relation("SupplierUpdatedBy")
+  rawMaterialCreatedBy       RawMaterial[]       @relation("RawMaterialCreatedBy")
+  rawMaterialDeletedBy       RawMaterial[]       @relation("RawMaterialDeletedBy")
+  rawMaterialUpdatedBy       RawMaterial[]       @relation("RawMaterialUpdatedBy")
   categoriesCreatedBY        Category[]          @relation("CategoryCreatedBy")
   categoriesDeletedBy        Category[]          @relation("CategoryDeletedBy")
   categoriesUpdatedBY        Category[]          @relation("CategoryUpdatedBy")
@@ -142,6 +168,28 @@ model User {
   salesOrderCreatedBy        SalesOrder[]        @relation("SalesOrderCreatedBy")
   salesOrderUpdatedBy        SalesOrder[]        @relation("SalesOrderUpdatedBy")
   salesOrderDeletedBy        SalesOrder[]        @relation("SalesOrderDeletedBy")
+
+  // Contractor work tracker audit relations
+  workersCreatedBy           Worker[]            @relation("WorkerCreatedBy")
+  workersUpdatedBy           Worker[]            @relation("WorkerUpdatedBy")
+  workersDeletedBy           Worker[]            @relation("WorkerDeletedBy")
+  contractorProductsCreatedBy  ContractorProduct[]   @relation("ContractorProductCreatedBy")
+  contractorProductsUpdatedBy  ContractorProduct[]   @relation("ContractorProductUpdatedBy")
+  contractorProductsDeletedBy  ContractorProduct[]   @relation("ContractorProductDeletedBy")
+  contractorOperationsCreatedBy ContractorOperation[] @relation("ContractorOperationCreatedBy")
+  contractorOperationsUpdatedBy ContractorOperation[] @relation("ContractorOperationUpdatedBy")
+  contractorOperationsDeletedBy ContractorOperation[] @relation("ContractorOperationDeletedBy")
+  contractorRatesCreatedBy     ContractorRate[]      @relation("ContractorRateCreatedBy")
+  contractorRatesUpdatedBy     ContractorRate[]      @relation("ContractorRateUpdatedBy")
+  contractorRatesDeletedBy     ContractorRate[]      @relation("ContractorRateDeletedBy")
+  workEntriesCreatedBy       WorkEntry[]         @relation("WorkEntryCreatedBy")
+  workEntriesUpdatedBy       WorkEntry[]         @relation("WorkEntryUpdatedBy")
+  workEntriesDeletedBy       WorkEntry[]         @relation("WorkEntryDeletedBy")
+  workerLedgerCreatedBy      WorkerLedgerEntry[] @relation("WorkerLedgerCreatedBy")
+  workerLedgerUpdatedBy      WorkerLedgerEntry[] @relation("WorkerLedgerUpdatedBy")
+  workerLedgerDeletedBy      WorkerLedgerEntry[] @relation("WorkerLedgerDeletedBy")
+  workerPayoutsCreatedBy     WorkerPayout[]      @relation("WorkerPayoutCreatedBy")
+  workerPayoutsUpdatedBy     WorkerPayout[]      @relation("WorkerPayoutUpdatedBy")
 
   @@map("users")
 }
@@ -211,6 +259,11 @@ model Customer {
   country      String
   pincode      String
   gstin        String?
+  defaultQuotationGst                   GST                   @default(CGST_SGST_18)
+  defaultQuotationPackingCharges        PackingCharges        @default(INCLUDED)
+  defaultQuotationPaymentTerms          PaymentTerms          @default(ADVANCE)
+  defaultQuotationTransportationPayment TransportationPayment @default(TO_PAY)
+  defaultQuotationDeliveryDate          String?
 
   status CustomerStatus @default(ACTIVE)
 
@@ -238,6 +291,134 @@ model Customer {
   @@index([city])
   @@index([status])
   @@index([deletedAt])
+}
+
+// Supplier
+model Supplier {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyName  String
+  companyEmail String?
+  companyPhone String?
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  country      String
+  pincode      String
+  gstin        String?
+
+  status SupplierStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("SupplierDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // optional: who created / last updated
+  createdById String?
+  createdBy   User?   @relation("SupplierCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("SupplierUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  rawMaterials      RawMaterial[]
+  goodsReceiptNotes GoodsReceiptNote[]
+  castingJobs       CastingJob[]
+
+  @@index([companyName])
+  @@index([companyPhone])
+  @@index([companyEmail])
+  @@index([gstin])
+  @@index([city])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model RawMaterial {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyItemName  String
+  supplierItemName String?
+  itemCode         String? @unique
+  hsnCode          String?
+  unit             String  @default("Nos")
+  description      String?
+  reorderLevel     Int?
+  openingStockQty      Int      @default(0)
+  openingStockUnitCost Decimal? @db.Decimal(12, 2)
+  openingStockAt       DateTime?
+
+  preferredSupplierId String?
+  preferredSupplier   Supplier? @relation(fields: [preferredSupplierId], references: [id], onDelete: SetNull)
+
+  status RawMaterialStatus @default(ACTIVE)
+
+  // soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("RawMaterialDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // optional: who created / last updated
+  createdById String?
+  createdBy   User?   @relation("RawMaterialCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("RawMaterialUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  grnItems           GoodsReceiptNoteItem[]
+  materialIssueItems MaterialIssueItem[]
+  castingInputItems  CastingJobItem[] @relation("CastingInputRawMaterial")
+  bomItems           VariantBomItem[]
+  stockAdjustmentItems StockAdjustmentItem[]
+  stockBalance       StockBalance?
+  stockLedgerEntries StockLedger[]
+
+  @@index([companyItemName])
+  @@index([supplierItemName])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([preferredSupplierId])
+}
+
+model CastingMaster {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingItemName String
+  castingCode     String? @unique
+  drawingNumber   String?
+  hsnCode         String?
+  unit            String  @default("Nos")
+  standardWeightKg Decimal? @db.Decimal(12, 3)
+  description     String?
+  reorderLevel    Int?
+  openingStockQty      Int      @default(0)
+  openingStockUnitCost Decimal? @db.Decimal(12, 2)
+  openingStockAt       DateTime?
+
+  status CastingMasterStatus @default(ACTIVE)
+
+  deletedAt   DateTime?
+  deletedById String?
+
+  createdById String?
+
+  updatedById String?
+
+  castingJobItems    CastingJobItem[]
+  bomItems           VariantBomItem[]
+  stockBalance       StockBalance?
+  stockLedgerEntries StockLedger[]
+
+  @@index([castingItemName])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("casting_masters")
 }
 
 // Category
@@ -354,6 +535,7 @@ model ProductVariant {
 
   // ✅ Components (ONLY in variant)
   components ProductComponentsOnVariants[]
+  bom        VariantBom?
 
   // General
   status               ProductStatus         @default(ACTIVE)
@@ -361,6 +543,11 @@ model ProductVariant {
   deliveryChallanItems DeliveryChallanItem[]
   salesOrderItems      SalesOrderItem[]
   invoiceItems         InvoiceItem[]
+  grnItems             GoodsReceiptNoteItem[]
+  materialIssueItems   MaterialIssueItem[]
+  stockAdjustmentItems StockAdjustmentItem[]
+  stockBalance         StockBalance?
+  stockLedgerEntries   StockLedger[]
 
   @@unique([productId, variant])
   @@index([productId])
@@ -1066,8 +1253,6 @@ model Invoice {
 
   invoiceDate DateTime @default(now())
 
-  // Nullable for legacy invoices imported without an order link.
-  // New invoices are still required to provide this in application actions.
   salesOrderId String?
   salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
 
@@ -1093,6 +1278,8 @@ model Invoice {
   lrNumber        String?
   remarks         String?
   ewayBill        String?
+  transportationPayment TransportationPayment @default(TO_PAY)
+  transportationAmount  Decimal?              @db.Decimal(12, 2)
 
   totalPackages Int            @default(0)
   lrCopy        ProductMedia[]
@@ -1101,6 +1288,11 @@ model Invoice {
   emailedTo    String?
   emailCc      String?
   emailSubject String?
+
+  paymentReceived           Boolean  @default(false)
+  paymentReceivedAt         DateTime?
+  paymentReminderLastSentAt DateTime?
+  paymentReminderCount      Int      @default(0)
 
   subtotal                  Decimal @default(0) @db.Decimal(14, 2)
   discountTotal             Decimal @default(0) @db.Decimal(14, 2)
@@ -1127,8 +1319,6 @@ model InvoiceItem {
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  // Nullable for legacy invoice rows imported without an order-item link.
-  // New invoice items are validated before finalization.
   salesOrderItemId String?
   salesOrderItem   SalesOrderItem? @relation(fields: [salesOrderItemId], references: [id], onDelete: Restrict)
 
@@ -1211,4 +1401,901 @@ model InvoicePackageItem {
   @@index([invoicePackageId])
   @@index([invoiceItemId])
   @@map("invoice_package_items")
+}
+
+model VariantBom {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variantId String         @unique
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  isActive Boolean @default(true)
+  notes    String?
+
+  createdById String?
+  updatedById String?
+
+  items VariantBomItem[]
+
+  @@index([isActive])
+  @@map("variant_boms")
+}
+
+model VariantBomItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bomId String
+  bom   VariantBom @relation(fields: [bomId], references: [id], onDelete: Cascade)
+
+  componentType BomComponentType
+
+  rawMaterialId String?
+  rawMaterial   RawMaterial? @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  castingMasterId String?
+  castingMaster   CastingMaster? @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
+
+  qtyPerUnit Int @default(1)
+  remarks    String?
+  sortOrder  Int @default(0)
+
+  @@index([bomId, sortOrder])
+  @@index([rawMaterialId])
+  @@index([castingMasterId])
+  @@map("variant_bom_items")
+}
+
+enum GrnStatus {
+  DRAFT
+  FINALIZED
+  CANCELLED
+}
+
+enum GrnMaterialCheckStatus {
+  PENDING
+  CHECKED_OK
+  CHECKED_NOT_OK
+}
+
+enum GrnQuantityCheckStatus {
+  PENDING
+  OK
+  MISMATCH
+}
+
+enum GrnDiscrepancyAction {
+  HOLD_STOCK
+  RETURN_TO_SUPPLIER
+  REQUEST_REPLACEMENT
+  ADJUST_STOCK
+  ACCEPT_WITH_DEVIATION
+}
+
+enum MaterialIssueStatus {
+  DRAFT
+  FINALIZED
+  CANCELLED
+}
+
+enum MaterialIssueType {
+  INTERNAL_USE
+  DIRECT_SALE
+}
+
+enum CastingJobStatus {
+  DRAFT
+  IN_PROGRESS
+  PARTIAL_RECEIVED
+  CLOSED
+  CANCELLED
+}
+
+enum CastingJobWorkerType {
+  IN_HOUSE
+  JOB_WORK
+  CONTRACT
+}
+
+enum StockAdjustmentStatus {
+  DRAFT
+  FINALIZED
+  CANCELLED
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  RETURN_IN
+  RETURN_OUT
+  ADJUST_IN
+  ADJUST_OUT
+  SCRAP_OUT
+}
+
+enum StockReferenceType {
+  GRN
+  MATERIAL_ISSUE
+  CASTING_JOB
+  INVOICE
+  DELIVERY_CHALLAN
+  MANUAL_ADJUSTMENT
+}
+
+enum WebsiteVisitSourceType {
+  DIRECT
+  ORGANIC_SEARCH
+  SOCIAL
+  EMAIL
+  REFERRAL
+  ADS
+  INTERNAL
+  UNKNOWN
+}
+
+enum WebsiteVisitDeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+  BOT
+  OTHER
+}
+
+model GoodsReceiptNote {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  grnNo Int
+  grnFy String
+
+  status GrnStatus @default(DRAFT)
+
+  receivedAt          DateTime  @default(now())
+  supplierId          String?
+  supplier            Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierNameSnapshot String?
+  supplierInvoiceNo    String?
+  supplierInvoiceDate  DateTime?
+  supplierInvoiceFiles Json?
+
+  transporterName String?
+  lrNumber        String?
+
+  transportationPaid       Boolean?
+  transportationPaidAmount Decimal? @db.Decimal(12, 2)
+
+  materialCheckStatus GrnMaterialCheckStatus @default(PENDING)
+  quantityCheckStatus GrnQuantityCheckStatus @default(PENDING)
+  discrepancyAction   GrnDiscrepancyAction?
+  checkNotes          String?
+  checkedAt           DateTime?
+  checkedById         String?
+
+  remarks String?
+
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  finalizedAt   DateTime?
+  finalizedById String?
+  createdById   String?
+  updatedById   String?
+
+  items GoodsReceiptNoteItem[]
+
+  @@unique([grnFy, grnNo])
+  @@index([status])
+  @@index([materialCheckStatus])
+  @@index([quantityCheckStatus])
+  @@index([grnFy])
+  @@index([receivedAt])
+  @@index([supplierId])
+  @@map("goods_receipt_notes")
+}
+
+model GoodsReceiptNoteItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  grnId String
+  grn   GoodsReceiptNote @relation(fields: [grnId], references: [id], onDelete: Cascade)
+
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  rawMaterialId    String?
+  rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  title      String
+  supplierItemName String?
+  sku        String?
+  typeNumber String?
+  hsnCode    String?
+  unit       String?
+
+  qty Int @default(1)
+
+  unitCost          Decimal @default(0) @db.Decimal(12, 2)
+  discountPercent   Decimal @default(0) @db.Decimal(5, 2)
+  grossAmount       Decimal @default(0) @db.Decimal(14, 2)
+  discountAmount    Decimal @default(0) @db.Decimal(14, 2)
+  effectiveUnitCost Decimal @default(0) @db.Decimal(12, 2)
+  lineTotal         Decimal @default(0) @db.Decimal(14, 2)
+  sortOrder         Int     @default(0)
+
+  @@index([grnId, sortOrder])
+  @@index([productVariantId])
+  @@index([rawMaterialId])
+  @@map("goods_receipt_note_items")
+}
+
+model MaterialIssue {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issueNo Int
+  issueFy String
+
+  status MaterialIssueStatus @default(DRAFT)
+  issueType MaterialIssueType @default(INTERNAL_USE)
+
+  issueDate DateTime @default(now())
+
+  issuedToNameSnapshot String
+  issuedByNameSnapshot String?
+  directSaleCustomerNameSnapshot String?
+  directSaleReferenceNo          String?
+  department           String?
+  purpose              String?
+  workReference        String?
+  remarks              String?
+
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  finalizedAt   DateTime?
+  finalizedById String?
+  createdById   String?
+  updatedById   String?
+
+  items MaterialIssueItem[]
+
+  @@unique([issueFy, issueNo])
+  @@index([status])
+  @@index([issueType])
+  @@index([issueFy])
+  @@index([issueDate])
+  @@index([issuedToNameSnapshot])
+  @@index([directSaleCustomerNameSnapshot])
+  @@map("material_issues")
+}
+
+model MaterialIssueItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  materialIssueId String
+  materialIssue   MaterialIssue @relation(fields: [materialIssueId], references: [id], onDelete: Cascade)
+
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  rawMaterialId    String?
+  rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  title      String
+  supplierItemName String?
+  sku        String?
+  typeNumber String?
+  hsnCode    String?
+  unit       String?
+
+  qtyIssued   Int @default(1)
+  qtyReturned Int @default(0)
+
+  sortOrder Int @default(0)
+
+  @@index([materialIssueId, sortOrder])
+  @@index([productVariantId])
+  @@index([rawMaterialId])
+  @@map("material_issue_items")
+}
+
+model CastingJob {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobNo Int
+  jobFy String
+
+  status     CastingJobStatus     @default(DRAFT)
+  workerType CastingJobWorkerType @default(IN_HOUSE)
+
+  workerNameSnapshot String
+  supplierId         String?
+  supplier           Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  issueDate          DateTime  @default(now())
+  expectedReturnDate DateTime?
+  remarks            String?
+
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  finalizedAt   DateTime?
+  finalizedById String?
+  closedAt      DateTime?
+  closedById    String?
+  createdById   String?
+  updatedById   String?
+
+  totalIssuedQty       Int     @default(0)
+  totalIssuedWeightKg  Decimal @default(0) @db.Decimal(14, 3)
+  totalReceivedQty     Int     @default(0)
+  totalReceivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  totalPendingWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  yieldPercent         Decimal? @db.Decimal(7, 3)
+
+  items    CastingJobItem[]
+  receipts CastingJobReceipt[]
+
+  @@unique([jobFy, jobNo])
+  @@index([status])
+  @@index([workerType])
+  @@index([jobFy])
+  @@index([issueDate])
+  @@index([supplierId])
+  @@index([workerNameSnapshot])
+  @@map("casting_jobs")
+}
+
+model CastingJobItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingJobId String
+  castingJob   CastingJob @relation(fields: [castingJobId], references: [id], onDelete: Cascade)
+
+  inputRawMaterialId String
+  inputRawMaterial   RawMaterial @relation("CastingInputRawMaterial", fields: [inputRawMaterialId], references: [id], onDelete: Restrict)
+
+  outputCastingId String
+  outputCasting   CastingMaster @relation(fields: [outputCastingId], references: [id], onDelete: Restrict)
+
+  inputTitle  String
+  outputTitle String
+  inputUnit   String?
+  outputUnit  String?
+
+  issuedQty      Int     @default(0)
+  issuedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+
+  expectedOutputQty      Int?
+  expectedOutputWeightKg Decimal? @db.Decimal(14, 3)
+
+  receivedQty      Int     @default(0)
+  receivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  pendingWeightKg  Decimal @default(0) @db.Decimal(14, 3)
+
+  sortOrder Int @default(0)
+
+  receiptItems CastingJobReceiptItem[]
+
+  @@index([castingJobId, sortOrder])
+  @@index([inputRawMaterialId])
+  @@index([outputCastingId])
+  @@map("casting_job_items")
+}
+
+model CastingJobReceipt {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingJobId String
+  castingJob   CastingJob @relation(fields: [castingJobId], references: [id], onDelete: Cascade)
+
+  receiptNo Int
+  receivedAt DateTime @default(now())
+
+  receivedByNameSnapshot String?
+  remarks                String?
+
+  items CastingJobReceiptItem[]
+
+  @@unique([castingJobId, receiptNo])
+  @@index([castingJobId, receivedAt])
+  @@map("casting_job_receipts")
+}
+
+model CastingJobReceiptItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  castingJobReceiptId String
+  castingJobReceipt   CastingJobReceipt @relation(fields: [castingJobReceiptId], references: [id], onDelete: Cascade)
+
+  castingJobItemId String
+  castingJobItem   CastingJobItem @relation(fields: [castingJobItemId], references: [id], onDelete: Cascade)
+
+  receivedQty      Int     @default(0)
+  receivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+
+  sortOrder Int @default(0)
+
+  @@index([castingJobReceiptId, sortOrder])
+  @@index([castingJobItemId])
+  @@map("casting_job_receipt_items")
+}
+
+model StockAdjustment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  adjustNo Int
+  adjustFy String
+
+  status StockAdjustmentStatus @default(DRAFT)
+
+  adjustDate DateTime @default(now())
+  adjustedByNameSnapshot String?
+  reason                String?
+  remarks               String?
+
+  draftData    Json?
+  draftVersion Int   @default(0)
+
+  finalizedAt   DateTime?
+  finalizedById String?
+  createdById   String?
+  updatedById   String?
+
+  items StockAdjustmentItem[]
+
+  @@unique([adjustFy, adjustNo])
+  @@index([status])
+  @@index([adjustFy])
+  @@index([adjustDate])
+  @@index([adjustedByNameSnapshot])
+  @@map("stock_adjustments")
+}
+
+model StockAdjustmentItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stockAdjustmentId String
+  stockAdjustment   StockAdjustment @relation(fields: [stockAdjustmentId], references: [id], onDelete: Cascade)
+
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  rawMaterialId    String?
+  rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  title            String
+  supplierItemName String?
+  sku              String?
+  typeNumber       String?
+  hsnCode          String?
+  unit             String?
+
+  movementType StockMovementType
+  qty          Int @default(1)
+  unitCost     Decimal? @db.Decimal(12, 2)
+
+  remarks   String?
+  sortOrder Int @default(0)
+
+  @@index([stockAdjustmentId, sortOrder])
+  @@index([productVariantId])
+  @@index([rawMaterialId])
+  @@map("stock_adjustment_items")
+}
+
+model StockBalance {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productVariantId String?         @unique
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  rawMaterialId    String?         @unique
+  rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+  castingMasterId  String?         @unique
+  castingMaster    CastingMaster?  @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
+
+  qtyOnHand   Int @default(0)
+  qtyReserved Int @default(0)
+  qtyAvailable Int @default(0)
+
+  lastMovementAt DateTime?
+
+  @@index([qtyOnHand])
+  @@index([qtyAvailable])
+  @@index([productVariantId])
+  @@index([rawMaterialId])
+  @@index([castingMasterId])
+  @@map("stock_balances")
+}
+
+model StockLedger {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movementDate DateTime         @default(now())
+  movementType StockMovementType
+
+  referenceType StockReferenceType
+  referenceId   String
+  referenceNo   String?
+
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  rawMaterialId    String?
+  rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+  castingMasterId  String?
+  castingMaster    CastingMaster?  @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
+
+  qtyIn        Int @default(0)
+  qtyOut       Int @default(0)
+  balanceAfter Int @default(0)
+
+  unitCost  Decimal? @db.Decimal(12, 2)
+  totalCost Decimal? @db.Decimal(14, 2)
+
+  actorName   String?
+  remarks     String?
+  createdById String?
+
+  @@index([productVariantId, movementDate])
+  @@index([rawMaterialId, movementDate])
+  @@index([castingMasterId, movementDate])
+  @@index([referenceType, referenceId])
+  @@index([movementType, movementDate])
+  @@map("stock_ledger")
+}
+
+model WebsiteVisit {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visitedAt DateTime @default(now())
+
+  visitorId String
+  sessionId String
+
+  isFrontend     Boolean @default(true)
+  isSessionEntry Boolean @default(false)
+
+  path        String
+  queryString String?
+  pageTitle   String?
+
+  referrer   String?
+  sourceHost String?
+  sourceType WebsiteVisitSourceType @default(UNKNOWN)
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  country       String?
+  countryRegion String?
+  city          String?
+
+  deviceType WebsiteVisitDeviceType @default(OTHER)
+  browser    String?
+  os         String?
+  userAgent  String?
+  ipHash     String?
+
+  @@index([visitedAt])
+  @@index([visitorId, visitedAt])
+  @@index([sessionId, visitedAt])
+  @@index([sourceType, visitedAt])
+  @@index([sourceHost, visitedAt])
+  @@index([country, visitedAt])
+  @@index([path, visitedAt])
+  @@index([isFrontend, visitedAt])
+  @@index([isSessionEntry, visitedAt])
+  @@map("website_visits")
+}
+
+model InventorySetting {
+  id        String   @id @default("default")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  allowNegativeStock Boolean @default(false)
+  lowStockThreshold  Int     @default(0)
+
+  @@map("inventory_settings")
+}
+
+// =====================
+// Contractor Work Tracker
+// =====================
+
+enum WorkerRole {
+  TURNER
+  ASSEMBLY
+  POLISHING
+  PAINTING
+  HELPER
+  OTHER
+}
+
+enum WorkerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ContractorCatalogStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum WorkerLedgerKind {
+  ADVANCE
+  DEDUCTION
+  BONUS
+  PAYOUT
+  ADJUSTMENT
+}
+
+model Worker {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  code     String       @unique
+  name     String
+  role     WorkerRole   @default(TURNER)
+  phone    String?
+  email    String?
+  address  String?
+  joinedAt DateTime?
+  notes    String?
+  status   WorkerStatus @default(ACTIVE)
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("WorkerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("WorkerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  workEntries   WorkEntry[]
+  ledgerEntries WorkerLedgerEntry[]
+  payouts       WorkerPayout[]
+
+  @@index([name])
+  @@index([code])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("workers")
+}
+
+model ContractorProduct {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String                 @unique
+  description String?
+  status      ContractorCatalogStatus @default(ACTIVE)
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ContractorProductDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("ContractorProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("ContractorProductUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  rates ContractorRate[]
+
+  @@index([name])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contractor_products")
+}
+
+model ContractorOperation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String                 @unique
+  description String?
+  status      ContractorCatalogStatus @default(ACTIVE)
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ContractorOperationDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("ContractorOperationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("ContractorOperationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  rates ContractorRate[]
+
+  @@index([name])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contractor_operations")
+}
+
+model ContractorRate {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contractorProductId String
+  contractorProduct   ContractorProduct @relation(fields: [contractorProductId], references: [id], onDelete: Restrict)
+
+  contractorOperationId String
+  contractorOperation   ContractorOperation @relation(fields: [contractorOperationId], references: [id], onDelete: Restrict)
+
+  sideLabel String?
+  unit      String  @default("Nos")
+  defaultRate Decimal @default(0) @db.Decimal(10, 2)
+  role      WorkerRole?
+  status    ContractorCatalogStatus @default(ACTIVE)
+  notes     String?
+
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("ContractorRateDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("ContractorRateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("ContractorRateUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  workEntries WorkEntry[]
+
+  @@unique([contractorProductId, contractorOperationId, sideLabel])
+  @@index([contractorProductId])
+  @@index([contractorOperationId])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contractor_rates")
+}
+
+model WorkEntry {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  date DateTime
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+
+  contractorRateId String?
+  contractorRate   ContractorRate? @relation(fields: [contractorRateId], references: [id], onDelete: SetNull)
+
+  productNameSnapshot   String
+  operationNameSnapshot String
+  sideLabelSnapshot     String?
+  unitSnapshot          String? @default("Nos")
+
+  qty    Int
+  rate   Decimal @db.Decimal(10, 2)
+  amount Decimal @db.Decimal(12, 2)
+
+  notes String?
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("WorkEntryDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("WorkEntryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkEntryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([workerId, date])
+  @@index([contractorRateId])
+  @@index([deletedAt])
+  @@map("work_entries")
+}
+
+model WorkerLedgerEntry {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+
+  date   DateTime
+  kind   WorkerLedgerKind
+  amount Decimal          @db.Decimal(12, 2)
+  notes  String?
+
+  payoutId String?
+  payout   WorkerPayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  // Soft delete + audit
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("WorkerLedgerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("WorkerLedgerCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkerLedgerUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([workerId, date])
+  @@index([kind])
+  @@index([payoutId])
+  @@index([deletedAt])
+  @@map("worker_ledger_entries")
+}
+
+model WorkerPayout {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+
+  monthYear String // "YYYY-MM"
+
+  earningsTotal   Decimal @default(0) @db.Decimal(14, 2)
+  advancesTotal   Decimal @default(0) @db.Decimal(14, 2)
+  deductionsTotal Decimal @default(0) @db.Decimal(14, 2)
+  bonusTotal      Decimal @default(0) @db.Decimal(14, 2)
+  netPayable      Decimal @default(0) @db.Decimal(14, 2)
+  amountPaid      Decimal @default(0) @db.Decimal(14, 2)
+  carryForward    Decimal @default(0) @db.Decimal(14, 2)
+
+  applyAdvances Boolean   @default(true)
+  paidAt        DateTime?
+  notes         String?
+
+  ledgerEntries WorkerLedgerEntry[]
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("WorkerPayoutCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("WorkerPayoutUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([workerId, monthYear])
+  @@index([monthYear])
+  @@index([workerId])
+  @@map("worker_payouts")
 }

@@ -24,6 +24,11 @@ const page: FC<pageProps> = async ({ params }) => {
       country: true,
       pincode: true,
       gstin: true,
+      defaultQuotationGst: true,
+      defaultQuotationPackingCharges: true,
+      defaultQuotationTransportationPayment: true,
+      defaultQuotationPaymentTerms: true,
+      defaultQuotationDeliveryDate: true,
       status: true,
     },
   });
@@ -49,6 +54,13 @@ const page: FC<pageProps> = async ({ params }) => {
           country: c.country,
           pincode: c.pincode,
           gstin: c.gstin as string | undefined,
+          defaultQuotationGst: c.defaultQuotationGst,
+          defaultQuotationPackingCharges: c.defaultQuotationPackingCharges,
+          defaultQuotationTransportationPayment:
+            c.defaultQuotationTransportationPayment,
+          defaultQuotationPaymentTerms: c.defaultQuotationPaymentTerms,
+          defaultQuotationDeliveryDate:
+            c.defaultQuotationDeliveryDate as string | undefined,
           status: c.status,
           id: c.id,
         }}

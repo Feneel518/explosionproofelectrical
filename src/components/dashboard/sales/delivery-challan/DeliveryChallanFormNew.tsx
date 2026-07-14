@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import React, { FC, useMemo } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -226,10 +226,10 @@ const DeliveryChallanFormNew: FC<DeliveryChallanFormNewProps> = ({
 
   const saveIndicator = (() => {
     if (!deliveryChallanId)
-      return <Badge variant="secondary">Creating draft…</Badge>;
+      return <Badge variant="secondary">Creating draft</Badge>;
 
     if (autosave.status === "saving")
-      return <Badge variant="secondary">Saving…</Badge>;
+      return <Badge variant="secondary">Saving</Badge>;
 
     if (autosave.status === "saved")
       return (
@@ -399,7 +399,8 @@ const DeliveryChallanFormNew: FC<DeliveryChallanFormNewProps> = ({
               Draft autosaves automatically. Finalize to issue the challan.
             </div>
             <div className="text-xs text-muted-foreground">
-              {challanCode} · {formatFinancialDocumentNumber(challanFY, challanNo)}
+              {challanCode} ·{" "}
+              {formatFinancialDocumentNumber(challanFY, challanNo)}
             </div>
           </div>
 

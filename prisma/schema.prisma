@@ -828,6 +828,11 @@ enum SalesOrderSourceType {
   IMPORTED
 }
 
+enum SalesOrderCompletionType {
+  INVOICED
+  MANUAL
+}
+
 model SalesOrder {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -839,6 +844,7 @@ model SalesOrder {
 
   status     SalesOrderStatus     @default(DRAFT)
   sourceType SalesOrderSourceType @default(DIRECT)
+  completionType SalesOrderCompletionType?
 
   // Optional quotation link
   quotationId String?
@@ -1060,8 +1066,10 @@ model Invoice {
 
   invoiceDate DateTime @default(now())
 
-  salesOrderId String
-  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  // Nullable for legacy invoices imported without an order link.
+  // New invoices are still required to provide this in application actions.
+  salesOrderId String?
+  salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
@@ -1119,8 +1127,10 @@ model InvoiceItem {
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  salesOrderItemId String
-  salesOrderItem   SalesOrderItem @relation(fields: [salesOrderItemId], references: [id], onDelete: Restrict)
+  // Nullable for legacy invoice rows imported without an order-item link.
+  // New invoice items are validated before finalization.
+  salesOrderItemId String?
+  salesOrderItem   SalesOrderItem? @relation(fields: [salesOrderItemId], references: [id], onDelete: Restrict)
 
   productId String?
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)

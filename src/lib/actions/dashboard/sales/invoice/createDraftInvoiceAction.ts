@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { getFinancialYearLabelFromStartYear } from "@/lib/helpers/globalHelpers/financialYear";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
+import { syncSalesOrderInvoiceProgress } from "@/lib/actions/dashboard/sales/order/syncSalesOrderInvoiceProgress";
 
 function getFinancialYearStartYear(date = new Date()) {
   const month = date.getMonth() + 1;
@@ -16,6 +17,39 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
+      const orderState = await tx.salesOrder.findUnique({
+        where: { id: salesOrderId },
+        select: { id: true, status: true },
+      });
+
+      if (!orderState) {
+        return { ok: false as const, message: "Sales order not found" };
+      }
+
+      if (orderState.status === "CANCELLED") {
+        return {
+          ok: false as const,
+          message: "Cancelled order cannot be invoiced",
+        };
+      }
+
+      if (orderState.status === "DRAFT") {
+        return {
+          ok: false as const,
+          message: "Finalize the sales order before creating an invoice",
+        };
+      }
+
+      if (orderState.status === "COMPLETED") {
+        return {
+          ok: false as const,
+          message: "Completed order cannot be invoiced",
+        };
+      }
+
+      // Reconcile legacy/stale order counters before deciding what is invoiceable.
+      await syncSalesOrderInvoiceProgress(tx, salesOrderId, session.user.id);
+
       const order = await tx.salesOrder.findUnique({
         where: { id: salesOrderId },
         select: {
@@ -53,13 +87,6 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
 
       if (!order) {
         return { ok: false as const, message: "Sales order not found" };
-      }
-
-      if (order.status === "CANCELLED") {
-        return {
-          ok: false as const,
-          message: "Cancelled order cannot be invoiced",
-        };
       }
 
       const invoiceableItems = order.items

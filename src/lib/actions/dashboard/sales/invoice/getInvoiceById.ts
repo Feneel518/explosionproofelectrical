@@ -238,7 +238,7 @@ export async function getInvoiceByIdAction(invoiceId: string) {
       return { ok: false as const, message: "Invoice not found" };
     }
 
-    const pendingItems = invoice.salesOrder.items
+    const pendingItems = (invoice.salesOrder?.items ?? [])
       .map((item) => {
         const qty = Number(item.qty ?? 0);
         const invoicedQty = Number(item.invoicedQty ?? 0);

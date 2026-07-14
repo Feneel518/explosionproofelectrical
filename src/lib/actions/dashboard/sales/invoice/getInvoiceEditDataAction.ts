@@ -110,6 +110,13 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
       return { ok: false as const, message: "Invoice not found" };
     }
 
+    if (!invoice.salesOrderId || !invoice.salesOrder) {
+      return {
+        ok: false as const,
+        message: "Legacy invoice is not linked to a sales order",
+      };
+    }
+
     const pendingItems = invoice.salesOrder.items
       .map((item) => {
         const qty = Number(item.qty ?? 0);
@@ -145,6 +152,8 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
       ok: true as const,
       invoice: {
         ...invoice,
+        salesOrderId: invoice.salesOrderId,
+        salesOrder: invoice.salesOrder,
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
         grandTotal: Number(invoice.grandTotal ?? 0),

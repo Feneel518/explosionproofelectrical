@@ -2,14 +2,16 @@
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
+import { syncSalesOrderInvoiceProgress } from "@/lib/actions/dashboard/sales/order/syncSalesOrderInvoiceProgress";
+import { revalidatePath } from "next/cache";
 
 export async function reopenInvoiceAsDraftAction(invoiceId: string) {
-  await requireAuth();
+  const session = await requireAuth();
 
   try {
     const invoice = await prisma.invoice.findUnique({
       where: { id: invoiceId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, salesOrderId: true },
     });
 
     if (!invoice) {
@@ -23,12 +25,33 @@ export async function reopenInvoiceAsDraftAction(invoiceId: string) {
       };
     }
 
-    await prisma.invoice.update({
-      where: { id: invoiceId },
-      data: {
-        status: "DRAFT",
-      },
+    if (!invoice.salesOrderId) {
+      return {
+        ok: false as const,
+        message: "Legacy invoice is not linked to a sales order",
+      };
+    }
+
+    const salesOrderId = invoice.salesOrderId;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          status: "DRAFT",
+        },
+      });
+
+      await syncSalesOrderInvoiceProgress(
+        tx,
+        salesOrderId,
+        session.user.id,
+      );
     });
+
+    revalidatePath("/dashboard/sales/invoices");
+    revalidatePath(`/dashboard/sales/invoices/${invoiceId}`);
+    revalidatePath(`/dashboard/sales/orders/${salesOrderId}`);
 
     return {
       ok: true as const,

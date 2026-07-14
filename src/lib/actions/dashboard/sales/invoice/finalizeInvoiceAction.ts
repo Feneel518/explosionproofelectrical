@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { ProductMediaKind } from "@prisma/client";
+import { syncSalesOrderInvoiceProgress } from "@/lib/actions/dashboard/sales/order/syncSalesOrderInvoiceProgress";
 
 import { revalidatePath } from "next/cache";
 
@@ -39,6 +40,15 @@ export const finalizeInvoiceAction = async (id: string) => {
     if (invoice.status !== "DRAFT") {
       return { ok: false as const, message: "Invoice already finalized" };
     }
+
+    if (!invoice.salesOrderId) {
+      return {
+        ok: false as const,
+        message: "Legacy invoice is not linked to a sales order",
+      };
+    }
+
+    const salesOrderId = invoice.salesOrderId;
 
     const draft = invoice.draftData as InvoiceDraftData | null;
 
@@ -92,8 +102,32 @@ export const finalizeInvoiceAction = async (id: string) => {
     }
 
     await prisma.$transaction(async (tx) => {
+      const orderState = await tx.salesOrder.findUnique({
+        where: { id: salesOrderId },
+        select: { status: true },
+      });
+
+      if (!orderState) {
+        throw new Error("Sales order not found");
+      }
+
+      if (orderState.status === "CANCELLED") {
+        throw new Error("Cancelled order cannot be invoiced");
+      }
+
+      if (orderState.status === "COMPLETED") {
+        throw new Error("Completed order cannot be invoiced");
+      }
+
+      // Repair any stale cached quantities before validating this invoice.
+      await syncSalesOrderInvoiceProgress(
+        tx,
+        salesOrderId,
+        session.user.id,
+      );
+
       const liveOrderItems = await tx.salesOrderItem.findMany({
-        where: { salesOrderId: invoice.salesOrderId },
+        where: { salesOrderId },
         select: {
           id: true,
           qty: true,
@@ -349,93 +383,16 @@ export const finalizeInvoiceAction = async (id: string) => {
         }
       }
 
-      for (const item of preparedItems) {
-        const live = liveMap.get(item.salesOrderItemId)!;
-        const newInvoicedQty = live.invoicedQty + item.qty;
-        const newDispatchedQty = newInvoicedQty;
-        const newPendingQty = Math.max(live.qty - newInvoicedQty, 0);
-
-        await tx.salesOrderItem.update({
-          where: { id: item.salesOrderItemId },
-          data: {
-            invoicedQty: newInvoicedQty,
-            dispatchedQty: newDispatchedQty,
-            pendingQty: newPendingQty,
-          },
-        });
-      }
-
-      const refreshedItems = await tx.salesOrderItem.findMany({
-        where: { salesOrderId: invoice.salesOrderId },
-        select: {
-          qty: true,
-          invoicedQty: true,
-          dispatchedQty: true,
-        },
-      });
-
-      const totalOrderedQty = refreshedItems.reduce((a, i) => a + i.qty, 0);
-      const totalInvoicedQty = refreshedItems.reduce(
-        (a, i) => a + i.invoicedQty,
-        0,
+      await syncSalesOrderInvoiceProgress(
+        tx,
+        salesOrderId,
+        session.user.id,
       );
-      const totalDispatchedQty = refreshedItems.reduce(
-        (a, i) => a + i.dispatchedQty,
-        0,
-      );
-      const totalPendingQty = refreshedItems.reduce(
-        (a, i) => a + Math.max(i.qty - i.invoicedQty, 0),
-        0,
-      );
-
-      const isFullyInvoiced =
-        refreshedItems.length > 0 &&
-        refreshedItems.every((i) => i.invoicedQty >= i.qty);
-
-      const isFullyDispatched =
-        refreshedItems.length > 0 &&
-        refreshedItems.every((i) => i.dispatchedQty >= i.qty);
-
-      let status:
-        | "CONFIRMED"
-        | "PARTIALLY_DISPATCHED"
-        | "DISPATCHED"
-        | "PARTIALLY_INVOICED"
-        | "INVOICED"
-        | "COMPLETED" = "CONFIRMED";
-
-      if (isFullyInvoiced && isFullyDispatched) {
-        status = "COMPLETED";
-      } else if (isFullyInvoiced) {
-        status = "INVOICED";
-      } else if (totalInvoicedQty > 0) {
-        status = "PARTIALLY_INVOICED";
-      } else if (isFullyDispatched) {
-        status = "DISPATCHED";
-      } else if (totalDispatchedQty > 0) {
-        status = "PARTIALLY_DISPATCHED";
-      }
-
-      await tx.salesOrder.update({
-        where: { id: invoice.salesOrderId },
-        data: {
-          totalOrderedQty,
-          totalDispatchedQty,
-          totalInvoicedQty,
-          totalPendingQty,
-          isFullyInvoiced,
-          isFullyDispatched,
-          firstInvoicedAt: totalInvoicedQty > 0 ? new Date() : undefined,
-          fullyInvoicedAt: isFullyInvoiced ? new Date() : null,
-          status,
-          updatedById: session.user.id,
-        },
-      });
     });
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${id}`);
-    revalidatePath(`/dashboard/sales/orders/${invoice.salesOrderId}`);
+    revalidatePath(`/dashboard/sales/orders/${salesOrderId}`);
 
     return { ok: true as const, message: "Invoice finalized" };
   } catch (error) {

@@ -14,7 +14,15 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FC } from "react";
-import { ArrowLeft, FileText, Pencil, ReceiptText, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  Pencil,
+  ReceiptText,
+  Truck,
+  XCircle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/order/reopenSalesOrderAsDraftAction";
@@ -22,6 +30,10 @@ import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
 import WorkOrderCopyModal from "@/components/customerCopy/sales-order/WorkOrderCopyDialog";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import {
+  cancelSalesOrderAction,
+  completeSalesOrderManuallyAction,
+} from "@/lib/actions/dashboard/sales/order/updateSalesOrderStatusAction";
 
 interface SalesOrderDetailsPageProps {
   order: GetSalesOrderByIdData;
@@ -95,6 +107,12 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
     "-";
 
   const canEdit = order.status === "DRAFT" || order.status === "CONFIRMED";
+  const canComplete =
+    order.status !== "DRAFT" &&
+    order.status !== "COMPLETED" &&
+    order.status !== "CANCELLED";
+  const canCancel =
+    order.status !== "COMPLETED" && order.status !== "CANCELLED";
 
   return (
     <div className="space-y-6">
@@ -117,6 +135,14 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
               {order.status}
             </Badge>
 
+            {order.status === "COMPLETED" && order.completionType ? (
+              <Badge variant="outline">
+                {order.completionType === "MANUAL"
+                  ? "MANUALLY CLOSED"
+                  : "FULLY INVOICED"}
+              </Badge>
+            ) : null}
+
             <Badge variant="outline">{order.sourceType}</Badge>
           </div>
 
@@ -130,7 +156,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
           {canEdit ? (
             <Button
               onClick={async () => {
-                if (status === "DRAFT") {
+                if (order.status === "DRAFT") {
                   router.push(`/dashboard/sales/orders/${order.id}/edit`);
                   return;
                 }
@@ -148,6 +174,44 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
               className={buttonVariants({ variant: "outline" })}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
+            </Button>
+          ) : null}
+
+          {canComplete ? (
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (
+                  !window.confirm(
+                    "Complete this order manually without requiring a full invoice?",
+                  )
+                ) {
+                  return;
+                }
+
+                const res = await completeSalesOrderManuallyAction(order.id);
+                if (res.ok) toast.success(res.message);
+                else toast.error(res.message);
+                if (res.ok) router.refresh();
+              }}>
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Complete Manually
+            </Button>
+          ) : null}
+
+          {canCancel ? (
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!window.confirm("Cancel this sales order?")) return;
+
+                const res = await cancelSalesOrderAction(order.id);
+                if (res.ok) toast.success(res.message);
+                else toast.error(res.message);
+                if (res.ok) router.refresh();
+              }}>
+              <XCircle className="mr-2 h-4 w-4" />
+              Cancel Order
             </Button>
           ) : null}
 

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ background:#04121b; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:#E46414; color:#fff; }
+  @keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-14px); } }
+  @keyframes scrollDot{ 0%{ transform:translateY(0); opacity:0; } 30%{ opacity:1; } 100%{ transform:translateY(18px); opacity:0; } }
+  @keyframes glowPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:.85; } }
+  @keyframes ldrFill{ from{ width:0%; } to{ width:100%; } }
+  @keyframes ldrFlicker{ 0%,100%{ opacity:.85; transform:scale(1); } 25%{ opacity:1; transform:scale(1.06); } 50%{ opacity:.7; transform:scale(.97); } 75%{ opacity:.95; transform:scale(1.03); } }
+  @keyframes ldrRing{ to{ transform:rotate(360deg); } }
+  @keyframes ldrUp{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes ldrSweep{ 0%{ transform:translateX(-100%); } 100%{ transform:translateX(220%); } }
+</style>
+</helmet>
+
+<div style="background:#04121b; color:#fff; min-height:100vh; overflow-x:hidden;">
+
+  <!-- ========================== LOADING ANIMATION ========================== -->
+  <div style="{{ loaderStyle }}">
+    <div style="position:fixed; inset:0; z-index:9999; background:#04121b; display:flex; align-items:center; justify-content:center; transition:opacity .7s ease; opacity:{{ loaderFade }}; pointer-events:{{ loaderPointer }};">
+      <!-- ambient glow -->
+      <div style="position:absolute; left:50%; top:42%; transform:translate(-50%,-50%); width:680px; height:680px; max-width:90vw; background:radial-gradient(circle, rgba(228,100,20,0.22) 0%, rgba(228,100,20,0) 62%); animation:glowPulse 4s ease-in-out infinite;"></div>
+      <!-- edge rails -->
+      <div style="position:absolute; inset:0; border-left:1px solid rgba(255,255,255,0.10); border-right:1px solid rgba(255,255,255,0.10);"></div>
+
+      <!-- corner labels -->
+      <div style="position:absolute; top:32px; left:40px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:rgba(255,255,255,0.45);">EXEC · EXPLOSION PROOF ELECTRICAL CONTROL</div>
+      <div style="position:absolute; top:32px; right:40px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:#F17D1E;">EST. 1996</div>
+      <div style="position:absolute; bottom:32px; left:40px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:rgba(255,255,255,0.45);">VAPI · GUJARAT · INDIA</div>
+      <div style="position:absolute; bottom:32px; right:40px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:rgba(255,255,255,0.45);">{{ loaderStatus }}</div>
+
+      <!-- center stack -->
+      <div style="position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;">
+        <!-- spinning containment ring around logo -->
+        <div style="position:relative; width:148px; height:148px; display:flex; align-items:center; justify-content:center; margin-bottom:38px;">
+          <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,255,255,0.12);"></div>
+          <div style="position:absolute; inset:0; border-radius:50%; border:2px solid transparent; border-top-color:#E46414; border-right-color:rgba(228,100,20,0.4); animation:ldrRing 1.2s linear infinite;"></div>
+          <img src="assets/Logo.png" alt="ExEC" width="78" height="78" style="width:78px; height:78px; object-fit:contain; animation:ldrFlicker 2.6s ease-in-out infinite;">
+        </div>
+
+        <div style="font-family:'Bebas Neue'; font-size:64px; line-height:0.84; letter-spacing:0.05em; animation:ldrUp .8s ease both;">BUILT TO CONTAIN<br><span style="color:#E46414;">THE SPARK</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.26em; color:rgba(255,255,255,0.55); margin-top:20px; animation:ldrUp 1s ease both;">FLAMEPROOF &amp; EXPLOSION-PROOF EQUIPMENT</div>
+
+        <!-- progress -->
+        <div style="margin-top:46px; width:340px; max-width:70vw;">
+          <div style="display:flex; align-items:center; justify-content:space-between; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.5); margin-bottom:12px;">
+            <span>LOADING</span><span style="color:#F17D1E;">{{ loaderPct }}%</span>
+          </div>
+          <div style="position:relative; height:3px; background:rgba(255,255,255,0.12); overflow:hidden;">
+            <div style="position:absolute; inset:0 auto 0 0; background:#E46414; box-shadow:0 0 14px rgba(228,100,20,0.7); animation:ldrFill 2.4s cubic-bezier(.45,.05,.2,1) forwards;"></div>
+            <div style="position:absolute; top:0; bottom:0; width:60px; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); animation:ldrSweep 1.3s ease-in-out infinite;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== FULL-SCREEN FRAME (edge rails) ===================== -->
+  <div style="width:100%; border-left:1px solid rgba(255,255,255,0.12); border-right:1px solid rgba(255,255,255,0.12);">
+
+    <!-- ======================= UTILITY BAR ======================= -->
+    <div style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b;">
+      <div style="padding:0 40px; height:42px; display:flex; align-items:center; justify-content:space-between; font-family:'Space Mono',monospace; font-size:11.5px; letter-spacing:0.14em; color:rgba(255,255,255,0.66);">
+        <div style="display:flex; align-items:center; gap:26px;">
+          <span style="color:#F17D1E;">●</span>
+          <span>GIDC PHASE IV · VAPI · GUJARAT · INDIA</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:26px;">
+          <span style="color:rgba(255,255,255,0.5);">EST. 1996</span>
+          <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bcf5f2faf3fcf9e4ecf0f3eff5f3f2eceef3f3faf9f0f9ffe8eef5fffdf092fff3f1">[email&#160;protected]</a></span>
+          <span style="color:#fff; border-bottom:1px solid #E46414; padding-bottom:2px; cursor:pointer;">DASHBOARD ↗</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= NAV ======================= -->
+    <div style="position:sticky; top:0; z-index:50; background:rgba(6,29,43,0.88); backdrop-filter:blur(14px); border-bottom:1px solid rgba(255,255,255,0.12);">
+      <div style="padding:0 40px; height:84px; display:flex; align-items:center; justify-content:space-between;">
+        <div onClick="{{ goHome }}" style="display:flex; align-items:center; gap:16px; cursor:pointer;">
+          <img src="assets/Logo.png" alt="ExEC" width="54" height="54" style="display:block; width:54px; height:54px; object-fit:contain;">
+          <div style="line-height:1; border-left:1px solid rgba(255,255,255,0.18); padding-left:16px;">
+            <div style="font-family:'Bebas Neue'; font-size:24px; letter-spacing:0.04em;">EXEC</div>
+            <div style="font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.22em; color:rgba(255,255,255,0.55); margin-top:3px;">EXPLOSION PROOF ELECTRICAL CONTROL</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:40px; font-size:13px; letter-spacing:0.16em; font-weight:500;">
+          <span onClick="{{ goHome }}" style="{{ homeLinkStyle }}">HOME</span>
+          <span onClick="{{ goCatalog }}" style="{{ catalogLinkStyle }}">CATALOG</span>
+          <span onClick="{{ goBlog }}" style="{{ blogLinkStyle }}">BLOG</span>
+          <span onClick="{{ goStory }}" style="{{ storyLinkStyle }}">OUR STORY</span>
+          <span onClick="{{ goContact }}" style="{{ contactLinkStyle }}">CONTACT</span>
+        </div>
+        <div onClick="{{ goCatalog }}" style="background:#E46414; color:#fff; font-size:12.5px; font-weight:700; letter-spacing:0.12em; padding:14px 26px; cursor:pointer; box-shadow:0 8px 30px rgba(228,100,20,0.32);">
+          REQUEST A QUOTE
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ========================== HOME ========================= -->
+    <!-- ========================================================= -->
+    <div style="{{ homeStyle }}">
+
+      <!-- ===== HERO ===== -->
+      <div data-screen-label="Hero" style="position:relative; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.12);">
+        <img src="assets/factory.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.20;">
+        <div style="position:absolute; inset:0; background:linear-gradient(115deg, #04121b 30%, rgba(7,37,54,0.72) 70%, rgba(7,37,54,0.35) 100%);"></div>
+        <div style="position:absolute; right:-180px; top:6%; width:760px; height:760px; background:radial-gradient(circle, rgba(228,100,20,0.30) 0%, rgba(228,100,20,0) 62%); filter:blur(8px); animation:glowPulse 6s ease-in-out infinite;"></div>
+
+        <div style="position:relative; display:grid; grid-template-columns:1.15fr 0.85fr; gap:60px; align-items:center; min-height:calc(100vh - 126px); padding:80px 72px;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:12px; font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#F17D1E; border:1px solid rgba(228,100,20,0.45); padding:9px 16px; margin-bottom:34px;">
+              <span style="width:6px; height:6px; background:#E46414; border-radius:50%; box-shadow:0 0 10px #E46414;"></span>
+              CIMFR &amp; PESO CERTIFIED · ZONE 1 &amp; ZONE 2
+            </div>
+            <h1 style="font-family:'Bebas Neue'; font-size:104px; line-height:0.88; letter-spacing:0.005em; margin-bottom:28px; text-wrap:balance;">
+              BUILT TO<br>CONTAIN<br><span style="color:#E46414;">THE SPARK.</span>
+            </h1>
+            <p style="font-size:18px; line-height:1.65; font-weight:300; color:rgba(255,255,255,0.74); max-width:520px; margin-bottom:40px;">
+              Flameproof &amp; explosion-proof electrical equipment engineered for the world's most hazardous environments. Designed, cast and certified in Vapi since 1996.
+            </p>
+            <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+              <div onClick="{{ goCatalog }}" style="background:#E46414; color:#fff; font-size:14px; font-weight:700; letter-spacing:0.1em; padding:18px 34px; cursor:pointer; box-shadow:0 12px 40px rgba(228,100,20,0.34);">BROWSE CATALOG →</div>
+              <div style="border:1px solid rgba(255,255,255,0.32); color:#fff; font-size:14px; font-weight:600; letter-spacing:0.1em; padding:18px 32px; cursor:pointer;">DOWNLOAD BROCHURE ↓</div>
+            </div>
+          </div>
+          <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <div style="position:absolute; width:380px; height:380px; background:radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 65%);"></div>
+            <img src="assets/wellglass.png" alt="Flameproof wellglass light fitting" style="position:relative; width:430px; max-width:100%; object-fit:contain; filter:drop-shadow(0 40px 60px rgba(0,0,0,0.6)); animation:floatY 7s ease-in-out infinite;">
+            <div style="position:absolute; right:-6px; bottom:34px; background:#061d2b; border:1px solid rgba(255,255,255,0.16); padding:14px 18px; font-family:'Space Mono',monospace;">
+              <div style="font-size:10px; letter-spacing:0.18em; color:rgba(255,255,255,0.55);">MODEL</div>
+              <div style="font-size:16px; color:#fff; margin-top:4px; letter-spacing:0.06em;">EXEC&nbsp;L-45</div>
+              <div style="font-size:10px; letter-spacing:0.14em; color:#F17D1E; margin-top:6px;">IP-66 · Ex d IIB</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="position:absolute; left:50%; bottom:26px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:10px;">
+          <span style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,255,255,0.5);">SCROLL</span>
+          <div style="width:22px; height:36px; border:1px solid rgba(255,255,255,0.3); border-radius:12px; display:flex; justify-content:center; padding-top:7px;">
+            <span style="width:3px; height:7px; background:#E46414; border-radius:2px; animation:scrollDot 1.8s ease-in-out infinite;"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TRUST STRIP (4-col) ===== -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b; display:grid; grid-template-columns:repeat(4,1fr);">
+        <div style="padding:30px 28px; border-right:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; gap:16px;">
+          <div style="font-family:'Bebas Neue'; font-size:46px; color:#E46414; line-height:0.8;">CIMFR</div>
+          <div style="font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.14em; color:rgba(255,255,255,0.6); line-height:1.5;">TEST &amp; APPROVAL<br>CERTIFIED</div>
+        </div>
+        <div style="padding:30px 28px; border-right:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; gap:16px;">
+          <div style="font-family:'Bebas Neue'; font-size:46px; color:#E46414; line-height:0.8;">PESO</div>
+          <div style="font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.14em; color:rgba(255,255,255,0.6); line-height:1.5;">APPROVED FOR<br>HAZARDOUS AREAS</div>
+        </div>
+        <div style="padding:30px 28px; border-right:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; gap:16px;">
+          <div style="font-family:'Bebas Neue'; font-size:46px; color:#fff; line-height:0.8;">IP-66</div>
+          <div style="font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.14em; color:rgba(255,255,255,0.6); line-height:1.5;">DUST &amp; JET<br>INGRESS RATED</div>
+        </div>
+        <div style="padding:30px 28px; display:flex; align-items:center; gap:16px;">
+          <div style="font-family:'Bebas Neue'; font-size:46px; color:#fff; line-height:0.8;">Ex&nbsp;d</div>
+          <div style="font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.14em; color:rgba(255,255,255,0.6); line-height:1.5;">IIA · IIB · IIC<br>GAS GROUPS</div>
+        </div>
+      </div>
+
+      <!-- ===== STATS (4-col, dividers aligned to trust strip) ===== -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:repeat(4,1fr);">
+        <div style="text-align:center; padding:74px 28px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Bebas Neue'; font-size:78px; line-height:0.85; color:#fff;">28<span style="color:#E46414;">+</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:12px;">YEARS OF FLAMEPROOF<br>ENGINEERING</div>
+        </div>
+        <div style="text-align:center; padding:74px 28px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Bebas Neue'; font-size:78px; line-height:0.85; color:#fff;">100<span style="color:#E46414;">+</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:12px;">CERTIFIED PRODUCT<br>TYPES</div>
+        </div>
+        <div style="text-align:center; padding:74px 28px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Bebas Neue'; font-size:78px; line-height:0.85; color:#fff;">2</div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:12px;">HAZARDOUS ZONES<br>1 &amp; 2 RATED</div>
+        </div>
+        <div style="text-align:center; padding:74px 28px;">
+          <div style="font-family:'Bebas Neue'; font-size:78px; line-height:0.85; color:#fff;">PAN<span style="color:#E46414;">·</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:12px;">INDIA SUPPLY<br>NETWORK</div>
+        </div>
+      </div>
+
+      <!-- ===== PRODUCT CATEGORIES ===== -->
+      <div data-screen-label="Categories" style="border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div style="padding:80px 60px 50px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:24px;">
+          <div>
+            <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:18px;">/ WHAT WE BUILD</div>
+            <h2 style="font-family:'Bebas Neue'; font-size:68px; line-height:0.9; letter-spacing:0.01em;">A COMPLETE FLAMEPROOF RANGE</h2>
+          </div>
+          <div onClick="{{ goCatalog }}" style="font-size:13px; font-weight:600; letter-spacing:0.1em; color:#fff; border-bottom:1px solid #E46414; padding-bottom:6px; cursor:pointer;">VIEW FULL CATALOG →</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,0.12);">
+          <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="6">
+            <div onClick="{{ goCatalog }}" class="cat-card" style="position:relative; border-right:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); cursor:pointer; overflow:hidden;">
+              <div style="height:300px; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 35%, #0c3145 0%, #061d2b 70%); position:relative;">
+                <div style="position:absolute; top:18px; left:20px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:rgba(255,255,255,0.4);">{{ cat.code }}</div>
+                <div role="img" aria-label="{{ cat.name }}" style="width:78%; height:210px; background-image:url('{{ cat.img }}'); background-size:contain; background-repeat:no-repeat; background-position:center; filter:drop-shadow(0 20px 30px rgba(0,0,0,0.5));"></div>
+              </div>
+              <div style="padding:26px 28px 30px;">
+                <div style="font-family:'Bebas Neue'; font-size:30px; letter-spacing:0.02em; line-height:1;">{{ cat.name }}</div>
+                <div style="font-size:13.5px; font-weight:300; color:rgba(255,255,255,0.6); margin-top:12px; line-height:1.55;">{{ cat.desc }}</div>
+                <div style="margin-top:20px; display:flex; align-items:center; gap:10px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#F17D1E;">{{ cat.spec }}<span style="color:rgba(255,255,255,0.4);">→</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- ===== WHY CHOOSE US ===== -->
+      <div style="background:#061d2b; border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:0.9fr 1.1fr;">
+        <div style="border-right:1px solid rgba(255,255,255,0.12); padding:74px 50px; position:relative;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:18px;">/ WHY EXEC</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:62px; line-height:0.9;">SAFETY ENGINEERED<br>INTO EVERY CASTING</h2>
+          <img src="assets/flame.png" alt="" style="width:120px; opacity:0.9; margin-top:50px; filter:drop-shadow(0 0 30px rgba(228,100,20,0.4));">
+          <p style="font-size:15px; font-weight:300; line-height:1.7; color:rgba(255,255,255,0.66); margin-top:34px; max-width:360px;">
+            Every enclosure is pressure-tested to contain an internal explosion and prevent ignition of the surrounding atmosphere — the core principle of flameproof protection.
+          </p>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr;">
+          <sc-for list="{{ pillars }}" as="p" hint-placeholder-count="4">
+            <div style="padding:48px 40px; border-bottom:1px solid rgba(255,255,255,0.12); border-right:1px solid rgba(255,255,255,0.12);">
+              <div style="font-family:'Bebas Neue'; font-size:40px; color:#E46414; line-height:0.8;">{{ p.num }}</div>
+              <div style="font-family:'Bebas Neue'; font-size:28px; letter-spacing:0.03em; margin-top:18px;">{{ p.title }}</div>
+              <div style="font-size:13.5px; font-weight:300; line-height:1.6; color:rgba(255,255,255,0.62); margin-top:12px;">{{ p.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- ===== CAPABILITY SPLIT (panel) ===== -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1fr 1fr; align-items:stretch;">
+        <div style="padding:90px 60px; display:flex; flex-direction:column; justify-content:center; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:20px;">/ CUSTOM CONTROL PANELS</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:64px; line-height:0.9; margin-bottom:26px;">FROM A SINGLE<br>JUNCTION BOX TO A<br>FULL CONTROL ROOM</h2>
+          <p style="font-size:16px; font-weight:300; line-height:1.7; color:rgba(255,255,255,0.7); max-width:480px;">
+            We design and fabricate flameproof control &amp; instrumentation panels to spec — pressure, level and motor control built into a single explosion-proof enclosure, wired, tested and certified before it leaves the floor.
+          </p>
+          <div style="display:flex; gap:40px; margin-top:44px;">
+            <div>
+              <div style="font-family:'Bebas Neue'; font-size:34px; color:#fff;">EX d</div>
+              <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:rgba(255,255,255,0.55); margin-top:6px;">ENCLOSURE TYPE</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue'; font-size:34px; color:#fff;">BUILT-TO-SPEC</div>
+              <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:rgba(255,255,255,0.55); margin-top:6px;">EVERY ORDER</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:radial-gradient(circle at 50% 40%, #0c3145 0%, #04121b 75%); display:flex; align-items:center; justify-content:center; padding:60px; position:relative;">
+          <div style="position:absolute; top:24px; right:28px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.4);">FIG. 02 — CONTROL PANEL</div>
+          <img src="assets/panel.png" alt="Flameproof control panel" style="max-height:520px; max-width:90%; object-fit:contain; filter:drop-shadow(0 30px 50px rgba(0,0,0,0.55));">
+        </div>
+      </div>
+
+      <!-- ===== MISSION + INDIA ===== -->
+      <div style="background:#061d2b; border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1.1fr 0.9fr; align-items:center;">
+        <div style="padding:90px 60px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:22px;">/ OUR MISSION</div>
+          <p style="font-family:'Bebas Neue'; font-size:42px; line-height:1.04; letter-spacing:0.01em; color:#fff;">
+            "TO KEEP INDIA'S MOST DEMANDING PLANTS — THEIR PEOPLE, ASSETS AND FACILITIES — <span style="color:#E46414;">SAFE,</span> THROUGH FLAMEPROOF EQUIPMENT WE'D STAND BEHIND OURSELVES."
+          </p>
+          <div style="margin-top:40px; display:flex; align-items:center; gap:16px;">
+            <img src="assets/Logo.png" alt="" width="42" height="42" style="width:42px; height:42px; object-fit:contain;">
+            <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.14em; color:rgba(255,255,255,0.6); line-height:1.6;">EXPLOSION PROOF ELECTRICAL CONTROL<br>VAPI · GUJARAT · SINCE 1996</div>
+          </div>
+        </div>
+        <div style="padding:70px 50px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+          <img src="assets/india.png" alt="Serving customers across India" style="width:300px; max-width:80%; object-fit:contain; opacity:0.95; filter:drop-shadow(0 0 40px rgba(228,100,20,0.25));">
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:24px; line-height:1.7;">VAPI · SILVASSA · DAMAN · VALSAD<br>&amp; HAZARDOUS-AREA PLANTS NATIONWIDE</div>
+        </div>
+      </div>
+
+      <!-- ===== CTA BAND ===== -->
+      <div data-screen-label="CTA" style="position:relative; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.12);">
+        <img src="assets/factory.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.22;">
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(4,18,27,0.86) 0%, rgba(7,37,54,0.78) 100%);"></div>
+        <div style="position:relative; padding:110px 60px; text-align:center; max-width:820px; margin:0 auto;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.24em; color:#F17D1E; margin-bottom:24px;">/ LET'S TALK SAFETY</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:82px; line-height:0.9; letter-spacing:0.01em; margin-bottom:30px; text-wrap:balance;">SPEC THE RIGHT FLAMEPROOF EQUIPMENT FOR YOUR ZONE</h2>
+          <p style="font-size:17px; font-weight:300; color:rgba(255,255,255,0.74); line-height:1.65; margin-bottom:44px;">Send us your hazardous-area requirement and our engineers will recommend the certified product or build the panel you need.</p>
+          <div style="display:flex; gap:18px; justify-content:center; flex-wrap:wrap;">
+            <div onClick="{{ goCatalog }}" style="background:#E46414; color:#fff; font-size:14px; font-weight:700; letter-spacing:0.1em; padding:19px 38px; cursor:pointer; box-shadow:0 14px 44px rgba(228,100,20,0.4);">BROWSE CATALOG →</div>
+            <div onClick="{{ goContact }}" style="border:1px solid rgba(255,255,255,0.4); color:#fff; font-size:14px; font-weight:600; letter-spacing:0.1em; padding:19px 36px; cursor:pointer;">CONTACT US</div>
+            <div style="border:1px solid rgba(255,255,255,0.4); color:#fff; font-size:14px; font-weight:600; letter-spacing:0.1em; padding:19px 36px; cursor:pointer;">DOWNLOAD BROCHURE ↓</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ========================= CATALOG ======================= -->
+    <!-- ========================================================= -->
+    <div style="{{ catalogStyle }}">
+      <div data-screen-label="Catalog" style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b;">
+        <div style="padding:60px 60px 54px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.18em; color:rgba(255,255,255,0.55); margin-bottom:24px;"><span onClick="{{ goHome }}" style="cursor:pointer; color:#F17D1E;">HOME</span> &nbsp;/&nbsp; CATALOG</div>
+          <h1 style="font-family:'Bebas Neue'; font-size:84px; line-height:0.88; letter-spacing:0.01em;">PRODUCT CATALOG</h1>
+          <p style="font-size:17px; font-weight:300; color:rgba(255,255,255,0.7); max-width:620px; margin-top:22px; line-height:1.6;">Flameproof &amp; explosion-proof equipment certified for Zone 1 and Zone 2 hazardous areas. Every unit is CIMFR &amp; PESO approved and IP-rated for dust and water ingress.</p>
+        </div>
+      </div>
+
+      <!-- filter -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); position:sticky; top:84px; z-index:30; background:rgba(4,18,27,0.92); backdrop-filter:blur(10px); display:flex; flex-wrap:wrap;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
+          <div onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</div>
+        </sc-for>
+      </div>
+
+      <!-- grid -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr);">
+        <sc-for list="{{ shownProducts }}" as="p" hint-placeholder-count="9">
+          <div class="prod-card" onClick="{{ p.open }}" style="border-right:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; cursor:pointer;">
+            <div style="height:260px; position:relative; background:radial-gradient(circle at 50% 38%, #0c3145 0%, #061d2b 72%); display:flex; align-items:center; justify-content:center;">
+              <div style="position:absolute; top:16px; left:18px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.12em; color:rgba(255,255,255,0.42);">{{ p.type }}</div>
+              <div style="position:absolute; top:14px; right:16px; font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#04121b; background:#F17D1E; padding:4px 9px;">{{ p.ip }}</div>
+              <div role="img" aria-label="{{ p.name }}" style="width:74%; height:180px; background-image:url('{{ p.img }}'); background-size:contain; background-repeat:no-repeat; background-position:center; filter:drop-shadow(0 18px 26px rgba(0,0,0,0.5));"></div>
+            </div>
+            <div style="padding:24px 26px 28px; flex:1; display:flex; flex-direction:column;">
+              <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#F17D1E; margin-bottom:10px;">{{ p.cat }}</div>
+              <div style="font-family:'Bebas Neue'; font-size:27px; letter-spacing:0.02em; line-height:1;">{{ p.name }}</div>
+              <div style="display:flex; gap:14px; margin-top:16px; font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.08em; color:rgba(255,255,255,0.6);">
+                <span>{{ p.group }}</span><span style="color:rgba(255,255,255,0.25);">·</span><span>{{ p.ip }}</span>
+              </div>
+              <div style="margin-top:auto; padding-top:22px; display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:12px; font-weight:600; letter-spacing:0.1em; color:#fff; border-bottom:1px solid #E46414; padding-bottom:5px; cursor:pointer;">INQUIRE NOW</span>
+                <span style="color:rgba(255,255,255,0.4);">→</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- catalog cta -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b;">
+        <div style="padding:80px 60px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:30px;">
+          <div>
+            <h2 style="font-family:'Bebas Neue'; font-size:54px; line-height:0.92;">CAN'T FIND YOUR EXACT SPEC?</h2>
+            <p style="font-size:16px; font-weight:300; color:rgba(255,255,255,0.7); margin-top:14px; max-width:520px;">We build flameproof enclosures and panels to order. Tell us your zone, gas group and load.</p>
+          </div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div style="background:#E46414; color:#fff; font-size:14px; font-weight:700; letter-spacing:0.1em; padding:18px 34px; cursor:pointer; box-shadow:0 12px 40px rgba(228,100,20,0.34);">REQUEST A QUOTE →</div>
+            <div onClick="{{ goHome }}" style="border:1px solid rgba(255,255,255,0.34); color:#fff; font-size:14px; font-weight:600; letter-spacing:0.1em; padding:18px 32px; cursor:pointer;">← BACK HOME</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ====================== PRODUCT DETAIL ==================== -->
+    <!-- ========================================================= -->
+    <div style="{{ productStyle }}">
+      <div data-screen-label="Product" style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1fr 1fr; align-items:stretch;">
+        <div style="background:radial-gradient(circle at 50% 42%, #0c3145 0%, #04121b 78%); border-right:1px solid rgba(255,255,255,0.12); position:relative; min-height:580px; display:flex; align-items:center; justify-content:center; padding:60px;">
+          <div style="position:absolute; top:24px; left:28px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.14em; color:rgba(255,255,255,0.45);">{{ detail.type }}</div>
+          <div style="position:absolute; top:22px; right:26px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#04121b; background:#F17D1E; padding:5px 11px;">{{ detail.ip }}</div>
+          <div role="img" aria-label="{{ detail.name }}" style="width:80%; height:440px; background-image:url('{{ detail.img }}'); background-size:contain; background-repeat:no-repeat; background-position:center; filter:drop-shadow(0 36px 50px rgba(0,0,0,0.55));"></div>
+        </div>
+        <div style="padding:70px 60px; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.16em; color:rgba(255,255,255,0.5); margin-bottom:24px;"><span onClick="{{ goHome }}" style="cursor:pointer; color:#F17D1E;">HOME</span> &nbsp;/&nbsp; <span onClick="{{ goCatalog }}" style="cursor:pointer;">CATALOG</span> &nbsp;/&nbsp; {{ detail.cat }}</div>
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#F17D1E; margin-bottom:16px;">{{ detail.cat }}</div>
+          <h1 style="font-family:'Bebas Neue'; font-size:74px; line-height:0.9;">{{ detail.name }}</h1>
+          <p style="font-size:16px; font-weight:300; line-height:1.7; color:rgba(255,255,255,0.72); margin-top:22px; max-width:520px;">{{ detail.blurb }}</p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:30px;">
+            <div style="border:1px solid rgba(255,255,255,0.2); padding:11px 16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#fff;">{{ detail.group }}</div>
+            <div style="border:1px solid rgba(255,255,255,0.2); padding:11px 16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#fff;">{{ detail.ip }}</div>
+            <div style="border:1px solid rgba(228,100,20,0.45); padding:11px 16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#F17D1E;">CIMFR · PESO</div>
+          </div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:38px;">
+            <div style="background:#E46414; color:#fff; font-size:14px; font-weight:700; letter-spacing:0.1em; padding:18px 32px; cursor:pointer; box-shadow:0 12px 40px rgba(228,100,20,0.34);">REQUEST A QUOTE →</div>
+            <div style="border:1px solid rgba(255,255,255,0.32); color:#fff; font-size:14px; font-weight:600; letter-spacing:0.1em; padding:18px 30px; cursor:pointer;">DOWNLOAD DATASHEET ↓</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1.1fr 0.9fr;">
+        <div style="padding:72px 60px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:24px;">/ TECHNICAL SPECIFICATIONS</div>
+          <sc-for list="{{ detailSpecs }}" as="s" hint-placeholder-count="9">
+            <div style="display:flex; justify-content:space-between; gap:24px; padding:15px 0; border-bottom:1px solid rgba(255,255,255,0.12);">
+              <span style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.06em; color:rgba(255,255,255,0.55);">{{ s.k }}</span>
+              <span style="font-size:14px; color:#fff; text-align:right;">{{ s.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:72px 60px; background:#061d2b;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:24px;">/ KEY FEATURES</div>
+          <sc-for list="{{ detailFeatures }}" as="f" hint-placeholder-count="4">
+            <div style="display:flex; gap:16px; padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.12);">
+              <span style="color:#E46414; font-family:'Bebas Neue'; font-size:22px; line-height:1;">✓</span>
+              <span style="font-size:15px; font-weight:300; line-height:1.55; color:rgba(255,255,255,0.8);">{{ f }}</span>
+            </div>
+          </sc-for>
+          <img src="assets/flame.png" alt="" style="width:88px; opacity:0.85; margin-top:40px; filter:drop-shadow(0 0 26px rgba(228,100,20,0.4));">
+        </div>
+      </div>
+
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div style="padding:60px 60px 30px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+          <h2 style="font-family:'Bebas Neue'; font-size:54px; line-height:0.9;">RELATED PRODUCTS</h2>
+          <div onClick="{{ goCatalog }}" style="font-size:13px; font-weight:600; letter-spacing:0.1em; border-bottom:1px solid #E46414; padding-bottom:6px; cursor:pointer;">ALL PRODUCTS →</div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,0.12);">
+          <sc-for list="{{ relatedProducts }}" as="p" hint-placeholder-count="3">
+            <div onClick="{{ p.open }}" style="border-right:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; cursor:pointer;">
+              <div style="height:260px; position:relative; background:radial-gradient(circle at 50% 38%, #0c3145 0%, #061d2b 72%); display:flex; align-items:center; justify-content:center;">
+                <div style="position:absolute; top:16px; left:18px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.12em; color:rgba(255,255,255,0.42);">{{ p.type }}</div>
+                <div style="position:absolute; top:14px; right:16px; font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#04121b; background:#F17D1E; padding:4px 9px;">{{ p.ip }}</div>
+                <div role="img" aria-label="{{ p.name }}" style="width:74%; height:180px; background-image:url('{{ p.img }}'); background-size:contain; background-repeat:no-repeat; background-position:center; filter:drop-shadow(0 18px 26px rgba(0,0,0,0.5));"></div>
+              </div>
+              <div style="padding:24px 26px 28px; flex:1; display:flex; flex-direction:column;">
+                <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#F17D1E; margin-bottom:10px;">{{ p.cat }}</div>
+                <div style="font-family:'Bebas Neue'; font-size:27px; letter-spacing:0.02em; line-height:1;">{{ p.name }}</div>
+                <div style="display:flex; gap:14px; margin-top:16px; font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.08em; color:rgba(255,255,255,0.6);">
+                  <span>{{ p.group }}</span><span style="color:rgba(255,255,255,0.25);">·</span><span>{{ p.ip }}</span>
+                </div>
+                <div style="margin-top:auto; padding-top:22px; display:flex; align-items:center; justify-content:space-between;">
+                  <span style="font-size:12px; font-weight:600; letter-spacing:0.1em; color:#fff; border-bottom:1px solid #E46414; padding-bottom:5px;">VIEW PRODUCT</span>
+                  <span style="color:rgba(255,255,255,0.4);">→</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ========================== BLOG ========================= -->
+    <!-- ========================================================= -->
+    <div style="{{ blogStyle }}">
+      <div data-screen-label="Blog" style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b;">
+        <div style="padding:60px 60px 54px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#F17D1E; margin-bottom:20px;">/ INSIGHTS</div>
+          <h1 style="font-family:'Bebas Neue'; font-size:84px; line-height:0.88;">NOTES FROM THE FLOOR</h1>
+          <p style="font-size:17px; font-weight:300; color:rgba(255,255,255,0.7); max-width:640px; margin-top:20px; line-height:1.6;">Field guidance, standards explained and product know-how on flameproof &amp; explosion-proof electrical equipment for hazardous areas.</p>
+        </div>
+      </div>
+
+      <div onClick="{{ featured.open }}" style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1.1fr 0.9fr; cursor:pointer;">
+        <div style="position:relative; min-height:440px; overflow:hidden; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="position:absolute; inset:0; background-image:url('{{ featured.img }}'); background-size:cover; background-position:center; opacity:0.42;"></div>
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(4,18,27,0.45), rgba(7,37,54,0.72));"></div>
+          <div style="position:absolute; top:24px; left:28px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#04121b; background:#F17D1E; padding:6px 13px;">FEATURED</div>
+        </div>
+        <div style="padding:64px 60px; display:flex; flex-direction:column; justify-content:center; background:#061d2b;">
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:#F17D1E; margin-bottom:18px;">{{ featured.cat }}</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:52px; line-height:0.94;">{{ featured.title }}</h2>
+          <p style="font-size:15.5px; font-weight:300; line-height:1.7; color:rgba(255,255,255,0.7); margin-top:18px; max-width:480px;">{{ featured.excerpt }}</p>
+          <div style="display:flex; align-items:center; gap:16px; margin-top:30px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55);">
+            <span>{{ featured.date }}</span><span style="color:rgba(255,255,255,0.25);">·</span><span>{{ featured.read }} READ</span>
+            <span style="color:#fff; border-bottom:1px solid #E46414; padding-bottom:4px;">READ ARTICLE →</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr);">
+        <sc-for list="{{ gridPosts }}" as="bp" hint-placeholder-count="5">
+          <div onClick="{{ bp.open }}" style="border-right:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); cursor:pointer; display:flex; flex-direction:column;">
+            <div style="height:200px; background:radial-gradient(circle at 50% 40%, #0c3145, #061d2b); position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.12);">
+              <img src="assets/flame.png" alt="" style="width:60px; opacity:0.22;">
+              <div style="position:absolute; top:16px; left:18px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#F17D1E;">{{ bp.cat }}</div>
+            </div>
+            <div style="padding:28px 28px 32px; flex:1; display:flex; flex-direction:column;">
+              <h3 style="font-family:'Bebas Neue'; font-size:30px; line-height:0.98;">{{ bp.title }}</h3>
+              <p style="font-size:13.5px; font-weight:300; line-height:1.6; color:rgba(255,255,255,0.6); margin-top:14px;">{{ bp.excerpt }}</p>
+              <div style="margin-top:auto; padding-top:22px; display:flex; align-items:center; gap:12px; font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:rgba(255,255,255,0.5);">
+                <span>{{ bp.date }}</span><span style="color:rgba(255,255,255,0.25);">·</span><span>{{ bp.read }}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ========================= ARTICLE ======================= -->
+    <!-- ========================================================= -->
+    <div style="{{ articleStyle }}">
+      <div data-screen-label="Article" style="position:relative; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.12); min-height:360px; display:flex; align-items:flex-end;">
+        <div style="position:absolute; inset:0; background-image:url('{{ post.img }}'); background-size:cover; background-position:center; opacity:0.3;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(4,18,27,0.5), rgba(4,18,27,0.92));"></div>
+        <div style="position:relative; padding:58px 60px; max-width:920px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-bottom:24px;"><span onClick="{{ goHome }}" style="cursor:pointer; color:#F17D1E;">HOME</span> &nbsp;/&nbsp; <span onClick="{{ goBlog }}" style="cursor:pointer;">BLOG</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.2em; color:#F17D1E; margin-bottom:16px;">{{ post.cat }}</div>
+          <h1 style="font-family:'Bebas Neue'; font-size:64px; line-height:0.94; text-wrap:balance;">{{ post.title }}</h1>
+          <div style="display:flex; gap:16px; margin-top:22px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55);"><span>{{ post.date }}</span><span style="color:rgba(255,255,255,0.25);">·</span><span>{{ post.read }} READ</span></div>
+        </div>
+      </div>
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div style="max-width:760px; margin:0 auto; padding:64px 40px 72px;">
+          <sc-for list="{{ post.body }}" as="para" hint-placeholder-count="4">
+            <p style="font-size:17px; font-weight:300; line-height:1.85; color:rgba(255,255,255,0.82); margin-bottom:26px;">{{ para }}</p>
+          </sc-for>
+          <div onClick="{{ goBlog }}" style="margin-top:20px; font-size:13px; font-weight:600; letter-spacing:0.1em; color:#fff; border-bottom:1px solid #E46414; padding-bottom:6px; display:inline-block; cursor:pointer;">← BACK TO ALL ARTICLES</div>
+        </div>
+      </div>
+
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div style="padding:54px 60px 28px;"><h2 style="font-family:'Bebas Neue'; font-size:48px;">MORE INSIGHTS</h2></div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,0.12);">
+          <sc-for list="{{ morePosts }}" as="bp" hint-placeholder-count="3">
+            <div onClick="{{ bp.open }}" style="border-right:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); cursor:pointer; display:flex; flex-direction:column;">
+              <div style="height:200px; background:radial-gradient(circle at 50% 40%, #0c3145, #061d2b); position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.12);">
+                <img src="assets/flame.png" alt="" style="width:60px; opacity:0.22;">
+                <div style="position:absolute; top:16px; left:18px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#F17D1E;">{{ bp.cat }}</div>
+              </div>
+              <div style="padding:28px 28px 32px; flex:1; display:flex; flex-direction:column;">
+                <h3 style="font-family:'Bebas Neue'; font-size:30px; line-height:0.98;">{{ bp.title }}</h3>
+                <p style="font-size:13.5px; font-weight:300; line-height:1.6; color:rgba(255,255,255,0.6); margin-top:14px;">{{ bp.excerpt }}</p>
+                <div style="margin-top:auto; padding-top:22px; display:flex; align-items:center; gap:12px; font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:rgba(255,255,255,0.5);">
+                  <span>{{ bp.date }}</span><span style="color:rgba(255,255,255,0.25);">·</span><span>{{ bp.read }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ======================== OUR STORY ====================== -->
+    <!-- ========================================================= -->
+    <div style="{{ storyStyle }}">
+
+      <!-- hero -->
+      <div data-screen-label="Story" style="position:relative; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.12);">
+        <img src="assets/factory.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.20;">
+        <div style="position:absolute; inset:0; background:linear-gradient(115deg, #04121b 28%, rgba(7,37,54,0.72) 72%, rgba(7,37,54,0.32) 100%);"></div>
+        <div style="position:absolute; right:-160px; top:-10%; width:680px; height:680px; background:radial-gradient(circle, rgba(228,100,20,0.26) 0%, rgba(228,100,20,0) 62%); animation:glowPulse 6s ease-in-out infinite;"></div>
+        <div style="position:relative; padding:96px 72px 88px; max-width:980px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.2em; color:rgba(255,255,255,0.55); margin-bottom:26px;"><span onClick="{{ goHome }}" style="cursor:pointer; color:#F17D1E;">HOME</span> &nbsp;/&nbsp; OUR STORY</div>
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:22px;">/ SINCE 1996 · VAPI, GUJARAT</div>
+          <h1 style="font-family:'Bebas Neue'; font-size:108px; line-height:0.86; letter-spacing:0.005em; text-wrap:balance;">THREE DECADES<br>CONTAINING<br><span style="color:#E46414;">THE SPARK.</span></h1>
+          <p style="font-size:18px; line-height:1.7; font-weight:300; color:rgba(255,255,255,0.74); max-width:600px; margin-top:30px;">What began as a small flameproof casting workshop in Vapi has grown into one of Gujarat's trusted names in explosion-proof electrical equipment — built on one stubborn principle: safety you can stand behind.</p>
+        </div>
+      </div>
+
+      <!-- origin split -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1.05fr 0.95fr; align-items:stretch;">
+        <div style="padding:84px 60px; border-right:1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:20px;">/ HOW WE STARTED</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:62px; line-height:0.92; margin-bottom:26px;">A WORKSHOP, A LATHE,<br>AND ONE HARD RULE</h2>
+          <p style="font-size:16px; font-weight:300; line-height:1.78; color:rgba(255,255,255,0.72); max-width:520px; margin-bottom:22px;">In 1996, the chemical and petrochemical belt around Vapi was booming — and so was the demand for electrical equipment that wouldn't become the source of the next plant fire. We started with a handful of machinists and a simple commitment: every enclosure that left the floor would be tested to contain an explosion, not just to pass an inspection.</p>
+          <p style="font-size:16px; font-weight:300; line-height:1.78; color:rgba(255,255,255,0.72); max-width:520px;">That rule never changed. The catalogue grew, the certifications stacked up, and LED replaced the old lamps — but the discipline behind every flame path stayed exactly the same.</p>
+        </div>
+        <div style="background:radial-gradient(circle at 50% 40%, #0c3145 0%, #04121b 78%); display:flex; align-items:center; justify-content:center; padding:56px; position:relative;">
+          <div style="position:absolute; top:24px; right:28px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.4);">FIG. 01 — THE FLOOR</div>
+          <img src="assets/HumanStatic.png" alt="Flameproof unit on the production floor" style="max-height:460px; max-width:92%; object-fit:contain; filter:drop-shadow(0 30px 50px rgba(0,0,0,0.55));">
+        </div>
+      </div>
+
+      <!-- timeline -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b;">
+        <div style="padding:80px 60px 40px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:18px;">/ THE TIMELINE</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:64px; line-height:0.9;">MILESTONES ALONG THE WAY</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid rgba(255,255,255,0.12);">
+          <sc-for list="{{ milestones }}" as="m" hint-placeholder-count="5">
+            <div style="padding:44px 30px 54px; border-right:1px solid rgba(255,255,255,0.12); position:relative;">
+              <div style="width:11px; height:11px; background:#E46414; border-radius:50%; box-shadow:0 0 14px rgba(228,100,20,0.7); margin-bottom:26px;"></div>
+              <div style="font-family:'Bebas Neue'; font-size:54px; line-height:0.8; color:#fff;">{{ m.year }}</div>
+              <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#F17D1E; margin-top:16px;">{{ m.tag }}</div>
+              <div style="font-size:13.5px; font-weight:300; line-height:1.6; color:rgba(255,255,255,0.66); margin-top:12px;">{{ m.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- values -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:0.9fr 1.1fr;">
+        <div style="border-right:1px solid rgba(255,255,255,0.12); padding:80px 50px; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:18px;">/ WHAT WE STAND ON</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:60px; line-height:0.9;">THE VALUES<br>UNDER EVERY<br>CASTING</h2>
+          <img src="assets/flame.png" alt="" style="width:110px; opacity:0.9; margin-top:44px; filter:drop-shadow(0 0 30px rgba(228,100,20,0.4));">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr;">
+          <sc-for list="{{ storyValues }}" as="v" hint-placeholder-count="4">
+            <div style="padding:48px 40px; border-bottom:1px solid rgba(255,255,255,0.12); border-right:1px solid rgba(255,255,255,0.12);">
+              <div style="font-family:'Bebas Neue'; font-size:40px; color:#E46414; line-height:0.8;">{{ v.num }}</div>
+              <div style="font-family:'Bebas Neue'; font-size:28px; letter-spacing:0.03em; margin-top:18px;">{{ v.title }}</div>
+              <div style="font-size:13.5px; font-weight:300; line-height:1.62; color:rgba(255,255,255,0.62); margin-top:12px;">{{ v.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- stats strip -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:repeat(4,1fr);">
+        <div style="text-align:center; padding:64px 24px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Bebas Neue'; font-size:70px; line-height:0.85;">28<span style="color:#E46414;">+</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:10px;">YEARS IN<br>FLAMEPROOF</div>
+        </div>
+        <div style="text-align:center; padding:64px 24px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Bebas Neue'; font-size:70px; line-height:0.85;">100<span style="color:#E46414;">+</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:10px;">CERTIFIED<br>PRODUCT TYPES</div>
+        </div>
+        <div style="text-align:center; padding:64px 24px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Bebas Neue'; font-size:70px; line-height:0.85;">500<span style="color:#E46414;">+</span></div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:10px;">PLANTS<br>SERVED</div>
+        </div>
+        <div style="text-align:center; padding:64px 24px;">
+          <div style="font-family:'Bebas Neue'; font-size:70px; line-height:0.85;">ZERO</div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:10px;">COMPROMISE ON<br>SAFETY</div>
+        </div>
+      </div>
+
+      <!-- founder quote -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b; display:grid; grid-template-columns:1.1fr 0.9fr; align-items:center;">
+        <div style="padding:90px 60px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:22px;">/ FROM THE FOUNDER</div>
+          <p style="font-family:'Bebas Neue'; font-size:40px; line-height:1.06; letter-spacing:0.01em;">"WE'VE NEVER SHIPPED A SINGLE ENCLOSURE WE WOULDN'T BE WILLING TO INSTALL IN OUR OWN PLANT. <span style="color:#E46414;">THAT'S THE WHOLE BUSINESS.</span>"</p>
+          <div style="margin-top:40px; display:flex; align-items:center; gap:16px;">
+            <img src="assets/Logo.png" alt="" width="42" height="42" style="width:42px; height:42px; object-fit:contain;">
+            <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.14em; color:rgba(255,255,255,0.6); line-height:1.6;">FOUNDER &amp; MANAGING DIRECTOR<br>EXPLOSION PROOF ELECTRICAL CONTROL</div>
+          </div>
+        </div>
+        <div style="padding:70px 50px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+          <img src="assets/india.png" alt="Serving plants across India" style="width:300px; max-width:80%; object-fit:contain; opacity:0.95; filter:drop-shadow(0 0 40px rgba(228,100,20,0.25));">
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:rgba(255,255,255,0.6); margin-top:24px; line-height:1.7;">FROM VAPI TO HAZARDOUS-AREA<br>PLANTS NATIONWIDE</div>
+        </div>
+      </div>
+
+      <!-- story cta -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div style="padding:80px 60px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:30px;">
+          <div>
+            <h2 style="font-family:'Bebas Neue'; font-size:56px; line-height:0.92;">WANT TO WORK WITH US?</h2>
+            <p style="font-size:16px; font-weight:300; color:rgba(255,255,255,0.7); margin-top:14px; max-width:520px;">Tell us about your hazardous-area requirement — our engineers are ready to help you spec it safely.</p>
+          </div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div onClick="{{ goContact }}" style="background:#E46414; color:#fff; font-size:14px; font-weight:700; letter-spacing:0.1em; padding:18px 34px; cursor:pointer; box-shadow:0 12px 40px rgba(228,100,20,0.34);">CONTACT US →</div>
+            <div onClick="{{ goCatalog }}" style="border:1px solid rgba(255,255,255,0.34); color:#fff; font-size:14px; font-weight:600; letter-spacing:0.1em; padding:18px 32px; cursor:pointer;">BROWSE CATALOG</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ========================= CONTACT ======================= -->
+    <!-- ========================================================= -->
+    <div style="{{ contactStyle }}">
+
+      <!-- hero -->
+      <div data-screen-label="Contact" style="border-bottom:1px solid rgba(255,255,255,0.12); background:#061d2b;">
+        <div style="padding:60px 60px 54px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.2em; color:rgba(255,255,255,0.55); margin-bottom:24px;"><span onClick="{{ goHome }}" style="cursor:pointer; color:#F17D1E;">HOME</span> &nbsp;/&nbsp; CONTACT</div>
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:18px;">/ LET'S TALK SAFETY</div>
+          <h1 style="font-family:'Bebas Neue'; font-size:88px; line-height:0.88; letter-spacing:0.01em;">GET IN TOUCH</h1>
+          <p style="font-size:17px; font-weight:300; color:rgba(255,255,255,0.7); max-width:640px; margin-top:20px; line-height:1.6;">Send us your zone, gas group and load — or just your question. Our engineers will recommend the certified product or build the flameproof panel you need.</p>
+        </div>
+      </div>
+
+      <!-- form + info -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns:1.1fr 0.9fr; align-items:stretch;">
+
+        <!-- form -->
+        <div style="padding:72px 60px; border-right:1px solid rgba(255,255,255,0.12);">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:28px;">/ SEND A REQUIREMENT</div>
+
+          <sc-if value="{{ contactSent }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid rgba(228,100,20,0.45); background:rgba(228,100,20,0.08); padding:48px 40px; text-align:center;">
+              <img src="assets/flame.png" alt="" style="width:64px; opacity:0.9; filter:drop-shadow(0 0 26px rgba(228,100,20,0.4));">
+              <div style="font-family:'Bebas Neue'; font-size:44px; line-height:0.9; margin-top:22px;">REQUEST RECEIVED</div>
+              <p style="font-size:15px; font-weight:300; color:rgba(255,255,255,0.72); margin-top:14px; line-height:1.6;">Thanks for reaching out. Our engineering team will get back to you within one business day.</p>
+              <div onClick="{{ resetContact }}" style="display:inline-block; margin-top:26px; font-size:13px; font-weight:600; letter-spacing:0.1em; color:#fff; border-bottom:1px solid #E46414; padding-bottom:5px; cursor:pointer;">SEND ANOTHER →</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ contactForm }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:22px;">
+              <div>
+                <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-bottom:10px;">FULL NAME *</div>
+                <input type="text" placeholder="Your name" style="width:100%; background:#061d2b; border:1px solid rgba(255,255,255,0.16); color:#fff; font-family:'Inter',sans-serif; font-size:14px; padding:14px 16px; outline:none;" style-focus="border-color:#E46414;">
+              </div>
+              <div>
+                <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-bottom:10px;">COMPANY</div>
+                <input type="text" placeholder="Organisation" style="width:100%; background:#061d2b; border:1px solid rgba(255,255,255,0.16); color:#fff; font-family:'Inter',sans-serif; font-size:14px; padding:14px 16px; outline:none;" style-focus="border-color:#E46414;">
+              </div>
+              <div>
+                <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-bottom:10px;">EMAIL *</div>
+                <input type="email" placeholder="you@company.com" style="width:100%; background:#061d2b; border:1px solid rgba(255,255,255,0.16); color:#fff; font-family:'Inter',sans-serif; font-size:14px; padding:14px 16px; outline:none;" style-focus="border-color:#E46414;">
+              </div>
+              <div>
+                <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-bottom:10px;">PHONE</div>
+                <input type="tel" placeholder="+91" style="width:100%; background:#061d2b; border:1px solid rgba(255,255,255,0.16); color:#fff; font-family:'Inter',sans-serif; font-size:14px; padding:14px 16px; outline:none;" style-focus="border-color:#E46414;">
+              </div>
+            </div>
+            <div style="margin-top:22px;">
+              <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-bottom:10px;">PRODUCT INTEREST</div>
+              <select style="width:100%; background:#061d2b; border:1px solid rgba(255,255,255,0.16); color:#fff; font-family:'Inter',sans-serif; font-size:14px; padding:14px 16px; outline:none; appearance:none;" style-focus="border-color:#E46414;">
+                <option>Flameproof Lighting</option>
+                <option>Control Panels</option>
+                <option>LED Floodlights</option>
+                <option>Junction Boxes</option>
+                <option>Instrumentation</option>
+                <option>Custom Build / Other</option>
+              </select>
+            </div>
+            <div style="margin-top:22px;">
+              <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-bottom:10px;">YOUR REQUIREMENT *</div>
+              <textarea rows="5" placeholder="Zone, gas group, load, quantity, timelines…" style="width:100%; background:#061d2b; border:1px solid rgba(255,255,255,0.16); color:#fff; font-family:'Inter',sans-serif; font-size:14px; padding:14px 16px; outline:none; resize:vertical; line-height:1.6;" style-focus="border-color:#E46414;"></textarea>
+            </div>
+            <div onClick="{{ submitContact }}" style="margin-top:28px; background:#E46414; color:#fff; font-size:14px; font-weight:700; letter-spacing:0.1em; padding:18px 38px; cursor:pointer; display:inline-block; box-shadow:0 12px 40px rgba(228,100,20,0.34);">SEND REQUEST →</div>
+          </sc-if>
+        </div>
+
+        <!-- info -->
+        <div style="background:#061d2b; display:flex; flex-direction:column;">
+          <sc-for list="{{ contactInfo }}" as="c" hint-placeholder-count="4">
+            <div style="padding:34px 44px; border-bottom:1px solid rgba(255,255,255,0.12);">
+              <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#F17D1E; margin-bottom:12px;">{{ c.label }}</div>
+              <div style="font-size:16px; color:#fff; line-height:1.6;">{{ c.value }}</div>
+              <div style="font-size:13px; font-weight:300; color:rgba(255,255,255,0.55); margin-top:6px;">{{ c.sub }}</div>
+            </div>
+          </sc-for>
+          <div style="flex:1; min-height:240px; position:relative; background:radial-gradient(circle at 50% 50%, #0c3145 0%, #04121b 80%); display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <div style="position:absolute; top:20px; left:24px; font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.14em; color:rgba(255,255,255,0.45);">LOCATION — GUJARAT, INDIA</div>
+            <img src="assets/gujarat.png" alt="ExEC location in Vapi, Gujarat" style="max-height:300px; max-width:78%; object-fit:contain; filter:invert(1) drop-shadow(0 0 20px rgba(228,100,20,0.2)); opacity:0.85;">
+          </div>
+        </div>
+      </div>
+
+      <!-- departments -->
+      <div style="border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div style="padding:64px 60px 30px;">
+          <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.22em; color:#F17D1E; margin-bottom:16px;">/ REACH THE RIGHT TEAM</div>
+          <h2 style="font-family:'Bebas Neue'; font-size:54px; line-height:0.9;">DIRECT LINES</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,0.12);">
+          <sc-for list="{{ departments }}" as="d" hint-placeholder-count="3">
+            <div style="padding:44px 40px 50px; border-right:1px solid rgba(255,255,255,0.12);">
+              <div style="font-family:'Bebas Neue'; font-size:30px; letter-spacing:0.02em;">{{ d.name }}</div>
+              <div style="font-size:13.5px; font-weight:300; line-height:1.6; color:rgba(255,255,255,0.62); margin-top:12px;">{{ d.desc }}</div>
+              <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.08em; color:#F17D1E; margin-top:20px;">{{ d.email }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= FOOTER ======================= -->
+    <div style="background:#04121b;">
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; padding:74px 60px 50px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:24px;">
+            <img src="assets/Logo.png" alt="ExEC" width="48" height="48" style="width:48px; height:48px; object-fit:contain;">
+            <div style="font-family:'Bebas Neue'; font-size:26px; letter-spacing:0.04em;">EXEC</div>
+          </div>
+          <p style="font-size:13.5px; font-weight:300; line-height:1.7; color:rgba(255,255,255,0.58); max-width:300px;">Explosion Proof Electrical Control — flameproof junction boxes, lighting, panels and instrumentation for hazardous areas. Engineered in Vapi, Gujarat since 1996.</p>
+        </div>
+        <div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#F17D1E; margin-bottom:20px;">EXPLORE</div>
+          <div style="display:flex; flex-direction:column; gap:14px; font-size:13.5px; color:rgba(255,255,255,0.7);">
+            <span onClick="{{ goHome }}" style="cursor:pointer;">Home</span>
+            <span onClick="{{ goCatalog }}" style="cursor:pointer;">Catalog</span>
+            <span onClick="{{ goBlog }}" style="cursor:pointer;">Blog</span>
+            <span onClick="{{ goStory }}" style="cursor:pointer;">Our Story</span>
+            <span onClick="{{ goContact }}" style="cursor:pointer;">Contact</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#F17D1E; margin-bottom:20px;">PRODUCTS</div>
+          <div style="display:flex; flex-direction:column; gap:14px; font-size:13.5px; color:rgba(255,255,255,0.7);">
+            <span style="cursor:pointer;">Light Fittings</span>
+            <span style="cursor:pointer;">Control Panels</span>
+            <span style="cursor:pointer;">Junction Boxes</span>
+            <span style="cursor:pointer;">Instrumentation</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#F17D1E; margin-bottom:20px;">REACH US</div>
+          <div style="display:flex; flex-direction:column; gap:14px; font-size:13.5px; color:rgba(255,255,255,0.7); line-height:1.5;">
+            <span>GIDC Phase IV, Vapi<br>Gujarat 396195, India</span>
+            <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="345d5a525b74514c44585b475d5b5a44465b5b525158515740465d5755581a575b59">[email&#160;protected]</a></span>
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.12); padding:26px 60px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.45);">
+        <span>© {{ year }} EXPLOSION PROOF ELECTRICAL CONTROL · ALL RIGHTS RESERVED</span>
+        <span>CIMFR &amp; PESO CERTIFIED · IP-66 · Ex d IIA·IIB·IIC</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view: 'home', cat: 'All', activeProduct: null, activePost: null, loading: true, loaderPct: 0, contactSent: false };
+
+  componentDidMount() {
+    const statuses = ['INITIALIZING', 'LOADING CATALOG', 'VERIFYING CERTS', 'READY'];
+    const start = Date.now();
+    const dur = 2400;
+    this._ldr = setInterval(() => {
+      const t = Math.min(1, (Date.now() - start) / dur);
+      const pct = Math.round(t * 100);
+      const status = statuses[Math.min(statuses.length - 1, Math.floor(t * statuses.length))];
+      this.setState({ loaderPct: pct, loaderStatus: status });
+      if (t >= 1) {
+        clearInterval(this._ldr);
+        setTimeout(() => this.setState({ loading: false }), 380);
+        setTimeout(() => this.setState({ loaderGone: true }), 1180);
+      }
+    }, 60);
+  }
+
+  componentWillUnmount() { if (this._ldr) clearInterval(this._ldr); }
+
+  go(view, payload) {
+    const patch = { view };
+    if (payload && payload.product) patch.activeProduct = payload.product;
+    if (payload && payload.post) patch.activePost = payload.post;
+    this.setState(patch);
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {}
+  }
+
+  renderVals() {
+    const isHome = this.state.view === 'home';
+    const navBase = 'cursor:pointer; padding-bottom:4px; transition:color .2s;';
+    const linkActive = navBase + 'color:#fff; border-bottom:2px solid #E46414;';
+    const linkIdle = navBase + 'color:rgba(255,255,255,0.7); border-bottom:2px solid transparent;';
+
+    const categories = [
+      { code: 'CAT-01', name: 'FLAMEPROOF LIGHTING', desc: 'Wellglass, bulkheads & hand lamps that contain the spark in Zone 1 areas.', spec: 'IP-66 · Ex d IIB', img: 'assets/wellglass.png' },
+      { code: 'CAT-02', name: 'CONTROL PANELS', desc: 'Built-to-spec flameproof control, instrumentation & switchgear panels.', spec: 'IP-66 · Ex d IIB', img: 'assets/panel.png' },
+      { code: 'CAT-03', name: 'LED FLOODLIGHTS', desc: 'High-output hazardous-area floodlighting for yards and process units.', spec: 'IP-66 · Ex d IIC', img: 'assets/flood.png' },
+      { code: 'CAT-04', name: 'TUBE LIGHT FITTINGS', desc: 'Twin-tube flameproof batten fittings for walkways and platforms.', spec: 'IP-66 · Ex d IIB', img: 'assets/Tubeloight.png' },
+      { code: 'CAT-05', name: 'JUNCTION BOXES', desc: 'Cast enclosures, terminal boxes & cable glands for hazardous wiring.', spec: 'IP-66 · Ex d IIC', img: 'assets/flame.png' },
+      { code: 'CAT-06', name: 'INSTRUMENTATION', desc: 'Push-button stations, plug-tops, limit & proximity switches, controllers.', spec: 'IP-66 · Ex d IIC', img: 'assets/sketchfl.png' },
+    ];
+
+    const pillars = [
+      { num: '01', title: 'EXPERTISE', body: 'Three decades engineering flameproof equipment for India\u2019s most demanding plants.' },
+      { num: '02', title: 'QUALITY', body: 'Pressure-tested castings and premium materials built to outlast the environment.' },
+      { num: '03', title: 'SAFETY', body: 'Every product meets the highest industry standards, CIMFR tested and PESO approved.' },
+      { num: '04', title: 'FAST DELIVERY', body: 'Responsive lead times and a pan-India network that keeps your plant running.' },
+    ];
+
+    const products = [
+      { name: 'LED WELLGLASS L-45', cat: 'LIGHTING', img: 'assets/wellglass.png', ip: 'IP-66', group: 'Ex d IIB', type: 'EXEC L-45', filter: 'Lighting' },
+      { name: 'LED FLOODLIGHT FL-150', cat: 'FLOODLIGHTS', img: 'assets/flood.png', ip: 'IP-66', group: 'Ex d IIC', type: 'EXEC FL-150', filter: 'Lighting' },
+      { name: 'TWIN TUBE FITTING', cat: 'TUBE LIGHTS', img: 'assets/Tubeloight.png', ip: 'IP-66', group: 'Ex d IIB', type: 'EXEC T-2x20', filter: 'Lighting' },
+      { name: 'FLAMEPROOF CONTROL PANEL', cat: 'CONTROL PANELS', img: 'assets/panel.png', ip: 'IP-66', group: 'Ex d IIB', type: 'EXEC CP', filter: 'Control Panels' },
+      { name: 'DOL STARTER UNIT', cat: 'CONTROL PANELS', img: 'assets/panel.png', ip: 'IP-66', group: 'Ex d IIB', type: 'EXEC DOL', filter: 'Control Panels' },
+      { name: 'HAND LAMP HL-20', cat: 'LIGHTING', img: 'assets/wellglass.png', ip: 'IP-54', group: 'Ex d IIB', type: 'EXEC HL', filter: 'Lighting' },
+      { name: 'PUSH-BUTTON STATION', cat: 'INSTRUMENTATION', img: 'assets/sketchfl.png', ip: 'IP-66', group: 'Ex d IIC', type: 'EXEC PB-4', filter: 'Instrumentation' },
+      { name: 'PLUG & SOCKET 32A', cat: 'INSTRUMENTATION', img: 'assets/sketchfl.png', ip: 'IP-66', group: 'Ex d IIB', type: 'EXEC PS-32', filter: 'Instrumentation' },
+      { name: 'JUNCTION BOX JB', cat: 'ENCLOSURES', img: 'assets/flame.png', ip: 'IP-66', group: 'Ex d IIC', type: 'EXEC JB', filter: 'Enclosures' },
+      { name: 'TERMINAL ENCLOSURE', cat: 'ENCLOSURES', img: 'assets/flame.png', ip: 'IP-66', group: 'Ex d IIB', type: 'EXEC TE', filter: 'Enclosures' },
+      { name: 'CABLE GLAND SET', cat: 'ACCESSORIES', img: 'assets/flame.png', ip: 'IP-68', group: 'Ex d', type: 'EXEC CG', filter: 'Accessories' },
+      { name: 'EXHAUST FAN EF-12', cat: 'INSTRUMENTATION', img: 'assets/sketchfl.png', ip: 'IP-55', group: 'Ex d IIB', type: 'EXEC EF-12', filter: 'Instrumentation' },
+    ];
+
+    const filterNames = ['All', 'Lighting', 'Control Panels', 'Instrumentation', 'Enclosures', 'Accessories'];
+    const fActive = 'padding:18px 24px; font-family:\'Space Mono\',monospace; font-size:12px; letter-spacing:0.12em; cursor:pointer; border-right:1px solid rgba(255,255,255,0.12); color:#04121b; background:#E46414;';
+    const fIdle = 'padding:18px 24px; font-family:\'Space Mono\',monospace; font-size:12px; letter-spacing:0.12em; cursor:pointer; border-right:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); background:transparent;';
+    const filters = filterNames.map(name => ({
+      label: name.toUpperCase(),
+      style: this.state.cat === name ? fActive : fIdle,
+      onClick: () => this.setState({ cat: name }),
+    }));
+
+    const v = this.state.view;
+    const catActive = (v === 'catalog' || v === 'product');
+    const blogActive = (v === 'blog' || v === 'article');
+    const storyActive = (v === 'story');
+    const contactActive = (v === 'contact');
+    const styleFor = (n) => ({ display: v === n ? 'block' : 'none' });
+    const openP = (p) => ({ ...p, open: () => this.go('product', { product: p }) });
+
+    const baseShown = this.state.cat === 'All' ? products : products.filter(p => p.filter === this.state.cat);
+    const shownProducts = baseShown.map(openP);
+
+    // ---------- PRODUCT DETAIL ----------
+    const dp = this.state.activeProduct || products[0];
+    const detail = Object.assign({}, dp, {
+      blurb: 'The ' + dp.name + ' is a CIMFR tested, PESO approved ' + dp.cat.toLowerCase() +
+        ' unit \u2014 engineered to contain an internal explosion and prevent ignition of the surrounding atmosphere, for Zone 1 and Zone 2 hazardous areas.',
+    });
+    const detailSpecs = [
+      { k: 'Type No.', v: dp.type },
+      { k: 'Certification', v: 'CIMFR Tested \u00b7 PESO Approved' },
+      { k: 'Protection Concept', v: 'Flameproof (' + dp.group + ')' },
+      { k: 'Ingress Protection', v: dp.ip },
+      { k: 'Enclosure', v: 'LM-6 Aluminium Alloy, Pressure Die-Cast' },
+      { k: 'Finish', v: 'Epoxy Powder Coated' },
+      { k: 'Hardware', v: 'Stainless Steel 316' },
+      { k: 'Temperature Class', v: 'T4 / T5' },
+      { k: 'Ambient Range', v: '\u221220\u00b0C to +55\u00b0C' },
+    ];
+    const detailFeatures = [
+      'Tested to contain an internal explosion without external ignition',
+      'Certified for Zone 1 & Zone 2 gas-group hazardous areas',
+      'Weatherproof to ' + dp.ip + ' \u2014 dust-tight and jet-proof',
+      'Heavy die-cast body built for corrosive industrial service',
+    ];
+    const relatedProducts = products
+      .filter(p => p.filter === dp.filter && p.type !== dp.type)
+      .slice(0, 3)
+      .map(openP);
+
+    // ---------- BLOG ----------
+    const rawPosts = [
+      { id: 'p1', cat: 'STANDARDS', date: '12 JUN 2026', read: '6 MIN', img: 'assets/factory.jpg',
+        title: 'Understanding Zone 0, 1 & 2 Hazardous Area Classification',
+        excerpt: 'How hazardous areas are zoned by the likelihood of an explosive atmosphere \u2014 and what it means for the equipment you can install.',
+        body: [
+          'In a hazardous area, the question is never whether a spark could ignite the atmosphere \u2014 it is how often that atmosphere is present. That single idea is what area classification exists to capture.',
+          'Zone 0 describes a location where an explosive gas atmosphere is present continuously or for long periods. Zone 1 covers areas where it is likely to occur in normal operation. Zone 2 is reserved for places where it is unlikely, and if it does occur, only for a short time.',
+          'The zone dictates the equipment. A fitting certified for Zone 1 carries a protection concept rated to contain or avoid ignition under far more demanding conditions than one intended only for Zone 2.',
+          'Getting the classification right is the foundation of every safe installation. Specify below the zone and you invite catastrophe; specify far above it and you pay for protection you do not need. The discipline is matching the equipment to the real risk.',
+        ] },
+      { id: 'p2', cat: 'ENGINEERING', date: '03 JUN 2026', read: '5 MIN', img: 'assets/panel.png',
+        title: 'Ex d vs Ex e: Choosing the Right Protection Concept',
+        excerpt: 'Two of the most common protection concepts in Indian industry solve the same problem in very different ways. Here is how to choose.',
+        body: [
+          'Two of the most common protection concepts in Indian industry \u2014 Ex d and Ex e \u2014 solve the same problem in very different ways.',
+          'Ex d, or flameproof, accepts that an explosion may happen inside the enclosure and builds a housing strong enough to contain it, with flame paths engineered so escaping gases cool below the ignition temperature of the surrounding atmosphere.',
+          'Ex e, increased safety, takes the opposite approach: it prevents sparks and excessive temperatures from arising in the first place, through generous clearances, quality terminals and conservative design.',
+          'Neither is universally better. Flameproof suits motors, switching and anything that arcs; increased safety suits terminal boxes and junction enclosures. Most real installations use both, chosen circuit by circuit.',
+        ] },
+      { id: 'p3', cat: 'PRODUCTS', date: '24 MAY 2026', read: '4 MIN', img: 'assets/wellglass.png',
+        title: 'Why IP-66 Matters for Flameproof Light Fittings',
+        excerpt: 'Certification tells you a fitting can contain an explosion. The IP rating tells you whether it will survive long enough to matter.',
+        body: [
+          'Certification tells you a fitting can contain an explosion. The IP rating tells you whether it will survive long enough to matter.',
+          'IP-66 means two things: complete protection against dust ingress, and protection against powerful water jets from any direction. In a coastal refinery or a wash-down chemical plant, that second digit is what keeps moisture out of the electronics.',
+          'For flameproof lighting in particular, ingress protection and explosion protection work together. A cracked gasket does not just let water in \u2014 it can compromise the flame path that makes the fitting safe.',
+          'When you specify a light fitting, read past the Ex marking to the IP rating. For outdoor and process areas, IP-66 should be the floor, not the ceiling.',
+        ] },
+      { id: 'p4', cat: 'COMPLIANCE', date: '15 MAY 2026', read: '5 MIN', img: 'assets/factory.jpg',
+        title: 'CIMFR & PESO: What Indian Certification Really Means',
+        excerpt: 'Two names appear on almost every legitimate flameproof product. Knowing what each one does removes a lot of confusion at procurement.',
+        body: [
+          'In India, two names appear on almost every legitimate flameproof product: CIMFR and PESO. Knowing what each one does removes a lot of confusion at the procurement stage.',
+          'CIMFR \u2014 the CSIR Central Institute of Mining and Fuel Research \u2014 is a testing authority. It subjects a design to the explosion, ingress and thermal tests defined by the relevant IS standards and issues a test report and certificate.',
+          'PESO \u2014 the Petroleum and Explosives Safety Organisation \u2014 is the statutory approval body. It reviews that certification and grants the approval that makes a product legal to install in licensed hazardous premises.',
+          'A product that is CIMFR tested and PESO approved has cleared both the technical and the regulatory bar. Anything missing one of the two should prompt a hard question before it goes near your plant.',
+        ] },
+      { id: 'p5', cat: 'LIGHTING', date: '02 MAY 2026', read: '4 MIN', img: 'assets/flood.png',
+        title: 'LED Retrofits for Hazardous-Area Lighting: A Cost Case',
+        excerpt: 'LED has quietly changed the economics of every flameproof fitting. The payback is usually measured in months, not years.',
+        body: [
+          'For decades, hazardous-area lighting meant sodium and mercury lamps in heavy flameproof housings. LED has quietly changed the economics of every one of those fittings.',
+          'The headline saving is energy \u2014 an LED wellglass typically draws a fraction of the wattage of the lamp it replaces for the same usable light on the ground.',
+          'The less obvious saving is maintenance. Relamping a fitting in a Zone 1 area means a permit, isolation and labour; an LED module that lasts years between interventions removes most of that recurring cost.',
+          'Across a plant with hundreds of fittings, the payback on an LED retrofit is usually measured in months, not years \u2014 before you count the improvement in light quality and uptime.',
+        ] },
+      { id: 'p6', cat: 'MAINTENANCE', date: '21 APR 2026', read: '5 MIN', img: 'assets/panel.png',
+        title: 'Maintaining Flameproof Enclosures: A Field Checklist',
+        excerpt: 'A flameproof enclosure only stays flameproof if it is maintained as one. Most field failures trace to a handful of avoidable issues.',
+        body: [
+          'A flameproof enclosure only stays flameproof if it is maintained as one. Most field failures trace back to a handful of avoidable issues.',
+          'Start with the flame path: the machined faces where the cover meets the body must be clean, undamaged and correctly torqued. A nick, a smear of the wrong grease or a missing bolt compromises the whole certification.',
+          'Check the glands and stoppers next. Every entry must be sealed with a certified gland of the right type; unused holes need certified stopping plugs, not tape.',
+          'Finally, confirm the gasket and the glass. A perished seal or a cracked cover lets in the moisture and dust that IP ratings exist to keep out. Document each inspection \u2014 the record is part of the safety case.',
+        ] },
+    ];
+    const openPost = (p) => ({ ...p, open: () => this.go('article', { post: p }) });
+    const posts = rawPosts.map(openPost);
+    const featured = posts[0];
+    const gridPosts = posts.slice(1);
+    const ap = this.state.activePost || posts[0];
+    const morePosts = posts.filter(p => p.id !== ap.id).slice(0, 3);
+
+    // ---------- OUR STORY ----------
+    const milestones = [
+      { year: '1996', tag: 'FOUNDED', body: 'Flameproof casting workshop opens in GIDC Phase IV, Vapi.' },
+      { year: '2004', tag: 'CERTIFIED', body: 'First CIMFR-tested, PESO-approved enclosure range launched.' },
+      { year: '2011', tag: 'EXPANSION', body: 'Custom control & instrumentation panel fabrication added in-house.' },
+      { year: '2018', tag: 'LED ERA', body: 'Full switch to high-output LED hazardous-area lighting.' },
+      { year: '2026', tag: 'TODAY', body: '100+ certified product types serving plants across India.' },
+    ];
+    const storyValues = [
+      { num: '01', title: 'CONTAINMENT FIRST', body: 'Every flame path is engineered to contain an internal explosion — never just to pass an inspection.' },
+      { num: '02', title: 'TESTED, NOT TRUSTED', body: 'Each design clears CIMFR explosion, ingress and thermal tests before it earns a type number.' },
+      { num: '03', title: 'BUILT IN-HOUSE', body: 'Casting, machining, wiring and testing happen under one roof in Vapi — full control, full traceability.' },
+      { num: '04', title: 'STAND BEHIND IT', body: 'If we wouldn\u2019t install it in our own plant, it doesn\u2019t leave the floor.' },
+    ];
+
+    // ---------- CONTACT ----------
+    const contactInfo = [
+      { label: 'FACTORY & OFFICE', value: 'GIDC Phase IV, Vapi', sub: 'Gujarat 396195, India' },
+      { label: 'EMAIL', value: 'info@explosionproofelectrical.com', sub: 'Sales & engineering enquiries' },
+      { label: 'PHONE', value: '+91 260 000 0000', sub: 'Mon–Sat · 9:30 AM – 6:30 PM IST' },
+      { label: 'CERTIFICATION', value: 'CIMFR Tested · PESO Approved', sub: 'IP-66 · Ex d IIA·IIB·IIC' },
+    ];
+    const departments = [
+      { name: 'SALES & QUOTES', desc: 'Pricing, lead times and stock availability across the catalogue.', email: 'sales@explosionproofelectrical.com' },
+      { name: 'ENGINEERING', desc: 'Zone, gas-group and load sizing — plus custom panel design.', email: 'engineering@explosionproofelectrical.com' },
+      { name: 'SUPPORT', desc: 'Datasheets, certificates and after-sales maintenance guidance.', email: 'support@explosionproofelectrical.com' },
+    ];
+
+    return {
+      homeStyle: styleFor('home'),
+      catalogStyle: styleFor('catalog'),
+      productStyle: styleFor('product'),
+      blogStyle: styleFor('blog'),
+      articleStyle: styleFor('article'),
+      storyStyle: styleFor('story'),
+      contactStyle: styleFor('contact'),
+      homeLinkStyle: v === 'home' ? linkActive : linkIdle,
+      catalogLinkStyle: catActive ? linkActive : linkIdle,
+      blogLinkStyle: blogActive ? linkActive : linkIdle,
+      storyLinkStyle: storyActive ? linkActive : linkIdle,
+      contactLinkStyle: contactActive ? linkActive : linkIdle,
+      goHome: () => this.go('home'),
+      goCatalog: () => this.go('catalog'),
+      goBlog: () => this.go('blog'),
+      goStory: () => this.go('story'),
+      goContact: () => this.go('contact'),
+      categories, pillars, filters, shownProducts,
+      detail, detailSpecs, detailFeatures, relatedProducts,
+      featured, gridPosts, post: ap, morePosts,
+      milestones, storyValues, contactInfo, departments,
+      loaderStyle: { display: this.state.loaderGone ? 'none' : 'block' },
+      loaderFade: this.state.loading ? 1 : 0,
+      loaderPointer: this.state.loading ? 'auto' : 'none',
+      loaderPct: this.state.loaderPct,
+      loaderStatus: this.state.loaderStatus || 'INITIALIZING',
+      contactSent: this.state.contactSent,
+      contactForm: !this.state.contactSent,
+      submitContact: () => this.setState({ contactSent: true }),
+      resetContact: () => this.setState({ contactSent: false }),
+      year: new Date().getFullYear(),
+    };
+  }
+}
+</script>
+</body>
+</html>

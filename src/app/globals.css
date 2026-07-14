@@ -166,6 +166,16 @@
     @apply bg-background text-foreground;
   }
 
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  ::-moz-selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
   html {
     overflow: scroll;
     overflow-x: hidden;
@@ -178,6 +188,244 @@
   ::-webkit-scrollbar-thumb {
     background: transparent;
   }
+}
+
+@keyframes floatY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes flameproofRing {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.65;
+    box-shadow: 0 0 22px rgba(228, 100, 20, 0.28);
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 44px rgba(228, 100, 20, 0.44);
+  }
+}
+
+@keyframes flameproofScan {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flameproofCore {
+  0%,
+  100% {
+    transform: scale(0.82);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes flameproofSpark {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-10px) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes flameproofBar {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.flameproof-loader-ring {
+  animation: flameproofRing 2.2s ease-in-out infinite;
+}
+
+.flameproof-loader-scan {
+  animation: flameproofScan 2.8s linear infinite;
+}
+
+.flameproof-loader-core {
+  animation: flameproofCore 1.8s ease-in-out infinite;
+}
+
+.flameproof-loader-spark {
+  animation: flameproofSpark 1.5s ease-in-out infinite;
+}
+
+.flameproof-loader-bar {
+  animation: flameproofBar 1.7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flameproof-loader-ring,
+  .flameproof-loader-scan,
+  .flameproof-loader-core,
+  .flameproof-loader-spark,
+  .flameproof-loader-bar {
+    animation: none;
+  }
+}
+
+/* ──── FlameproofPageLoader v2 animations ──── */
+
+@keyframes fpRotateCW {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fpRotateCCW {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes fpSweepY {
+  0% {
+    top: -4px;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% + 4px);
+    opacity: 0;
+  }
+}
+
+@keyframes fpPulseGlow {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.88);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes fpDotBlink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.18;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes fpBarSlide {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.fp-ring-ccw {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: fpRotateCCW 16s linear infinite;
+}
+
+.fp-ring-cw-med {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: fpRotateCW 10s linear infinite;
+}
+
+.fp-ring-cw-fast {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: fpRotateCW 5.5s linear infinite;
+}
+
+.fp-sweep-y {
+  animation: fpSweepY 4s ease-in-out infinite;
+}
+
+.fp-pulse-glow {
+  animation: fpPulseGlow 2.8s ease-in-out infinite;
+}
+
+.fp-dot {
+  animation: fpDotBlink 1.4s ease-in-out infinite;
+}
+
+.fp-bar {
+  animation: fpBarSlide 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-ring-ccw,
+  .fp-ring-cw-med,
+  .fp-ring-cw-fast,
+  .fp-sweep-y,
+  .fp-pulse-glow,
+  .fp-dot,
+  .fp-bar {
+    animation: none;
+  }
+}
+
+/* ──── Marketing loader animations (file 2 design) ──── */
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes ldrFlicker {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  25% { opacity: 1; transform: scale(1.06); }
+  50% { opacity: 0.7; transform: scale(0.97); }
+  75% { opacity: 0.95; transform: scale(1.03); }
+}
+
+@keyframes ldrRing {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ldrUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ldrSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(220%); }
+}
+
+@keyframes scrollDot {
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(18px); opacity: 0; }
 }
 
 @media print {

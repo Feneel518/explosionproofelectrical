@@ -1,3 +1,6 @@
+import { headers } from "next/headers";
+import { auth } from "../auth/auth";
+
 const FALLBACK_ALLOWED_DASHBOARD_EMAILS = ["feneelp@gmail.com"];
 
 const normalizeEmail = (value: string) => value.trim().toLowerCase();
@@ -20,3 +23,10 @@ export const isDashboardEmailAllowed = (email?: string | null) => {
   return allowedEmails.has(normalizeEmail(email));
 };
 
+export const canCurrentUserAccessDashboard = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  return isDashboardEmailAllowed(session?.user.email);
+};

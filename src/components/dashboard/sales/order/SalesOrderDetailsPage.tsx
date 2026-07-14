@@ -80,6 +80,19 @@ function getStatusVariant(status: string) {
   }
 }
 
+function getStatusClassName(status: string) {
+  switch (status) {
+    case "COMPLETED":
+      return "border-emerald-600 bg-emerald-600 text-white";
+    case "CONFIRMED":
+      return "border-blue-600 bg-blue-600 text-white";
+    case "DRAFT":
+      return "border-slate-300 bg-white text-slate-900 shadow-sm dark:border-slate-300 dark:bg-white dark:text-slate-900";
+    default:
+      return undefined;
+  }
+}
+
 function getInvoiceStatusVariant(status: string) {
   switch (status) {
     case "FINALIZED":
@@ -131,7 +144,9 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
               {orderLabel}
             </h1>
 
-            <Badge variant={getStatusVariant(order.status) as any}>
+            <Badge
+              variant={getStatusVariant(order.status) as any}
+              className={getStatusClassName(order.status)}>
               {order.status}
             </Badge>
 

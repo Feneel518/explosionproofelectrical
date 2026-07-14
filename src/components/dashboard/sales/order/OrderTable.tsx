@@ -109,6 +109,19 @@ function statusBadgeVariant(status: string) {
   }
 }
 
+function statusBadgeClassName(status: string) {
+  switch (status) {
+    case "COMPLETED":
+      return "border-emerald-600 bg-emerald-600 text-white";
+    case "CONFIRMED":
+      return "border-blue-600 bg-blue-600 text-white";
+    case "DRAFT":
+      return "border-slate-300 bg-white text-slate-900 shadow-sm dark:border-slate-300 dark:bg-white dark:text-slate-900";
+    default:
+      return undefined;
+  }
+}
+
 const OrderTable: FC<OrderTableProps> = ({
   items,
   total,
@@ -184,7 +197,9 @@ const OrderTable: FC<OrderTableProps> = ({
                   </div>
 
                   <div className="flex shrink-0 flex-col items-end gap-2">
-                    <Badge variant={statusBadgeVariant(o.status) as any}>
+                    <Badge
+                      variant={statusBadgeVariant(o.status) as any}
+                      className={statusBadgeClassName(o.status)}>
                       {o.status}
                     </Badge>
                     {o.deletedAt ? (
@@ -298,7 +313,9 @@ const OrderTable: FC<OrderTableProps> = ({
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant={statusBadgeVariant(o.status) as any}>
+                      <Badge
+                        variant={statusBadgeVariant(o.status) as any}
+                        className={statusBadgeClassName(o.status)}>
                         {o.status}
                       </Badge>
                     </TableCell>

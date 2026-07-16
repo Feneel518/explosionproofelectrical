@@ -711,6 +711,7 @@ export default function StockAdjustmentForm({
                         <Input
                           type="number"
                           min={0}
+                          step="0.001"
                           value={item.qty}
                           onChange={(event) =>
                             updateItem(index, "qty", Math.max(0, Number(event.target.value || 0)))

@@ -170,26 +170,26 @@ model User {
   salesOrderDeletedBy        SalesOrder[]        @relation("SalesOrderDeletedBy")
 
   // Contractor work tracker audit relations
-  workersCreatedBy           Worker[]            @relation("WorkerCreatedBy")
-  workersUpdatedBy           Worker[]            @relation("WorkerUpdatedBy")
-  workersDeletedBy           Worker[]            @relation("WorkerDeletedBy")
-  contractorProductsCreatedBy  ContractorProduct[]   @relation("ContractorProductCreatedBy")
-  contractorProductsUpdatedBy  ContractorProduct[]   @relation("ContractorProductUpdatedBy")
-  contractorProductsDeletedBy  ContractorProduct[]   @relation("ContractorProductDeletedBy")
+  workersCreatedBy              Worker[]              @relation("WorkerCreatedBy")
+  workersUpdatedBy              Worker[]              @relation("WorkerUpdatedBy")
+  workersDeletedBy              Worker[]              @relation("WorkerDeletedBy")
+  contractorProductsCreatedBy   ContractorProduct[]   @relation("ContractorProductCreatedBy")
+  contractorProductsUpdatedBy   ContractorProduct[]   @relation("ContractorProductUpdatedBy")
+  contractorProductsDeletedBy   ContractorProduct[]   @relation("ContractorProductDeletedBy")
   contractorOperationsCreatedBy ContractorOperation[] @relation("ContractorOperationCreatedBy")
   contractorOperationsUpdatedBy ContractorOperation[] @relation("ContractorOperationUpdatedBy")
   contractorOperationsDeletedBy ContractorOperation[] @relation("ContractorOperationDeletedBy")
-  contractorRatesCreatedBy     ContractorRate[]      @relation("ContractorRateCreatedBy")
-  contractorRatesUpdatedBy     ContractorRate[]      @relation("ContractorRateUpdatedBy")
-  contractorRatesDeletedBy     ContractorRate[]      @relation("ContractorRateDeletedBy")
-  workEntriesCreatedBy       WorkEntry[]         @relation("WorkEntryCreatedBy")
-  workEntriesUpdatedBy       WorkEntry[]         @relation("WorkEntryUpdatedBy")
-  workEntriesDeletedBy       WorkEntry[]         @relation("WorkEntryDeletedBy")
-  workerLedgerCreatedBy      WorkerLedgerEntry[] @relation("WorkerLedgerCreatedBy")
-  workerLedgerUpdatedBy      WorkerLedgerEntry[] @relation("WorkerLedgerUpdatedBy")
-  workerLedgerDeletedBy      WorkerLedgerEntry[] @relation("WorkerLedgerDeletedBy")
-  workerPayoutsCreatedBy     WorkerPayout[]      @relation("WorkerPayoutCreatedBy")
-  workerPayoutsUpdatedBy     WorkerPayout[]      @relation("WorkerPayoutUpdatedBy")
+  contractorRatesCreatedBy      ContractorRate[]      @relation("ContractorRateCreatedBy")
+  contractorRatesUpdatedBy      ContractorRate[]      @relation("ContractorRateUpdatedBy")
+  contractorRatesDeletedBy      ContractorRate[]      @relation("ContractorRateDeletedBy")
+  workEntriesCreatedBy          WorkEntry[]           @relation("WorkEntryCreatedBy")
+  workEntriesUpdatedBy          WorkEntry[]           @relation("WorkEntryUpdatedBy")
+  workEntriesDeletedBy          WorkEntry[]           @relation("WorkEntryDeletedBy")
+  workerLedgerCreatedBy         WorkerLedgerEntry[]   @relation("WorkerLedgerCreatedBy")
+  workerLedgerUpdatedBy         WorkerLedgerEntry[]   @relation("WorkerLedgerUpdatedBy")
+  workerLedgerDeletedBy         WorkerLedgerEntry[]   @relation("WorkerLedgerDeletedBy")
+  workerPayoutsCreatedBy        WorkerPayout[]        @relation("WorkerPayoutCreatedBy")
+  workerPayoutsUpdatedBy        WorkerPayout[]        @relation("WorkerPayoutUpdatedBy")
 
   @@map("users")
 }
@@ -249,16 +249,16 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  companyName  String
-  companyEmail String?
-  companyPhone String?
-  addressLine1 String
-  addressLine2 String?
-  city         String
-  state        String
-  country      String
-  pincode      String
-  gstin        String?
+  companyName                           String
+  companyEmail                          String?
+  companyPhone                          String?
+  addressLine1                          String
+  addressLine2                          String?
+  city                                  String
+  state                                 String
+  country                               String
+  pincode                               String
+  gstin                                 String?
   defaultQuotationGst                   GST                   @default(CGST_SGST_18)
   defaultQuotationPackingCharges        PackingCharges        @default(INCLUDED)
   defaultQuotationPaymentTerms          PaymentTerms          @default(ADVANCE)
@@ -321,8 +321,8 @@ model Supplier {
   createdById String?
   createdBy   User?   @relation("SupplierCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
-  updatedById String?
-  updatedBy   User?   @relation("SupplierUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedById       String?
+  updatedBy         User?              @relation("SupplierUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   rawMaterials      RawMaterial[]
   goodsReceiptNotes GoodsReceiptNote[]
   castingJobs       CastingJob[]
@@ -341,15 +341,18 @@ model RawMaterial {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  companyItemName  String
-  supplierItemName String?
-  itemCode         String? @unique
-  hsnCode          String?
-  unit             String  @default("Nos")
-  description      String?
-  reorderLevel     Int?
-  openingStockQty      Int      @default(0)
-  openingStockUnitCost Decimal? @db.Decimal(12, 2)
+  companyItemName      String
+  supplierItemName     String?
+  itemCode             String?   @unique
+  hsnCode              String?
+  unit                 String    @default("Nos")
+  description          String?
+  reorderLevel         Decimal?  @db.Decimal(14, 3)
+  maximumStockLevel    Decimal?  @db.Decimal(14, 3)
+  storageLocation      String?
+  binNumber            String?
+  openingStockQty      Decimal   @default(0) @db.Decimal(14, 3)
+  openingStockUnitCost Decimal?  @db.Decimal(12, 2)
   openingStockAt       DateTime?
 
   preferredSupplierId String?
@@ -369,13 +372,14 @@ model RawMaterial {
   updatedById String?
   updatedBy   User?   @relation("RawMaterialUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  grnItems           GoodsReceiptNoteItem[]
-  materialIssueItems MaterialIssueItem[]
-  castingInputItems  CastingJobItem[] @relation("CastingInputRawMaterial")
-  bomItems           VariantBomItem[]
+  grnItems             GoodsReceiptNoteItem[]
+  materialIssueItems   MaterialIssueItem[]
+  castingInputItems    CastingJobItem[]       @relation("CastingInputRawMaterial")
+  bomItems             VariantBomItem[]
   stockAdjustmentItems StockAdjustmentItem[]
-  stockBalance       StockBalance?
-  stockLedgerEntries StockLedger[]
+  stockBalance         StockBalance?
+  stockLedgerEntries   StockLedger[]
+  materialReturnItems  MaterialReturnItem[]
 
   @@index([companyItemName])
   @@index([supplierItemName])
@@ -389,16 +393,16 @@ model CastingMaster {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  castingItemName String
-  castingCode     String? @unique
-  drawingNumber   String?
-  hsnCode         String?
-  unit            String  @default("Nos")
-  standardWeightKg Decimal? @db.Decimal(12, 3)
-  description     String?
-  reorderLevel    Int?
-  openingStockQty      Int      @default(0)
-  openingStockUnitCost Decimal? @db.Decimal(12, 2)
+  castingItemName      String
+  castingCode          String?   @unique
+  drawingNumber        String?
+  hsnCode              String?
+  unit                 String    @default("Nos")
+  standardWeightKg     Decimal?  @db.Decimal(12, 3)
+  description          String?
+  reorderLevel         Int?
+  openingStockQty      Int       @default(0)
+  openingStockUnitCost Decimal?  @db.Decimal(12, 2)
   openingStockAt       DateTime?
 
   status CastingMasterStatus @default(ACTIVE)
@@ -538,7 +542,7 @@ model ProductVariant {
   bom        VariantBom?
 
   // General
-  status               ProductStatus         @default(ACTIVE)
+  status               ProductStatus          @default(ACTIVE)
   quotationItems       QuotationItem[]
   deliveryChallanItems DeliveryChallanItem[]
   salesOrderItems      SalesOrderItem[]
@@ -1015,6 +1019,35 @@ enum SalesOrderSourceType {
   IMPORTED
 }
 
+enum InventoryEmployeeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model InventoryEmployee {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employeeCode String                  @unique
+  name         String
+  department   String?
+  designation  String?
+  phone        String?
+  status       InventoryEmployeeStatus @default(ACTIVE)
+
+  createdById String?
+  updatedById String?
+
+  materialIssues  MaterialIssue[]
+  materialReturns MaterialReturn[]
+
+  @@index([name])
+  @@index([department])
+  @@index([status])
+  @@map("inventory_employees")
+}
+
 enum SalesOrderCompletionType {
   INVOICED
   MANUAL
@@ -1029,8 +1062,8 @@ model SalesOrder {
   orderNo Int
   orderFy String
 
-  status     SalesOrderStatus     @default(DRAFT)
-  sourceType SalesOrderSourceType @default(DIRECT)
+  status         SalesOrderStatus          @default(DRAFT)
+  sourceType     SalesOrderSourceType      @default(DIRECT)
   completionType SalesOrderCompletionType?
 
   // Optional quotation link
@@ -1269,15 +1302,15 @@ model Invoice {
   stateSnapshot      String?
   gstinSnapshot      String?
 
-  dispatchDate    DateTime?
-  transporterName String?
-  vehicleNumber   String?
-  driverName      String?
-  driverPhone     String?
-  dispatchThrough String?
-  lrNumber        String?
-  remarks         String?
-  ewayBill        String?
+  dispatchDate          DateTime?
+  transporterName       String?
+  vehicleNumber         String?
+  driverName            String?
+  driverPhone           String?
+  dispatchThrough       String?
+  lrNumber              String?
+  remarks               String?
+  ewayBill              String?
   transportationPayment TransportationPayment @default(TO_PAY)
   transportationAmount  Decimal?              @db.Decimal(12, 2)
 
@@ -1289,10 +1322,10 @@ model Invoice {
   emailCc      String?
   emailSubject String?
 
-  paymentReceived           Boolean  @default(false)
+  paymentReceived           Boolean   @default(false)
   paymentReceivedAt         DateTime?
   paymentReminderLastSentAt DateTime?
-  paymentReminderCount      Int      @default(0)
+  paymentReminderCount      Int       @default(0)
 
   subtotal                  Decimal @default(0) @db.Decimal(14, 2)
   discountTotal             Decimal @default(0) @db.Decimal(14, 2)
@@ -1439,9 +1472,9 @@ model VariantBomItem {
   castingMasterId String?
   castingMaster   CastingMaster? @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
 
-  qtyPerUnit Int @default(1)
+  qtyPerUnit Int     @default(1)
   remarks    String?
-  sortOrder  Int @default(0)
+  sortOrder  Int     @default(0)
 
   @@index([bomId, sortOrder])
   @@index([rawMaterialId])
@@ -1479,6 +1512,18 @@ enum MaterialIssueStatus {
   DRAFT
   FINALIZED
   CANCELLED
+}
+
+enum MaterialReturnStatus {
+  DRAFT
+  FINALIZED
+  CANCELLED
+}
+
+enum ReturnedMaterialCondition {
+  REUSABLE
+  DAMAGED
+  SCRAP
 }
 
 enum MaterialIssueType {
@@ -1519,6 +1564,7 @@ enum StockMovementType {
 enum StockReferenceType {
   GRN
   MATERIAL_ISSUE
+  MATERIAL_RETURN
   CASTING_JOB
   INVOICE
   DELIVERY_CHALLAN
@@ -1554,9 +1600,9 @@ model GoodsReceiptNote {
 
   status GrnStatus @default(DRAFT)
 
-  receivedAt          DateTime  @default(now())
-  supplierId          String?
-  supplier            Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  receivedAt           DateTime  @default(now())
+  supplierId           String?
+  supplier             Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   supplierNameSnapshot String?
   supplierInvoiceNo    String?
   supplierInvoiceDate  DateTime?
@@ -1610,14 +1656,14 @@ model GoodsReceiptNoteItem {
   rawMaterialId    String?
   rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
 
-  title      String
+  title            String
   supplierItemName String?
-  sku        String?
-  typeNumber String?
-  hsnCode    String?
-  unit       String?
+  sku              String?
+  typeNumber       String?
+  hsnCode          String?
+  unit             String?
 
-  qty Int @default(1)
+  qty Decimal @default(1) @db.Decimal(14, 3)
 
   unitCost          Decimal @default(0) @db.Decimal(12, 2)
   discountPercent   Decimal @default(0) @db.Decimal(5, 2)
@@ -1641,19 +1687,21 @@ model MaterialIssue {
   issueNo Int
   issueFy String
 
-  status MaterialIssueStatus @default(DRAFT)
-  issueType MaterialIssueType @default(INTERNAL_USE)
+  status    MaterialIssueStatus @default(DRAFT)
+  issueType MaterialIssueType   @default(INTERNAL_USE)
 
   issueDate DateTime @default(now())
 
-  issuedToNameSnapshot String
-  issuedByNameSnapshot String?
+  issuedToNameSnapshot           String
+  issuedToEmployeeId             String?
+  issuedToEmployee               InventoryEmployee? @relation(fields: [issuedToEmployeeId], references: [id], onDelete: SetNull)
+  issuedByNameSnapshot           String?
   directSaleCustomerNameSnapshot String?
   directSaleReferenceNo          String?
-  department           String?
-  purpose              String?
-  workReference        String?
-  remarks              String?
+  department                     String?
+  purpose                        String?
+  workReference                  String?
+  remarks                        String?
 
   draftData    Json?
   draftVersion Int   @default(0)
@@ -1663,7 +1711,8 @@ model MaterialIssue {
   createdById   String?
   updatedById   String?
 
-  items MaterialIssueItem[]
+  items   MaterialIssueItem[]
+  returns MaterialReturn[]
 
   @@unique([issueFy, issueNo])
   @@index([status])
@@ -1671,6 +1720,7 @@ model MaterialIssue {
   @@index([issueFy])
   @@index([issueDate])
   @@index([issuedToNameSnapshot])
+  @@index([issuedToEmployeeId])
   @@index([directSaleCustomerNameSnapshot])
   @@map("material_issues")
 }
@@ -1681,22 +1731,23 @@ model MaterialIssueItem {
   updatedAt DateTime @updatedAt
 
   materialIssueId String
-  materialIssue   MaterialIssue @relation(fields: [materialIssueId], references: [id], onDelete: Cascade)
+  materialIssue   MaterialIssue        @relation(fields: [materialIssueId], references: [id], onDelete: Cascade)
+  returnItems     MaterialReturnItem[]
 
   productVariantId String?
   productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
   rawMaterialId    String?
   rawMaterial      RawMaterial?    @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
 
-  title      String
+  title            String
   supplierItemName String?
-  sku        String?
-  typeNumber String?
-  hsnCode    String?
-  unit       String?
+  sku              String?
+  typeNumber       String?
+  hsnCode          String?
+  unit             String?
 
-  qtyIssued   Int @default(1)
-  qtyReturned Int @default(0)
+  qtyIssued   Decimal @default(1) @db.Decimal(14, 3)
+  qtyReturned Decimal @default(0) @db.Decimal(14, 3)
 
   sortOrder Int @default(0)
 
@@ -1704,6 +1755,64 @@ model MaterialIssueItem {
   @@index([productVariantId])
   @@index([rawMaterialId])
   @@map("material_issue_items")
+}
+
+model MaterialReturn {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  returnNo   Int
+  returnFy   String
+  status     MaterialReturnStatus @default(DRAFT)
+  returnDate DateTime             @default(now())
+
+  materialIssueId        String
+  materialIssue          MaterialIssue      @relation(fields: [materialIssueId], references: [id], onDelete: Restrict)
+  returnedByEmployeeId   String?
+  returnedByEmployee     InventoryEmployee? @relation(fields: [returnedByEmployeeId], references: [id], onDelete: SetNull)
+  returnedByNameSnapshot String
+  receivedByNameSnapshot String?
+  remarks                String?
+
+  finalizedAt   DateTime?
+  finalizedById String?
+  createdById   String?
+  updatedById   String?
+
+  items MaterialReturnItem[]
+
+  @@unique([returnFy, returnNo])
+  @@index([status])
+  @@index([returnDate])
+  @@index([materialIssueId])
+  @@index([returnedByEmployeeId])
+  @@map("material_returns")
+}
+
+model MaterialReturnItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  materialReturnId    String
+  materialReturn      MaterialReturn    @relation(fields: [materialReturnId], references: [id], onDelete: Cascade)
+  materialIssueItemId String
+  materialIssueItem   MaterialIssueItem @relation(fields: [materialIssueItemId], references: [id], onDelete: Restrict)
+  rawMaterialId       String
+  rawMaterial         RawMaterial       @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  title     String
+  unit      String?
+  qty       Decimal                   @db.Decimal(14, 3)
+  condition ReturnedMaterialCondition @default(REUSABLE)
+  remarks   String?
+  sortOrder Int                       @default(0)
+
+  @@index([materialReturnId, sortOrder])
+  @@index([materialIssueItemId])
+  @@index([rawMaterialId])
+  @@map("material_return_items")
 }
 
 model CastingJob {
@@ -1735,12 +1844,12 @@ model CastingJob {
   createdById   String?
   updatedById   String?
 
-  totalIssuedQty       Int     @default(0)
-  totalIssuedWeightKg  Decimal @default(0) @db.Decimal(14, 3)
-  totalReceivedQty     Int     @default(0)
-  totalReceivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
-  totalPendingWeightKg Decimal @default(0) @db.Decimal(14, 3)
-  yieldPercent         Decimal? @db.Decimal(7, 3)
+  totalIssuedQty        Int      @default(0)
+  totalIssuedWeightKg   Decimal  @default(0) @db.Decimal(14, 3)
+  totalReceivedQty      Int      @default(0)
+  totalReceivedWeightKg Decimal  @default(0) @db.Decimal(14, 3)
+  totalPendingWeightKg  Decimal  @default(0) @db.Decimal(14, 3)
+  yieldPercent          Decimal? @db.Decimal(7, 3)
 
   items    CastingJobItem[]
   receipts CastingJobReceipt[]
@@ -1802,7 +1911,7 @@ model CastingJobReceipt {
   castingJobId String
   castingJob   CastingJob @relation(fields: [castingJobId], references: [id], onDelete: Cascade)
 
-  receiptNo Int
+  receiptNo  Int
   receivedAt DateTime @default(now())
 
   receivedByNameSnapshot String?
@@ -1846,10 +1955,10 @@ model StockAdjustment {
 
   status StockAdjustmentStatus @default(DRAFT)
 
-  adjustDate DateTime @default(now())
+  adjustDate             DateTime @default(now())
   adjustedByNameSnapshot String?
-  reason                String?
-  remarks               String?
+  reason                 String?
+  remarks                String?
 
   draftData    Json?
   draftVersion Int   @default(0)
@@ -1890,11 +1999,11 @@ model StockAdjustmentItem {
   unit             String?
 
   movementType StockMovementType
-  qty          Int @default(1)
-  unitCost     Decimal? @db.Decimal(12, 2)
+  qty          Decimal           @default(1) @db.Decimal(14, 3)
+  unitCost     Decimal?          @db.Decimal(12, 2)
 
   remarks   String?
-  sortOrder Int @default(0)
+  sortOrder Int     @default(0)
 
   @@index([stockAdjustmentId, sortOrder])
   @@index([productVariantId])
@@ -1914,9 +2023,9 @@ model StockBalance {
   castingMasterId  String?         @unique
   castingMaster    CastingMaster?  @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
 
-  qtyOnHand   Int @default(0)
-  qtyReserved Int @default(0)
-  qtyAvailable Int @default(0)
+  qtyOnHand    Decimal @default(0) @db.Decimal(14, 3)
+  qtyReserved  Decimal @default(0) @db.Decimal(14, 3)
+  qtyAvailable Decimal @default(0) @db.Decimal(14, 3)
 
   lastMovementAt DateTime?
 
@@ -1933,7 +2042,7 @@ model StockLedger {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  movementDate DateTime         @default(now())
+  movementDate DateTime          @default(now())
   movementType StockMovementType
 
   referenceType StockReferenceType
@@ -1947,9 +2056,9 @@ model StockLedger {
   castingMasterId  String?
   castingMaster    CastingMaster?  @relation(fields: [castingMasterId], references: [id], onDelete: Restrict)
 
-  qtyIn        Int @default(0)
-  qtyOut       Int @default(0)
-  balanceAfter Int @default(0)
+  qtyIn        Decimal @default(0) @db.Decimal(14, 3)
+  qtyOut       Decimal @default(0) @db.Decimal(14, 3)
+  balanceAfter Decimal @default(0) @db.Decimal(14, 3)
 
   unitCost  Decimal? @db.Decimal(12, 2)
   totalCost Decimal? @db.Decimal(14, 2)
@@ -2019,7 +2128,7 @@ model InventorySetting {
   updatedAt DateTime @updatedAt
 
   allowNegativeStock Boolean @default(false)
-  lowStockThreshold  Int     @default(0)
+  lowStockThreshold  Decimal @default(0) @db.Decimal(14, 3)
 
   @@map("inventory_settings")
 }
@@ -2098,7 +2207,7 @@ model ContractorProduct {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String                 @unique
+  name        String                  @unique
   description String?
   status      ContractorCatalogStatus @default(ACTIVE)
 
@@ -2126,7 +2235,7 @@ model ContractorOperation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String                 @unique
+  name        String                  @unique
   description String?
   status      ContractorCatalogStatus @default(ACTIVE)
 
@@ -2159,12 +2268,12 @@ model ContractorRate {
   contractorOperationId String
   contractorOperation   ContractorOperation @relation(fields: [contractorOperationId], references: [id], onDelete: Restrict)
 
-  sideLabel String?
-  unit      String  @default("Nos")
-  defaultRate Decimal @default(0) @db.Decimal(10, 2)
-  role      WorkerRole?
-  status    ContractorCatalogStatus @default(ACTIVE)
-  notes     String?
+  sideLabel   String?
+  unit        String                  @default("Nos")
+  defaultRate Decimal                 @default(0) @db.Decimal(10, 2)
+  role        WorkerRole?
+  status      ContractorCatalogStatus @default(ACTIVE)
+  notes       String?
 
   deletedAt   DateTime?
   deletedById String?

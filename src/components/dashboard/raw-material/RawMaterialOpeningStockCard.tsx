@@ -131,6 +131,7 @@ export default function RawMaterialOpeningStockCard({
           <Input
             type="number"
             min={0}
+            step="0.001"
             value={qty}
             onChange={(e) => setQty(Math.max(0, Number(e.target.value || 0)))}
           />
@@ -197,9 +198,10 @@ export default function RawMaterialOpeningStockCard({
             <label className="text-sm">Quantity</label>
               <Input
                 type="number"
-                min={1}
+                min={0.001}
+                step="0.001"
                 value={adjustQty}
-                onChange={(e) => setAdjustQty(Math.max(1, Number(e.target.value || 0)))}
+                onChange={(e) => setAdjustQty(Math.max(0.001, Number(e.target.value || 0)))}
               />
           </div>
 

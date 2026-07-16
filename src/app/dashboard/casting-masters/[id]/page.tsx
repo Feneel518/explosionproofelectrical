@@ -214,7 +214,7 @@ const Page: FC<PageProps> = async ({ params }) => {
         </div>
         <div className="text-sm">
           <span className="text-muted-foreground">Current On Hand:</span>{" "}
-          {casting.stockBalance?.qtyOnHand ?? 0}
+          {Number(casting.stockBalance?.qtyOnHand ?? 0)}
         </div>
         <div className="text-xs text-muted-foreground">
           Created: {new Date(casting.createdAt).toLocaleString()}
@@ -224,7 +224,7 @@ const Page: FC<PageProps> = async ({ params }) => {
       <CastingMasterOpeningStockCard
         castingMasterId={casting.id}
         itemName={casting.castingItemName}
-        currentOnHand={casting.stockBalance?.qtyOnHand ?? 0}
+        currentOnHand={Number(casting.stockBalance?.qtyOnHand ?? 0)}
         openingStockQty={casting.openingStockQty ?? 0}
         openingStockUnitCost={
           casting.openingStockUnitCost == null
@@ -282,7 +282,7 @@ const Page: FC<PageProps> = async ({ params }) => {
         </div>
         <div className="text-xs text-muted-foreground">
           {lastStockMovement
-            ? `Last movement: ${formatDate(lastStockMovement.createdAt)} • ${lastStockMovement.movementType} • IN ${formatNumber(lastStockMovement.qtyIn)} / OUT ${formatNumber(lastStockMovement.qtyOut)} • ${lastStockMovement.referenceType}${lastStockMovement.referenceNo ? ` (${lastStockMovement.referenceNo})` : ""}`
+            ? `Last movement: ${formatDate(lastStockMovement.createdAt)} • ${lastStockMovement.movementType} • IN ${formatNumber(Number(lastStockMovement.qtyIn))} / OUT ${formatNumber(Number(lastStockMovement.qtyOut))} • ${lastStockMovement.referenceType}${lastStockMovement.referenceNo ? ` (${lastStockMovement.referenceNo})` : ""}`
             : "Last movement: -"}
         </div>
       </div>

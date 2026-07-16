@@ -67,6 +67,9 @@ export default function RawMaterialForm({
       unit: initial?.unit ?? "Nos",
       description: initial?.description ?? "",
       reorderLevel: initial?.reorderLevel,
+      maximumStockLevel: initial?.maximumStockLevel,
+      storageLocation: initial?.storageLocation ?? "",
+      binNumber: initial?.binNumber ?? "",
       preferredSupplierId: initial?.preferredSupplierId ?? "",
       status: initial?.status ?? "ACTIVE",
     },
@@ -249,6 +252,7 @@ export default function RawMaterialForm({
                     <Input
                       type="number"
                       min={0}
+                      step="0.001"
                       value={field.value ?? ""}
                       onChange={(event) => field.onChange(event.target.value)}
                       placeholder="e.g. 20"
@@ -259,6 +263,34 @@ export default function RawMaterialForm({
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="maximumStockLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Maximum Stock Level</FormLabel>
+                  <FormControl><Input type="number" min={0} step="0.001" value={field.value ?? ""} onChange={(event) => field.onChange(event.target.value)} placeholder="Optional maximum" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="storageLocation"
+              render={({ field }) => (
+                <FormItem><FormLabel>Storage Location</FormLabel><FormControl><Input placeholder="Main Store / Rack A" {...field} /></FormControl><FormMessage /></FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="binNumber"
+              render={({ field }) => (
+                <FormItem><FormLabel>Bin Number</FormLabel><FormControl><Input placeholder="A-01-03" {...field} /></FormControl><FormMessage /></FormItem>
               )}
             />
 

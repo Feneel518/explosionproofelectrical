@@ -3,7 +3,7 @@
 import { StockMovementType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
@@ -40,13 +40,13 @@ function toDateOrNull(value?: string | null) {
 export async function adjustRawMaterialStockAction(
   input: AdjustRawMaterialStockInput,
 ) {
-  const session = await requireAuth();
+  const session = await requireInventoryAccess("MANAGE");
 
   if (!input.rawMaterialId) {
     return { ok: false as const, message: "Raw material ID is required." };
   }
 
-  const qty = Math.trunc(Number(input.qty));
+  const qty = Number(Number(input.qty).toFixed(3));
   if (!Number.isFinite(qty) || qty <= 0) {
     return { ok: false as const, message: "Adjustment quantity must be greater than 0." };
   }
@@ -55,7 +55,10 @@ export async function adjustRawMaterialStockAction(
     return { ok: false as const, message: "Invalid adjustment type." };
   }
 
-  const reason = trimOrNull(input.reason) ?? "Manual adjustment";
+  const reason = trimOrNull(input.reason);
+  if (!reason) {
+    return { ok: false as const, message: "An adjustment reason is required." };
+  }
   const movementAt = toDateOrNull(input.movementAt) ?? new Date();
 
   try {

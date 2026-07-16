@@ -58,6 +58,10 @@ const data = {
           url: "/dashboard/raw-materials",
         },
         {
+          title: "Inventory Employees",
+          url: "/dashboard/inventory/employees",
+        },
+        {
           title: "Casting Masters",
           url: "/dashboard/casting-masters",
         },
@@ -165,8 +169,16 @@ const data = {
           url: "/dashboard/inventory/movements",
         },
         {
+          title: "Material Returns",
+          url: "/dashboard/inventory/returns",
+        },
+        {
           title: "Stock Adjustments",
           url: "/dashboard/inventory/adjustments",
+        },
+        {
+          title: "Inventory Reports",
+          url: "/dashboard/inventory/reports",
         },
       ],
     },

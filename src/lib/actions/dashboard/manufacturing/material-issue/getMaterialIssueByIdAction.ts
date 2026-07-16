@@ -10,8 +10,16 @@ export async function getMaterialIssueByIdAction(id: string) {
   const materialIssue = await prisma.materialIssue.findUnique({
     where: { id },
     include: {
+      issuedToEmployee: {
+        select: { employeeCode: true, name: true, department: true, designation: true },
+      },
       items: {
         orderBy: { sortOrder: "asc" },
+      },
+      returns: {
+        where: { status: "FINALIZED" },
+        orderBy: { returnDate: "desc" },
+        include: { items: { orderBy: { sortOrder: "asc" } } },
       },
     },
   });

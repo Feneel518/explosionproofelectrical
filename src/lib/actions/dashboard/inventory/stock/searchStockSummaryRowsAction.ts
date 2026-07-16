@@ -252,74 +252,35 @@ export async function searchStockSummaryRowsAction({
   ]);
 
   const consumedByRawMaterialId = new Map(
-    rawMaterialConsumption
-      .filter(
-        (row): row is { rawMaterialId: string; _sum: { qtyOut: number | null } } =>
-          Boolean(row.rawMaterialId),
-      )
-      .map((row) => [row.rawMaterialId, row._sum.qtyOut ?? 0] as const),
+    rawMaterialConsumption.flatMap((row) => row.rawMaterialId
+      ? [[row.rawMaterialId, Number(row._sum.qtyOut ?? 0)] as const]
+      : []),
   );
   const consumedByVariantId = new Map(
-    variantConsumption
-      .filter(
-        (row): row is { productVariantId: string; _sum: { qtyOut: number | null } } =>
-          Boolean(row.productVariantId),
-      )
-      .map((row) => [row.productVariantId, row._sum.qtyOut ?? 0] as const),
+    variantConsumption.flatMap((row) => row.productVariantId
+      ? [[row.productVariantId, Number(row._sum.qtyOut ?? 0)] as const]
+      : []),
   );
   const consumedByCastingId = new Map(
-    castingConsumption
-      .filter(
-        (row): row is { castingMasterId: string; _sum: { qtyOut: number | null } } =>
-          Boolean(row.castingMasterId),
-      )
-      .map((row) => [row.castingMasterId, row._sum.qtyOut ?? 0] as const),
+    castingConsumption.flatMap((row) => row.castingMasterId
+      ? [[row.castingMasterId, Number(row._sum.qtyOut ?? 0)] as const]
+      : []),
   );
 
   const mtdByRawMaterialId = new Map(
-    rawMaterialMtdMovements
-      .filter(
-        (
-          row,
-        ): row is {
-          rawMaterialId: string;
-          _sum: { qtyIn: number | null; qtyOut: number | null };
-        } => Boolean(row.rawMaterialId),
-      )
-      .map((row) => [
-        row.rawMaterialId,
-        { qtyIn: row._sum.qtyIn ?? 0, qtyOut: row._sum.qtyOut ?? 0 },
-      ] as const),
+    rawMaterialMtdMovements.flatMap((row) => row.rawMaterialId
+      ? [[row.rawMaterialId, { qtyIn: Number(row._sum.qtyIn ?? 0), qtyOut: Number(row._sum.qtyOut ?? 0) }] as const]
+      : []),
   );
   const mtdByVariantId = new Map(
-    variantMtdMovements
-      .filter(
-        (
-          row,
-        ): row is {
-          productVariantId: string;
-          _sum: { qtyIn: number | null; qtyOut: number | null };
-        } => Boolean(row.productVariantId),
-      )
-      .map((row) => [
-        row.productVariantId,
-        { qtyIn: row._sum.qtyIn ?? 0, qtyOut: row._sum.qtyOut ?? 0 },
-      ] as const),
+    variantMtdMovements.flatMap((row) => row.productVariantId
+      ? [[row.productVariantId, { qtyIn: Number(row._sum.qtyIn ?? 0), qtyOut: Number(row._sum.qtyOut ?? 0) }] as const]
+      : []),
   );
   const mtdByCastingId = new Map(
-    castingMtdMovements
-      .filter(
-        (
-          row,
-        ): row is {
-          castingMasterId: string;
-          _sum: { qtyIn: number | null; qtyOut: number | null };
-        } => Boolean(row.castingMasterId),
-      )
-      .map((row) => [
-        row.castingMasterId,
-        { qtyIn: row._sum.qtyIn ?? 0, qtyOut: row._sum.qtyOut ?? 0 },
-      ] as const),
+    castingMtdMovements.flatMap((row) => row.castingMasterId
+      ? [[row.castingMasterId, { qtyIn: Number(row._sum.qtyIn ?? 0), qtyOut: Number(row._sum.qtyOut ?? 0) }] as const]
+      : []),
   );
 
   const latestByItemKey = new Map<
@@ -351,8 +312,8 @@ export async function searchStockSummaryRowsAction({
       referenceType: movement.referenceType,
       referenceId: movement.referenceId,
       referenceNo: movement.referenceNo ?? null,
-      qtyIn: movement.qtyIn,
-      qtyOut: movement.qtyOut,
+      qtyIn: Number(movement.qtyIn),
+      qtyOut: Number(movement.qtyOut),
     });
   }
 
@@ -532,7 +493,9 @@ export async function searchStockSummaryRowsAction({
         ? mtdByCastingId.get(row.castingMaster?.id ?? "") ?? { qtyIn: 0, qtyOut: 0 }
         : mtdByVariantId.get(row.productVariant?.id ?? "") ?? { qtyIn: 0, qtyOut: 0 };
 
-    const openingQty = row.qtyOnHand - monthMovement.qtyIn + monthMovement.qtyOut;
+    const qtyOnHand = Number(row.qtyOnHand);
+    const qtyAvailable = Number(row.qtyAvailable);
+    const openingQty = qtyOnHand - monthMovement.qtyIn + monthMovement.qtyOut;
     const latestMovement = latestByItemKey.get(itemKey);
 
     let lastReferenceHref: string | null = null;
@@ -551,6 +514,9 @@ export async function searchStockSummaryRowsAction({
             ? `Direct Sale • ${issue.directSaleCustomerNameSnapshot || issue.issuedToNameSnapshot || "-"}`
             : `Internal Use • ${issue.issuedToNameSnapshot || "-"}`;
       }
+    } else if (latestMovement?.referenceType === "MATERIAL_RETURN") {
+      lastReferenceHref = "/dashboard/inventory/returns";
+      lastReferenceSubtext = "Employee material return";
     } else if (latestMovement?.referenceType === "CASTING_JOB") {
       lastReferenceHref = `/dashboard/manufacturing/casting-jobs/${latestMovement.referenceId}`;
       const castingJob = castingJobMetaById.get(latestMovement.referenceId);
@@ -587,8 +553,8 @@ export async function searchStockSummaryRowsAction({
       subtitle,
       meta: meta || null,
       itemHref,
-      qtyOnHand: row.qtyOnHand,
-      qtyAvailable: row.qtyAvailable,
+      qtyOnHand,
+      qtyAvailable,
       openingQty,
       monthInQty: monthMovement.qtyIn,
       monthOutQty: monthMovement.qtyOut,

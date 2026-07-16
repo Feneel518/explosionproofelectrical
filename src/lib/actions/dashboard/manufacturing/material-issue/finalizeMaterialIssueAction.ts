@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
 import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
@@ -26,7 +26,7 @@ function trimOrNull(value?: string | null) {
 }
 
 export async function finalizeMaterialIssueAction(id: string) {
-  const session = await requireAuth();
+  const session = await requireInventoryAccess("WRITE");
 
   const issue = await prisma.materialIssue.findUnique({
     where: { id },
@@ -55,10 +55,6 @@ export async function finalizeMaterialIssueAction(id: string) {
     return { ok: false as const, message: "Draft data missing." };
   }
 
-  if (!draft.header.issuedToName?.trim()) {
-    return { ok: false as const, message: "Issued To name is required." };
-  }
-
   if (!draft.items?.length) {
     return { ok: false as const, message: "Add at least one material item." };
   }
@@ -66,12 +62,19 @@ export async function finalizeMaterialIssueAction(id: string) {
   const issueType: MaterialIssueType =
     draft.header.issueType === "DIRECT_SALE" ? "DIRECT_SALE" : "INTERNAL_USE";
 
-  const internalIssuedToName = trimOrNull(draft.header.issuedToName);
+  const issuedToEmployeeId = trimOrNull(draft.header.issuedToEmployeeId);
+  const employee = issuedToEmployeeId
+    ? await prisma.inventoryEmployee.findFirst({
+        where: { id: issuedToEmployeeId, status: "ACTIVE" },
+        select: { id: true, name: true, department: true },
+      })
+    : null;
+  const internalIssuedToName = employee?.name ?? trimOrNull(draft.header.issuedToName);
   const directSaleCustomerName = trimOrNull(draft.header.directSaleCustomerName);
   const directSaleReferenceNo = trimOrNull(draft.header.directSaleReferenceNo);
 
-  if (issueType === "INTERNAL_USE" && !internalIssuedToName) {
-    return { ok: false as const, message: "Issued To name is required." };
+  if (issueType === "INTERNAL_USE" && !employee) {
+    return { ok: false as const, message: "Select an active company employee in Issued To." };
   }
 
   if (issueType === "DIRECT_SALE" && !directSaleCustomerName) {
@@ -84,7 +87,7 @@ export async function finalizeMaterialIssueAction(id: string) {
       : (internalIssuedToName ?? "Unknown");
 
   const preparedItems = draft.items.map((item, index) => {
-    const qtyIssued = Math.trunc(toNumber(item.qtyIssued, 0));
+    const qtyIssued = Number(toNumber(item.qtyIssued, 0).toFixed(3));
 
     if (!item.rawMaterialId || qtyIssued <= 0) {
       throw new Error(`Invalid material item at row ${index + 1}.`);
@@ -172,6 +175,7 @@ export async function finalizeMaterialIssueAction(id: string) {
           issueType,
           issueDate,
           issuedToNameSnapshot,
+          issuedToEmployeeId: issueType === "INTERNAL_USE" ? employee?.id ?? null : null,
           issuedByNameSnapshot: trimOrNull(draft.header.issuedByName),
           directSaleCustomerNameSnapshot:
             issueType === "DIRECT_SALE" ? directSaleCustomerName : null,
@@ -179,7 +183,7 @@ export async function finalizeMaterialIssueAction(id: string) {
             issueType === "DIRECT_SALE" ? directSaleReferenceNo : null,
           department:
             issueType === "INTERNAL_USE"
-              ? trimOrNull(draft.header.department)
+              ? employee?.department ?? trimOrNull(draft.header.department)
               : null,
           purpose:
             issueType === "DIRECT_SALE"

@@ -8,6 +8,7 @@ export type MaterialIssueDraftData = {
   header: {
     issueDate?: string | null;
     issueType?: "INTERNAL_USE" | "DIRECT_SALE";
+    issuedToEmployeeId?: string | null;
     issuedToName?: string | null;
     issuedByName?: string | null;
     directSaleCustomerName?: string | null;
@@ -46,6 +47,7 @@ export async function createDraftMaterialIssueAction() {
     header: {
       issueDate: new Date().toISOString(),
       issueType: "INTERNAL_USE",
+      issuedToEmployeeId: null,
       issuedToName: "",
       issuedByName: "",
       directSaleCustomerName: "",

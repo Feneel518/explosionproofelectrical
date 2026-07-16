@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 
 function formatDate(value?: Date | string | null) {
@@ -34,9 +35,10 @@ export default function MaterialIssueDetailView({ issue }: { issue: any }) {
             {issuedToLabel}: {issue.issuedToNameSnapshot}
           </p>
         </div>
-        <Badge variant={issue.status === "FINALIZED" ? "default" : "secondary"}>
-          {issue.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {issue.status === "FINALIZED" && issue.issueType === "INTERNAL_USE" ? <Button asChild variant="outline"><Link href={`/dashboard/inventory/returns/new?issueId=${issue.id}`}>Record Return</Link></Button> : null}
+          <Badge variant={issue.status === "FINALIZED" ? "default" : "secondary"}>{issue.status}</Badge>
+        </div>
       </div>
 
       <Card>
@@ -68,6 +70,12 @@ export default function MaterialIssueDetailView({ issue }: { issue: any }) {
           <Info label="Total Quantity Issued" value={String(totalIssued)} />
         </CardContent>
       </Card>
+
+      {issue.returns?.length ? (
+        <Card><CardHeader><CardTitle>Return History</CardTitle></CardHeader><CardContent className="space-y-3">
+          {issue.returns.map((row: any) => <div key={row.id} className="rounded-xl border p-4 text-sm"><div className="flex justify-between gap-3"><span className="font-medium">{formatFinancialDocumentNumber(row.returnFy, row.returnNo)}</span><span>{formatDate(row.returnDate)}</span></div><p className="mt-1 text-muted-foreground">Received by {row.receivedByNameSnapshot || "-"} · {row.items.length} item(s)</p></div>)}
+        </CardContent></Card>
+      ) : null}
 
       <Card>
         <CardHeader>

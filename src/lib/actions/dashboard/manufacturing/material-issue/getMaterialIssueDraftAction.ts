@@ -34,6 +34,7 @@ export async function getMaterialIssueDraftAction(id: string) {
     header: {
       issueDate: new Date().toISOString(),
       issueType: "INTERNAL_USE",
+      issuedToEmployeeId: null,
       issuedToName: "",
       issuedByName: "",
       directSaleCustomerName: "",

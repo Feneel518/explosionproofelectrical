@@ -275,7 +275,7 @@ export default async function Page({
         const key = `RM:${item.rawMaterialId}`;
         const existing = componentPlanMap.get(key);
         const available = Number(item.rawMaterial?.stockBalance?.qtyAvailable ?? 0);
-        const reorderLevel = item.rawMaterial?.reorderLevel ?? null;
+        const reorderLevel = item.rawMaterial?.reorderLevel == null ? null : Number(item.rawMaterial.reorderLevel);
 
         if (existing) {
           existing.requiredQty += requiredQty;

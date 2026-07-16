@@ -62,10 +62,10 @@ export default async function Page() {
       }),
     ]);
 
-  const totalOnHand = stockAgg._sum.qtyOnHand ?? 0;
+  const totalOnHand = Number(stockAgg._sum.qtyOnHand ?? 0);
   const totalsMtd = {
-    inward: mtdAgg._sum.qtyIn ?? 0,
-    consumed: mtdAgg._sum.qtyOut ?? 0,
+    inward: Number(mtdAgg._sum.qtyIn ?? 0),
+    consumed: Number(mtdAgg._sum.qtyOut ?? 0),
   };
   const openingQty = totalOnHand - totalsMtd.inward + totalsMtd.consumed;
 
@@ -113,13 +113,13 @@ export default async function Page() {
         </div>
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">
-            Low Stock ({"<="} {threshold})
+            Low Stock ({"<="} {Number(threshold)})
           </div>
           <div className="text-2xl font-semibold">{lowStockCount}</div>
         </div>
       </div>
 
-      <StockSummaryInfiniteTable monthLabel={monthLabel} threshold={threshold} />
+      <StockSummaryInfiniteTable monthLabel={monthLabel} threshold={Number(threshold)} />
     </div>
   );
 }

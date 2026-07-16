@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import {
@@ -37,7 +37,7 @@ function normalizeItemType(value: string | null | undefined): StockAdjustmentIte
 }
 
 export async function finalizeStockAdjustmentAction(id: string) {
-  const session = await requireAuth();
+  const session = await requireInventoryAccess("MANAGE");
 
   const adjustment = await prisma.stockAdjustment.findUnique({
     where: { id },
@@ -72,7 +72,7 @@ export async function finalizeStockAdjustmentAction(id: string) {
 
   const preparedItems = draft.items.map((item, index) => {
     const itemType = normalizeItemType(item.itemType);
-    const qty = Math.trunc(toNumber(item.qty, 0));
+    const qty = Number(toNumber(item.qty, 0).toFixed(3));
 
     const rawMaterialId = itemType === "RAW_MATERIAL" ? item.rawMaterialId : null;
     const productVariantId =
@@ -173,6 +173,10 @@ export async function finalizeStockAdjustmentAction(id: string) {
     "System";
   const headerReason = trimOrNull(draft.header.reason);
   const headerRemarks = trimOrNull(draft.header.remarks);
+
+  if (!headerReason) {
+    return { ok: false as const, message: "Adjustment reason is required." };
+  }
 
   const documentNo = formatFinancialDocumentNumber(
     adjustment.adjustFy,

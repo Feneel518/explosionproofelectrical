@@ -66,7 +66,7 @@ export async function postStockMovement(
     }
   }
 
-  const qty = Math.trunc(Number(input.qty || 0));
+  const qty = Number(Number(input.qty || 0).toFixed(3));
   if (!Number.isFinite(qty) || qty <= 0) {
     throw new Error("Stock movement quantity must be greater than 0.");
   }
@@ -109,8 +109,8 @@ export async function postStockMovement(
     },
   });
 
-  const currentOnHand = existingBalance?.qtyOnHand ?? 0;
-  const currentReserved = existingBalance?.qtyReserved ?? 0;
+  const currentOnHand = Number(existingBalance?.qtyOnHand ?? 0);
+  const currentReserved = Number(existingBalance?.qtyReserved ?? 0);
 
   const delta = getDelta(input.movementType, qty);
   const nextOnHand = currentOnHand + delta;

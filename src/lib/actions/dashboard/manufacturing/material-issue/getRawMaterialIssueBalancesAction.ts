@@ -34,11 +34,10 @@ export async function getRawMaterialIssueBalancesAction(
 
   return {
     ok: true as const,
-    balances: balances
-      .filter((row): row is { rawMaterialId: string; qtyOnHand: number } => Boolean(row.rawMaterialId))
-      .map((row) => ({
-        rawMaterialId: row.rawMaterialId!,
-        qtyOnHand: Number(row.qtyOnHand || 0),
-      })),
+    balances: balances.flatMap((row) =>
+      row.rawMaterialId
+        ? [{ rawMaterialId: row.rawMaterialId, qtyOnHand: Number(row.qtyOnHand || 0) }]
+        : [],
+    ),
   };
 }

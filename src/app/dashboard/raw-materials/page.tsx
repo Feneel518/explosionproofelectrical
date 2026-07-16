@@ -134,7 +134,7 @@ const Page: FC<PageProps> = async ({ searchParams }) => {
   const activeCount = metricRows.filter((row) => row.status === "ACTIVE").length;
   const lowStockCount = metricRows.filter((row) => {
     if (row.reorderLevel == null) return false;
-    return Number(row.stockBalance?.qtyOnHand ?? 0) <= row.reorderLevel;
+    return Number(row.stockBalance?.qtyOnHand ?? 0) <= Number(row.reorderLevel);
   }).length;
 
   const safeItems = serializeForClient(enrichedItems);

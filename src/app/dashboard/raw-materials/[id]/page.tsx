@@ -107,7 +107,7 @@ const Page: FC<PageProps> = async ({ params }) => {
   const receiptRows = [...grnItems]
     .map((item) => ({
       id: item.id,
-      qty: item.qty,
+      qty: Number(item.qty),
       unitCost: Number(item.effectiveUnitCost ?? item.unitCost ?? 0),
       supplier: item.grn.supplierNameSnapshot || "Unknown Supplier",
       receivedAt: item.grn.receivedAt,
@@ -199,11 +199,11 @@ const Page: FC<PageProps> = async ({ params }) => {
         </div>
         <div className="text-sm">
           <span className="text-muted-foreground">Reorder Level:</span>{" "}
-          {rawMaterial.reorderLevel ?? "-"}
+          {rawMaterial.reorderLevel == null ? "-" : Number(rawMaterial.reorderLevel)}
         </div>
         <div className="text-sm">
           <span className="text-muted-foreground">Current On Hand:</span>{" "}
-          {rawMaterial.stockBalance?.qtyOnHand ?? 0}
+          {Number(rawMaterial.stockBalance?.qtyOnHand ?? 0)}
         </div>
         <div className="text-xs text-muted-foreground">
           Created: {new Date(rawMaterial.createdAt).toLocaleString()}
@@ -213,8 +213,8 @@ const Page: FC<PageProps> = async ({ params }) => {
       <RawMaterialOpeningStockCard
         rawMaterialId={rawMaterial.id}
         itemName={rawMaterial.companyItemName}
-        currentOnHand={rawMaterial.stockBalance?.qtyOnHand ?? 0}
-        openingStockQty={rawMaterial.openingStockQty ?? 0}
+        currentOnHand={Number(rawMaterial.stockBalance?.qtyOnHand ?? 0)}
+        openingStockQty={Number(rawMaterial.openingStockQty ?? 0)}
         openingStockUnitCost={
           rawMaterial.openingStockUnitCost == null
             ? null

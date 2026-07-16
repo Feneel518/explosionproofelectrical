@@ -415,7 +415,7 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
     if (state.isDueToday) dueTodayPaymentCount += 1;
   }
 
-  const lowStockThreshold = inventorySetting?.lowStockThreshold ?? 0;
+  const lowStockThreshold = Number(inventorySetting?.lowStockThreshold ?? 0);
   const lowStockItems =
     lowStockThreshold <= 0
       ? stockLowItemsZeroThreshold
@@ -474,7 +474,7 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         cancelled: grnCancelled,
         pendingQualityChecks: grnPendingChecks,
         discrepancies: grnDiscrepancies,
-        receivedQtyThisMonth: grnReceivedQtyThisMonthAgg._sum.qty ?? 0,
+        receivedQtyThisMonth: Number(grnReceivedQtyThisMonthAgg._sum.qty ?? 0),
       },
     },
     manufacturing: {
@@ -485,8 +485,8 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         cancelled: materialIssueCancelled,
         internalUse: materialIssueInternalUse,
         directSale: materialIssueDirectSale,
-        qtyIssuedThisMonth: materialIssuedThisMonthAgg._sum.qtyIssued ?? 0,
-        qtyReturnedThisMonth: materialReturnedThisMonthAgg._sum.qtyReturned ?? 0,
+        qtyIssuedThisMonth: Number(materialIssuedThisMonthAgg._sum.qtyIssued ?? 0),
+        qtyReturnedThisMonth: Number(materialReturnedThisMonthAgg._sum.qtyReturned ?? 0),
       },
       castingJob: {
         total: castingJobTotal,
@@ -505,14 +505,14 @@ export async function getDashboardOverviewAction(): Promise<DashboardOverviewDat
         lowStockThreshold,
         lowStockItems,
         negativeStockItems: stockNegativeItems,
-        totalOnHand: stockBalanceAgg._sum.qtyOnHand ?? 0,
-        totalReserved: stockBalanceAgg._sum.qtyReserved ?? 0,
-        totalAvailable: stockBalanceAgg._sum.qtyAvailable ?? 0,
+        totalOnHand: Number(stockBalanceAgg._sum.qtyOnHand ?? 0),
+        totalReserved: Number(stockBalanceAgg._sum.qtyReserved ?? 0),
+        totalAvailable: Number(stockBalanceAgg._sum.qtyAvailable ?? 0),
         lastMovementAt: lastStockMovement?.movementDate
           ? lastStockMovement.movementDate.toISOString()
           : null,
-        movementInThisMonth: stockMovementThisMonthAgg._sum.qtyIn ?? 0,
-        movementOutThisMonth: stockMovementThisMonthAgg._sum.qtyOut ?? 0,
+        movementInThisMonth: Number(stockMovementThisMonthAgg._sum.qtyIn ?? 0),
+        movementOutThisMonth: Number(stockMovementThisMonthAgg._sum.qtyOut ?? 0),
       },
     },
   };

@@ -355,7 +355,7 @@ export default async function Page({
                   <TableRow key={row.id}>
                     <TableCell>{formatDate(row.movementDate)}</TableCell>
                     <TableCell>
-                      <Badge variant={row.qtyIn > 0 ? "default" : "secondary"}>
+                      <Badge variant={Number(row.qtyIn) > 0 ? "default" : "secondary"}>
                         {row.movementType}
                       </Badge>
                     </TableCell>
@@ -372,6 +372,12 @@ export default async function Page({
                           <Link
                             className="hover:underline"
                             href={`/dashboard/manufacturing/material-issues/${row.referenceId}`}>
+                            {row.referenceNo || row.referenceId}
+                          </Link>
+                        ) : row.referenceType === "MATERIAL_RETURN" ? (
+                          <Link
+                            className="hover:underline"
+                            href="/dashboard/inventory/returns">
                             {row.referenceNo || row.referenceId}
                           </Link>
                         ) : row.referenceType === "CASTING_JOB" ? (
@@ -471,9 +477,9 @@ export default async function Page({
                       ) : null}
                       <div className="text-xs text-muted-foreground">{itemMeta || "-"}</div>
                     </TableCell>
-                    <TableCell>{row.qtyIn}</TableCell>
-                    <TableCell>{row.qtyOut}</TableCell>
-                    <TableCell>{row.balanceAfter}</TableCell>
+                    <TableCell>{Number(row.qtyIn)}</TableCell>
+                    <TableCell>{Number(row.qtyOut)}</TableCell>
+                    <TableCell>{Number(row.balanceAfter)}</TableCell>
                     <TableCell>
                       <div>{row.actorName || "-"}</div>
                       <div className="text-xs text-muted-foreground">

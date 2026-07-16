@@ -84,12 +84,14 @@ export default function MaterialIssueForm({
   issueFy,
   initialDraft,
   initialDraftVersion,
+  employees,
 }: {
   materialIssueId: string;
   issueNo: number;
   issueFy: string;
   initialDraft: MaterialIssueDraftData;
   initialDraftVersion: number;
+  employees: Array<{ id: string; employeeCode: string; name: string; department: string | null; designation: string | null }>;
 }) {
   const router = useRouter();
   const [draft, setDraft] = React.useState<MaterialIssueDraftData>(initialDraft);
@@ -455,13 +457,30 @@ export default function MaterialIssueForm({
                 <>
                   <div className="space-y-1">
                     <label className="text-sm">Issued To</label>
-                    <Input
-                      value={draft.header.issuedToName ?? ""}
-                      onChange={(event) =>
-                        setHeaderValue("issuedToName", event.target.value)
-                      }
-                      placeholder="Person taking material"
-                    />
+                    <Select
+                      value={draft.header.issuedToEmployeeId ?? undefined}
+                      onValueChange={(employeeId) => {
+                        const employee = employees.find((row) => row.id === employeeId);
+                        setDraft((prev) => ({
+                          ...prev,
+                          header: {
+                            ...prev.header,
+                            issuedToEmployeeId: employeeId,
+                            issuedToName: employee?.name ?? "",
+                            department: employee?.department ?? prev.header.department ?? "",
+                          },
+                        }));
+                      }}>
+                      <SelectTrigger><SelectValue placeholder="Select company employee" /></SelectTrigger>
+                      <SelectContent>
+                        {employees.map((employee) => (
+                          <SelectItem key={employee.id} value={employee.id}>
+                            {employee.employeeCode} · {employee.name}{employee.department ? ` · ${employee.department}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {employees.length === 0 ? <p className="text-xs text-destructive">Create an inventory employee before issuing material.</p> : null}
                   </div>
 
                   <div className="space-y-1">
@@ -633,6 +652,7 @@ export default function MaterialIssueForm({
                         <Input
                           type="number"
                           min={0}
+                          step="0.001"
                           value={item.qtyIssued}
                           onChange={(event) =>
                             updateItem(

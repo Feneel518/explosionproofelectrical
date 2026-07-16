@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
 import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
@@ -113,7 +113,7 @@ async function recomputeRawMaterialBalance(
 }
 
 export async function finalizeGrnAction(id: string) {
-  const session = await requireAuth();
+  const session = await requireInventoryAccess("WRITE");
 
   const grn = await prisma.goodsReceiptNote.findUnique({
     where: { id },
@@ -134,6 +134,10 @@ export async function finalizeGrnAction(id: string) {
     return { ok: false as const, message: "Cancelled GRN cannot be finalized." };
   }
 
+  if (grn.status === "FINALIZED") {
+    return { ok: false as const, message: "Finalized GRN is locked. Create a reversal to correct it." };
+  }
+
   const draft = grn.draftData as GrnDraftData | null;
   if (!draft) {
     return { ok: false as const, message: "GRN draft data missing." };
@@ -144,7 +148,7 @@ export async function finalizeGrnAction(id: string) {
   }
 
   const preparedItems = draft.items.map((item, index) => {
-    const qty = Math.max(0, Math.trunc(toNumber(item.qty, 0)));
+    const qty = Math.max(0, Number(toNumber(item.qty, 0).toFixed(3)));
     const unitCost = Math.max(0, toNumber(item.unitCost, 0));
     const discountPercent = clampPercent(item.discountPercent);
     const grossAmount = round2(qty * unitCost);
@@ -203,6 +207,25 @@ export async function finalizeGrnAction(id: string) {
 
   if (supplierId && !supplier) {
     return { ok: false as const, message: "Selected supplier no longer exists." };
+  }
+
+  const supplierInvoiceNo = draft.header.supplierInvoiceNo?.trim() || null;
+  if (supplierInvoiceNo) {
+    const duplicateInvoice = await prisma.goodsReceiptNote.findFirst({
+      where: {
+        id: { not: grn.id },
+        status: { not: "CANCELLED" },
+        supplierInvoiceNo: { equals: supplierInvoiceNo, mode: "insensitive" },
+        ...(supplierId ? { supplierId } : { supplierNameSnapshot: supplier?.companyName ?? draft.header.supplierName?.trim() }),
+      },
+      select: { grnNo: true, grnFy: true },
+    });
+    if (duplicateInvoice) {
+      return {
+        ok: false as const,
+        message: `Supplier invoice ${supplierInvoiceNo} is already used in ${duplicateInvoice.grnFy}-${duplicateInvoice.grnNo}.`,
+      };
+    }
   }
 
   const supplierNameSnapshot =
@@ -264,7 +287,7 @@ export async function finalizeGrnAction(id: string) {
         receivedAt,
         supplierId,
         supplierNameSnapshot,
-        supplierInvoiceNo: draft.header.supplierInvoiceNo?.trim() || null,
+        supplierInvoiceNo,
         supplierInvoiceDate,
         supplierInvoiceFiles:
           supplierInvoiceFiles.length > 0

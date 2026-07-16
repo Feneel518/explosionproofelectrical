@@ -66,7 +66,7 @@ function clampPercent(value: unknown) {
 
 function recalculateDraftItem(item: GrnDraftData["items"][number]) {
   const qtyRaw = Number(item.qty ?? 0);
-  const qty = Number.isFinite(qtyRaw) ? Math.max(0, Math.trunc(qtyRaw)) : 0;
+  const qty = Number.isFinite(qtyRaw) ? Math.max(0, Number(qtyRaw.toFixed(3))) : 0;
 
   const unitCostRaw = Number(item.unitCost ?? 0);
   const unitCost = Number.isFinite(unitCostRaw) ? Math.max(0, unitCostRaw) : 0;
@@ -690,7 +690,8 @@ export default function GrnForm({
                         <label className="text-sm">Quantity</label>
                         <Input
                           type="number"
-                          min={1}
+                          min={0.001}
+                          step="0.001"
                           value={item.qty}
                           onChange={(event) =>
                             updateItem(

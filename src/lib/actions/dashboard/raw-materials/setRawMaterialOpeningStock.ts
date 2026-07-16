@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
@@ -22,13 +22,13 @@ function toDateOrNull(value?: string | null) {
 export async function setRawMaterialOpeningStockAction(
   input: SetOpeningStockInput,
 ) {
-  const session = await requireAuth();
+  const session = await requireInventoryAccess("MANAGE");
 
   if (!input.rawMaterialId) {
     return { ok: false as const, message: "Raw material ID is required." };
   }
 
-  const openingQty = Math.trunc(Number(input.openingQty));
+  const openingQty = Number(Number(input.openingQty).toFixed(3));
   if (!Number.isFinite(openingQty) || openingQty < 0) {
     return { ok: false as const, message: "Opening quantity must be 0 or greater." };
   }

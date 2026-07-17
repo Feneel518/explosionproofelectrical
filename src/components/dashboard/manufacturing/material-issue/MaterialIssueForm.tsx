@@ -587,6 +587,8 @@ export default function MaterialIssueForm({
                         <label className="text-sm">Raw Material</label>
                         <RawMaterialCombobox
                           value={item.rawMaterialId}
+                          inventoryOnly
+                          placeholder="Select inventory-active raw material"
                           onChange={(rawMaterial) => {
                             if (!rawMaterial) {
                               updateItem(index, "rawMaterialId", null);

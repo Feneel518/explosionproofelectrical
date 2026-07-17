@@ -161,6 +161,10 @@ const data = {
       icon: Command,
       items: [
         {
+          title: "Go-Live Setup",
+          url: "/dashboard/inventory/go-live",
+        },
+        {
           title: "Stock Summary",
           url: "/dashboard/inventory/stock",
         },

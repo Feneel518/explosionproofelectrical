@@ -36,6 +36,7 @@ type Props = {
   onChange: (item: RawMaterialSearchItem | null) => void;
   disabled?: boolean;
   placeholder?: string;
+  inventoryOnly?: boolean;
 };
 
 function metaLine(item: RawMaterialSearchItem) {
@@ -47,6 +48,7 @@ export function RawMaterialCombobox({
   onChange,
   placeholder = "Search & select raw material",
   disabled,
+  inventoryOnly = false,
 }: Props) {
   const isDesktop = !useIsMobile();
 
@@ -71,6 +73,7 @@ export function RawMaterialCombobox({
         query,
         cursor: null,
         take: 20,
+        inventoryOnly,
       });
       setItems(res.items);
       setNextCursor(res.nextCursor);
@@ -87,6 +90,7 @@ export function RawMaterialCombobox({
         query,
         cursor: nextCursor,
         take: 20,
+        inventoryOnly,
       });
       setItems((prev) => {
         const seen = new Set(prev.map((p) => p.id));
@@ -105,7 +109,8 @@ export function RawMaterialCombobox({
   React.useEffect(() => {
     if (!open) return;
     loadFirstPage(debounced ?? "");
-  }, [open, debounced]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, debounced, inventoryOnly]);
 
   React.useEffect(() => {
     let cancelled = false;

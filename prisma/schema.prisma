@@ -341,19 +341,21 @@ model RawMaterial {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  companyItemName      String
-  supplierItemName     String?
-  itemCode             String?   @unique
-  hsnCode              String?
-  unit                 String    @default("Nos")
-  description          String?
-  reorderLevel         Decimal?  @db.Decimal(14, 3)
-  maximumStockLevel    Decimal?  @db.Decimal(14, 3)
-  storageLocation      String?
-  binNumber            String?
-  openingStockQty      Decimal   @default(0) @db.Decimal(14, 3)
-  openingStockUnitCost Decimal?  @db.Decimal(12, 2)
-  openingStockAt       DateTime?
+  companyItemName           String
+  supplierItemName          String?
+  itemCode                  String?                               @unique
+  hsnCode                   String?
+  unit                      String                                @default("Nos")
+  description               String?
+  reorderLevel              Decimal?                              @db.Decimal(14, 3)
+  maximumStockLevel         Decimal?                              @db.Decimal(14, 3)
+  storageLocation           String?
+  binNumber                 String?
+  openingStockQty           Decimal                               @default(0) @db.Decimal(14, 3)
+  openingStockUnitCost      Decimal?                              @db.Decimal(12, 2)
+  openingStockAt            DateTime?
+  inventoryActivatedAt      DateTime?
+  inventoryActivationSource RawMaterialInventoryActivationSource?
 
   preferredSupplierId String?
   preferredSupplier   Supplier? @relation(fields: [preferredSupplierId], references: [id], onDelete: SetNull)
@@ -386,6 +388,7 @@ model RawMaterial {
   @@index([status])
   @@index([deletedAt])
   @@index([preferredSupplierId])
+  @@index([inventoryActivatedAt])
 }
 
 model CastingMaster {
@@ -1022,6 +1025,11 @@ enum SalesOrderSourceType {
 enum InventoryEmployeeStatus {
   ACTIVE
   INACTIVE
+}
+
+enum RawMaterialInventoryActivationSource {
+  OPENING_COUNT
+  POST_GO_LIVE_GRN
 }
 
 model InventoryEmployee {
@@ -2127,8 +2135,10 @@ model InventorySetting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  allowNegativeStock Boolean @default(false)
-  lowStockThreshold  Decimal @default(0) @db.Decimal(14, 3)
+  allowNegativeStock   Boolean   @default(false)
+  lowStockThreshold    Decimal   @default(0) @db.Decimal(14, 3)
+  inventoryGoLiveDate  DateTime?
+  physicalStockCountAt DateTime?
 
   @@map("inventory_settings")
 }

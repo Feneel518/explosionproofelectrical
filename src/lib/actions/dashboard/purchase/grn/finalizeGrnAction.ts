@@ -198,6 +198,20 @@ export async function finalizeGrnAction(id: string) {
   const supplierInvoiceDate = toDateOrNull(draft.header.supplierInvoiceDate);
   const supplierId = draft.header.supplierId?.trim() || null;
 
+  const inventorySettings = await prisma.inventorySetting.findUnique({
+    where: { id: "default" },
+    select: { inventoryGoLiveDate: true },
+  });
+  if (
+    inventorySettings?.inventoryGoLiveDate &&
+    receivedAt < inventorySettings.inventoryGoLiveDate
+  ) {
+    return {
+      ok: false as const,
+      message: `This GRN predates inventory go-live (${inventorySettings.inventoryGoLiveDate.toLocaleDateString("en-IN")}) and cannot post stock. Keep it as a historical record only.`,
+    };
+  }
+
   const supplier = supplierId
     ? await prisma.supplier.findFirst({
         where: { id: supplierId, deletedAt: null },
@@ -345,6 +359,14 @@ export async function finalizeGrnAction(id: string) {
         remarks: `GRN finalized (${item.title})`,
         createdById: session.user.id,
       });
+
+      await tx.rawMaterial.updateMany({
+        where: { id: item.rawMaterialId, inventoryActivatedAt: null },
+        data: {
+          inventoryActivatedAt: receivedAt,
+          inventoryActivationSource: "POST_GO_LIVE_GRN",
+        },
+      });
     }
   }, FINALIZE_TRANSACTION_OPTIONS);
 
@@ -352,6 +374,7 @@ export async function finalizeGrnAction(id: string) {
   revalidatePath(`/dashboard/purchase/grn/${id}`);
   revalidatePath("/dashboard/inventory/stock");
   revalidatePath("/dashboard/inventory/movements");
+  revalidatePath("/dashboard/inventory/go-live");
 
   return { ok: true as const, message: "GRN finalized successfully." };
 }

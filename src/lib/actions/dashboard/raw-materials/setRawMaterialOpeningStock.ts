@@ -84,6 +84,8 @@ export async function setRawMaterialOpeningStockAction(
           openingStockQty: openingQty,
           openingStockUnitCost: openingUnitCost,
           openingStockAt: openingAt,
+          inventoryActivatedAt: openingAt,
+          inventoryActivationSource: "OPENING_COUNT",
           updatedById: session.user.id,
         },
       });
@@ -93,6 +95,7 @@ export async function setRawMaterialOpeningStockAction(
     revalidatePath(`/dashboard/raw-materials/${input.rawMaterialId}`);
     revalidatePath("/dashboard/inventory/stock");
     revalidatePath("/dashboard/inventory/movements");
+    revalidatePath("/dashboard/inventory/go-live");
 
     return {
       ok: true as const,

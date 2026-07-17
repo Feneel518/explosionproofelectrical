@@ -8,12 +8,14 @@ interface SearchRawMaterialsForSelectArgs {
   query?: string;
   cursor?: string | null;
   take?: number;
+  inventoryOnly?: boolean;
 }
 
 export const searchRawMaterialsForSelectAction = async ({
   cursor = null,
   query = "",
   take = 20,
+  inventoryOnly = false,
 }: SearchRawMaterialsForSelectArgs): Promise<{
   items: RawMaterialSearchItem[];
   nextCursor: string | null;
@@ -30,6 +32,7 @@ export const searchRawMaterialsForSelectAction = async ({
     where: {
       deletedAt: null,
       status: "ACTIVE",
+      ...(inventoryOnly ? { inventoryActivatedAt: { not: null } } : {}),
       OR: q
         ? [
             { companyItemName: { contains: q, mode: "insensitive" } },

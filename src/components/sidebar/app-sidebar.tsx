@@ -100,6 +100,10 @@ const data = {
       icon: GalleryVerticalEnd,
       items: [
         {
+          title: "Purchase Orders",
+          url: "/dashboard/purchase/orders",
+        },
+        {
           title: "GRN",
           url: "/dashboard/purchase/grn",
         },

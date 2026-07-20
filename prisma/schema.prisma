@@ -325,6 +325,7 @@ model Supplier {
   updatedBy         User?              @relation("SupplierUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   rawMaterials      RawMaterial[]
   goodsReceiptNotes GoodsReceiptNote[]
+  purchaseOrders    PurchaseOrder[]
   castingJobs       CastingJob[]
 
   @@index([companyName])
@@ -375,6 +376,7 @@ model RawMaterial {
   updatedBy   User?   @relation("RawMaterialUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   grnItems             GoodsReceiptNoteItem[]
+  purchaseOrderItems   PurchaseOrderItem[]
   materialIssueItems   MaterialIssueItem[]
   castingInputItems    CastingJobItem[]       @relation("CastingInputRawMaterial")
   bomItems             VariantBomItem[]
@@ -1496,6 +1498,97 @@ enum GrnStatus {
   CANCELLED
 }
 
+enum PurchaseOrderStatus {
+  DRAFT
+  FINALIZED
+  SENT
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  poNo   Int
+  poFy   String
+  status PurchaseOrderStatus @default(DRAFT)
+
+  orderDate       DateTime  @default(now())
+  expectedDate    DateTime?
+  supplierId      String
+  supplier        Supplier  @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  supplierName    String
+  supplierEmail   String?
+  supplierPhone   String?
+  supplierAddress String?
+  supplierGstin   String?
+
+  paymentTerms    String?
+  deliveryTerms   String?
+  shippingAddress String?
+  remarks         String?
+  terms           String?
+
+  subtotal       Decimal @default(0) @db.Decimal(14, 2)
+  discountTotal  Decimal @default(0) @db.Decimal(14, 2)
+  taxableTotal   Decimal @default(0) @db.Decimal(14, 2)
+  gstTotal       Decimal @default(0) @db.Decimal(14, 2)
+  shippingAmount Decimal @default(0) @db.Decimal(14, 2)
+  grandTotal     Decimal @default(0) @db.Decimal(14, 2)
+
+  draftData    Json?
+  draftVersion Int       @default(0)
+  finalizedAt  DateTime?
+  sentAt       DateTime?
+  sentTo       String?
+  emailSubject String?
+  createdById  String?
+  updatedById  String?
+  cancelledAt  DateTime?
+
+  items             PurchaseOrderItem[]
+  goodsReceiptNotes GoodsReceiptNote[]
+
+  @@unique([poFy, poNo])
+  @@index([status])
+  @@index([supplierId])
+  @@index([orderDate])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  rawMaterialId   String
+  rawMaterial     RawMaterial   @relation(fields: [rawMaterialId], references: [id], onDelete: Restrict)
+
+  title            String
+  supplierItemName String?
+  itemCode         String?
+  hsnCode          String?
+  unit             String  @default("Nos")
+  qty              Decimal @default(1) @db.Decimal(14, 3)
+  unitPrice        Decimal @default(0) @db.Decimal(12, 2)
+  discountPercent  Decimal @default(0) @db.Decimal(5, 2)
+  gstPercent       Decimal @default(18) @db.Decimal(5, 2)
+  lineSubtotal     Decimal @default(0) @db.Decimal(14, 2)
+  lineDiscount     Decimal @default(0) @db.Decimal(14, 2)
+  lineTaxable      Decimal @default(0) @db.Decimal(14, 2)
+  lineGst          Decimal @default(0) @db.Decimal(14, 2)
+  lineTotal        Decimal @default(0) @db.Decimal(14, 2)
+  remarks          String?
+  sortOrder        Int     @default(0)
+
+  @@index([purchaseOrderId, sortOrder])
+  @@index([rawMaterialId])
+  @@map("purchase_order_items")
+}
+
 enum GrnMaterialCheckStatus {
   PENDING
   CHECKED_OK
@@ -1616,6 +1709,9 @@ model GoodsReceiptNote {
   supplierInvoiceDate  DateTime?
   supplierInvoiceFiles Json?
 
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+
   transporterName String?
   lrNumber        String?
 
@@ -1648,6 +1744,7 @@ model GoodsReceiptNote {
   @@index([grnFy])
   @@index([receivedAt])
   @@index([supplierId])
+  @@index([purchaseOrderId])
   @@map("goods_receipt_notes")
 }
 

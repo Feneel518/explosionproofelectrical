@@ -2,14 +2,18 @@
 
 ## Workflow
 
-1. Create raw materials with unit, reorder level, maximum level, rack/location and bin.
-2. Create company recipients under **Master → Inventory Employees**.
-3. Record inward only through a GRN. Finalizing a GRN posts an `IN` ledger movement.
-4. Record outward through **Manufacturing → Material Issues**. Internal issues require an active employee and cannot exceed on-hand stock.
-5. Record unused material through **Inventory → Material Returns** against the original issue.
+1. Set the physical-count and inventory go-live dates under **Inventory → Go-Live Setup**.
+2. Create raw materials with unit, reorder level, maximum level, rack/location and bin.
+3. Save the physical opening count on each raw-material detail page, including materials counted at zero. This activates the material for issue.
+4. Create company recipients under **Master → Inventory Employees**.
+5. Record inward only through a GRN. Finalizing a post-go-live GRN posts an `IN` ledger movement and activates new materials automatically.
+6. Record outward through **Manufacturing → Material Issues**. Only inventory-active materials appear; internal issues require an active employee and cannot exceed on-hand stock.
+7. Record unused material through **Inventory → Material Returns** against the original issue.
    - Reusable material posts `RETURN_IN` and increases usable stock.
    - Damaged and scrap material remain traceable but do not increase usable stock.
-6. Use adjustments only for opening stock, physical-count differences, damage and corrections. A reason is mandatory.
+8. Use adjustments only for physical-count differences, damage and corrections. A reason is mandatory.
+
+GRNs dated before the configured go-live date are blocked from stock posting. Retain those documents as historical purchase records outside the live stock ledger so their quantities are not counted twice.
 
 Finalized documents are locked. Corrections should be posted as a return or adjustment instead of editing historical ledger entries.
 

@@ -112,12 +112,22 @@ export async function finalizeMaterialIssueAction(id: string) {
   );
   const existingRawMaterials = await prisma.rawMaterial.findMany({
     where: { id: { in: rawMaterialIds } },
-    select: { id: true },
+    select: { id: true, companyItemName: true, inventoryActivatedAt: true },
   });
   if (existingRawMaterials.length !== rawMaterialIds.length) {
     return {
       ok: false as const,
       message: "One or more selected raw materials do not exist.",
+    };
+  }
+
+  const inactiveInventoryMaterials = existingRawMaterials.filter(
+    (material) => !material.inventoryActivatedAt,
+  );
+  if (inactiveInventoryMaterials.length > 0) {
+    return {
+      ok: false as const,
+      message: `Complete the opening physical count before issuing: ${inactiveInventoryMaterials.map((item) => item.companyItemName).join(", ")}.`,
     };
   }
 

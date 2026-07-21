@@ -8,6 +8,7 @@ import { SupplierCombobox } from "@/components/dashboard/global/SupplierCombobox
 import { RawMaterialCombobox } from "@/components/dashboard/global/RawMaterialCombobox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,8 +46,8 @@ export default function PurchaseOrderForm({ orderId, initialDraft, documentNumbe
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-2xl font-semibold">{orderId ? `Edit Purchase Order ${documentNumber ?? ""}` : "New Purchase Order"}</h1><p className="text-sm text-muted-foreground">Order raw materials from a supplier with agreed pricing and terms.</p></div><div className="flex gap-2"><Button variant="outline" disabled={saving} onClick={() => submit(false)}><Save className="mr-2 h-4 w-4"/>Save draft</Button><Button disabled={saving} onClick={() => submit(true)}><Send className="mr-2 h-4 w-4"/>Finalize</Button></div></div>
     <Card><CardHeader><CardTitle>Supplier & delivery</CardTitle></CardHeader><CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div className="space-y-2"><Label>Supplier *</Label><SupplierCombobox value={draft.supplierId} onChange={(value) => update("supplierId", value ?? "")} /></div>
-      <div className="space-y-2"><Label>Order date *</Label><Input type="date" value={dateInput(draft.orderDate)} onChange={(e) => update("orderDate", new Date(`${e.target.value}T00:00:00`).toISOString())}/></div>
-      <div className="space-y-2"><Label>Expected delivery</Label><Input type="date" value={dateInput(draft.expectedDate)} onChange={(e) => update("expectedDate", e.target.value ? new Date(`${e.target.value}T00:00:00`).toISOString() : null)}/></div>
+      <div className="space-y-2"><Label>Order date *</Label><DatePicker value={dateInput(draft.orderDate)} onChange={(value) => update("orderDate", value ? new Date(`${value}T00:00:00`).toISOString() : "")} placeholder="Select order date"/></div>
+      <div className="space-y-2"><Label>Expected delivery</Label><DatePicker value={dateInput(draft.expectedDate)} onChange={(value) => update("expectedDate", value ? new Date(`${value}T00:00:00`).toISOString() : null)} placeholder="Select expected date"/></div>
       <div className="space-y-2"><Label>Payment terms</Label><Input value={draft.paymentTerms ?? ""} onChange={(e) => update("paymentTerms", e.target.value)}/></div>
       <div className="space-y-2"><Label>Delivery terms</Label><Input value={draft.deliveryTerms ?? ""} onChange={(e) => update("deliveryTerms", e.target.value)}/></div>
       <div className="space-y-2"><Label>Freight / shipping</Label><Input type="number" min="0" step="0.01" value={draft.shippingAmount} onChange={(e) => update("shippingAmount", n(e.target.value))}/></div>

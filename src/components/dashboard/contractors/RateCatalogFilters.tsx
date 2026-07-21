@@ -68,7 +68,7 @@ export default function RateCatalogFilters({
       <CardHeader>
         <CardTitle>Filter Rate Rows</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3 md:grid-cols-6">
+      <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}

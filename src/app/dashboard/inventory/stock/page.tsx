@@ -78,7 +78,7 @@ export default async function Page() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5 xl:grid-cols-9">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 xl:grid-cols-9">
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Tracked Items</div>
           <div className="text-2xl font-semibold">{trackedItemsCount}</div>

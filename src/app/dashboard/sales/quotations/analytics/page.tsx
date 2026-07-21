@@ -19,12 +19,12 @@ interface pageProps {}
 const page: FC<pageProps> = async ({}) => {
   const analytics = await getQuotationDashboardAnalytics();
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {/* 1st */}
       <QuotationKpiCards data={analytics.kpis} />
 
       {/* 2nd */}
-      <div className="bg-muted row-span-2 col-span-2 p-4  text-woodsmoke-200 flex flex-col justify-between">
+      <div className="bg-muted row-span-2 p-4 text-woodsmoke-200 flex flex-col justify-between md:col-span-2">
         <div className="flex items-center justify-between">
           <div className="uppercase text-xl">Monthly Quotation </div>
         </div>
@@ -51,7 +51,7 @@ const page: FC<pageProps> = async ({}) => {
 
       <DashboardAlerts data={analytics.alerts} />
 
-      <div className="col-span-2">
+      <div className="md:col-span-2">
         <RecentQuotations data={analytics.recentQuotations} />
       </div>
     </div>

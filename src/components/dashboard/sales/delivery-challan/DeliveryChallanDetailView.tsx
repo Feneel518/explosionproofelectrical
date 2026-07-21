@@ -414,7 +414,7 @@ export default function DeliveryChallanDetailView({ deliveryChallan }: Props) {
                     </div>
                   ) : null}
 
-                  <div className="grid gap-4 md:grid-cols-5">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                     <div>
                       <div className="text-xs text-muted-foreground">Qty</div>
                       <div className="font-medium">{item.qty}</div>

@@ -23,7 +23,7 @@ const chartConfig = {
 
 const MonthlyDispatchChart: FC<Props> = ({ data }) => {
   return (
-    <div className="bg-muted row-span-2 col-span-2 p-4 text-woodsmoke-200 flex flex-col justify-between">
+    <div className="bg-muted row-span-2 p-4 text-woodsmoke-200 flex flex-col justify-between md:col-span-2">
       <div className="flex items-center justify-between">
         <div className="uppercase text-xl">Monthly Dispatch</div>
       </div>

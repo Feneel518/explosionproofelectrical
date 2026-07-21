@@ -55,7 +55,7 @@ export function ResponsiveModal({
   drawerClassName,
   scrollClassName,
 }: Props) {
-  const isDesktop = !useIsMobile(); // md
+  const isDesktop = !useIsMobile();
 
   // Shared scroll wrapper: makes body scroll, not entire page
   const ScrollBody = (

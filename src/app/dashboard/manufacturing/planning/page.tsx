@@ -399,7 +399,7 @@ export default async function Page({
         initialVariantId={selectedVariantId || null}
       />
 
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Pending Orders</div>
           <div className="text-2xl font-semibold">{uniqueOrderCount}</div>

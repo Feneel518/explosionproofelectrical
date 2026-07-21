@@ -39,9 +39,9 @@ const layout: FC<layoutProps> = async ({ children }) => {
     <SidebarProvider>
       <AppSidebar user={sidebarUser} />
       <SidebarInset>
-        <header className="flex h-14 lg:h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
+        <header className="flex h-14 xl:h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
           <QuotationFollowupReminderToast />
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex min-w-0 items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1  p-2 cursor-pointer" />
             <Separator
               orientation="vertical"
@@ -50,7 +50,7 @@ const layout: FC<layoutProps> = async ({ children }) => {
             <DashboardBreadcrumbs></DashboardBreadcrumbs>
           </div>
         </header>
-        <div className="p-4 lg:p-8">{children}</div>
+        <div className="min-w-0 p-3 sm:p-4 xl:p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

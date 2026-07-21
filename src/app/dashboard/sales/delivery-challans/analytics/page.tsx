@@ -13,7 +13,7 @@ const page: FC<PageProps> = async () => {
   const analytics = await getDeliveryChallanDashboardAnalytics();
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       <DeliveryChallanKpiCards data={analytics.kpis} />
 
       <MonthlyDispatchChart data={analytics.monthlyDispatch} />
@@ -24,7 +24,7 @@ const page: FC<PageProps> = async () => {
 
       <OpenChallans data={analytics.openChallans} />
 
-      <div className="col-span-4">
+      <div className="md:col-span-2 xl:col-span-4">
         <OverdueReturnables data={analytics.overdueReturnables} />
       </div>
     </div>

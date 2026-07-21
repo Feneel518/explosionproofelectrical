@@ -318,12 +318,12 @@ const ProductVariantForm: FC<ProductVariantFormProps> = ({
               return (
                 <div
                   key={field.id}
-                  className="grid grid-cols-5 gap-4 items-end">
+                  className="grid grid-cols-1 gap-4 items-end sm:grid-cols-2 lg:grid-cols-5">
                   <FormField
                     control={form.control}
                     name={`component.${index}.item`}
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                    <FormItem className="sm:col-span-2 lg:col-span-2">
                         <FormLabel>Item</FormLabel>
                         <FormControl>
                           <Input
@@ -339,7 +339,7 @@ const ProductVariantForm: FC<ProductVariantFormProps> = ({
                     control={form.control}
                     name={`component.${index}.unit`}
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                    <FormItem className="sm:col-span-2 lg:col-span-2">
                         <FormLabel>Units</FormLabel>
                         <FormControl>
                           <Input

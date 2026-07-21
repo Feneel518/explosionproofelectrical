@@ -26,6 +26,10 @@ type GrnItemView = {
   unit?: string | null;
   qty: number;
   unitCost?: number | string | null;
+  discountPercent?: number | string | null;
+  grossAmount?: number | string | null;
+  discountAmount?: number | string | null;
+  effectiveUnitCost?: number | string | null;
   lineTotal?: number | string | null;
 };
 
@@ -72,6 +76,36 @@ function fmtMoney(value?: number | string | null) {
   }).format(amount);
 }
 
+function getItemPricing(item: GrnItemView) {
+  const qty = Number(item.qty || 0);
+  const baseUnitCost = Number(item.unitCost || 0);
+  const discountPercent = Number(item.discountPercent || 0);
+  const grossAmount = Number(item.grossAmount ?? qty * baseUnitCost);
+  const discountAmount = Number(
+    item.discountAmount ?? (grossAmount * discountPercent) / 100,
+  );
+  const lineTotal = Number(item.lineTotal ?? grossAmount - discountAmount);
+  const storedEffectiveUnitCost = Number(item.effectiveUnitCost);
+  const hasUsableStoredEffectiveCost =
+    item.effectiveUnitCost != null &&
+    Number.isFinite(storedEffectiveUnitCost) &&
+    (storedEffectiveUnitCost > 0 || lineTotal === 0);
+  const effectiveUnitCost = hasUsableStoredEffectiveCost
+    ? storedEffectiveUnitCost
+    : qty > 0
+      ? lineTotal / qty
+      : baseUnitCost;
+
+  return {
+    baseUnitCost,
+    discountPercent,
+    grossAmount,
+    discountAmount,
+    effectiveUnitCost,
+    lineTotal,
+  };
+}
+
 function normalizeLabel(value?: string | null) {
   if (!value) return "-";
   return value
@@ -108,12 +142,16 @@ const GrnCustomerCopy: FC<GrnCustomerCopyProps> = ({ grn }) => {
     (sum, item) => sum + Number(item.qty || 0),
     0,
   );
+  const subtotalValue = grn.items.reduce(
+    (sum, item) => sum + getItemPricing(item).grossAmount,
+    0,
+  );
+  const totalDiscount = grn.items.reduce(
+    (sum, item) => sum + getItemPricing(item).discountAmount,
+    0,
+  );
   const totalValue = grn.items.reduce(
-    (sum, item) =>
-      sum +
-      Number(
-        item.lineTotal ?? Number(item.qty || 0) * Number(item.unitCost || 0),
-      ),
+    (sum, item) => sum + getItemPricing(item).lineTotal,
     0,
   );
 
@@ -217,7 +255,10 @@ const GrnCustomerCopy: FC<GrnCustomerCopyProps> = ({ grn }) => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {group.map((item, index) => (
+                      {group.map((item, index) => {
+                        const pricing = getItemPricing(item);
+
+                        return (
                         <TableRow key={item.id}>
                           <TableCell>
                             {pageItemStartIndex + index + 1}
@@ -239,13 +280,26 @@ const GrnCustomerCopy: FC<GrnCustomerCopyProps> = ({ grn }) => {
                             {item.qty} {item.unit || ""}
                           </TableCell>
                           <TableCell className="text-right">
-                            {fmtMoney(item.unitCost)}
+                            <div className={pricing.discountPercent > 0 ? "text-xs text-muted-foreground line-through" : "font-medium"}>
+                              {fmtMoney(pricing.baseUnitCost)}
+                            </div>
+                            {pricing.discountPercent > 0 ? (
+                              <>
+                                <div className="text-[10px] text-muted-foreground">
+                                  {pricing.discountPercent.toFixed(2)}% discount
+                                </div>
+                                <div className="font-semibold">
+                                  Net: {fmtMoney(pricing.effectiveUnitCost)}
+                                </div>
+                              </>
+                            ) : null}
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {fmtMoney(item.lineTotal)}
+                            {fmtMoney(pricing.lineTotal)}
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
 
@@ -271,8 +325,16 @@ const GrnCustomerCopy: FC<GrnCustomerCopyProps> = ({ grn }) => {
                           <span>Total Quantity</span>
                           <span>{totalQty}</span>
                         </div>
+                        <div className="flex items-center justify-between">
+                          <span>Subtotal (Before Discount)</span>
+                          <span>{fmtMoney(subtotalValue)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Total Discount</span>
+                          <span>- {fmtMoney(totalDiscount)}</span>
+                        </div>
                         <div className="flex items-center justify-between font-semibold">
-                          <span>Total Value</span>
+                          <span>Net Total</span>
                           <span>{fmtMoney(totalValue)}</span>
                         </div>
                       </div>

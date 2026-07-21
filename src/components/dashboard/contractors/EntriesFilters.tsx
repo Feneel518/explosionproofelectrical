@@ -68,7 +68,7 @@ export default function EntriesFilters({
       <CardHeader>
         <CardTitle>Filter Entries</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3 md:grid-cols-5">
+      <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <Select
           value={workerId}
           onValueChange={(value) => {

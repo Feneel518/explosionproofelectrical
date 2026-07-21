@@ -366,7 +366,7 @@ export default function GrnDetailView({ grn }: { grn: any }) {
                 <div className="text-xs text-muted-foreground">
                   {[item.sku, item.hsnCode].filter(Boolean).join(" • ") || "-"}
                 </div>
-                <div className="mt-2 grid gap-2 text-sm md:grid-cols-6">
+                <div className="mt-2 grid gap-2 text-sm md:grid-cols-3 xl:grid-cols-6">
                   <InfoInline label="Qty" value={item.qty} />
                   <InfoInline label="Unit" value={item.unit || "-"} />
                   <InfoInline

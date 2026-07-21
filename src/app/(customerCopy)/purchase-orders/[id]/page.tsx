@@ -1,13 +1,66 @@
 import { notFound } from "next/navigation";
-import PrintPurchaseOrderButton from "@/components/customerCopy/purchase-order/PrintPurchaseOrderButton";
+import { Lora } from "next/font/google";
+import PurchaseOrderCustomerCopy from "@/components/customerCopy/purchase-order/PurchaseOrderCustomerCopy";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
-const money = (value: unknown) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2 }).format(Number(value));
-export default async function PurchaseOrderCopyPage({ params }: { params: Promise<{ id: string }> }) { const { id } = await params; const order = await prisma.purchaseOrder.findUnique({ where: { id }, include: { items: { orderBy: { sortOrder: "asc" } } } }); if (!order || order.status === "DRAFT") notFound(); const number = formatFinancialDocumentNumber(order.poFy, order.poNo); return <main className="min-h-screen bg-slate-100 p-4 print:bg-white print:p-0"><div className="mx-auto mb-4 flex max-w-[210mm] justify-end"><PrintPurchaseOrderButton/></div><article className="mx-auto min-h-[297mm] max-w-[210mm] bg-white p-10 text-[12px] text-slate-900 shadow print:min-h-0 print:max-w-none print:shadow-none">
-  <header className="border-b-2 border-slate-800 pb-5"><div className="flex justify-between gap-6"><div><h1 className="text-2xl font-bold uppercase tracking-wide">Explosion Proof Electrical Control</h1><p>Plot no. 920, GIDC, phase 4, Vapi, Gujarat, India</p><p>GSTIN: 24AAAFE7591G1ZG</p></div><div className="text-right"><h2 className="text-xl font-bold text-slate-700">PURCHASE ORDER</h2><p className="font-semibold">{number}</p></div></div></header>
-  <section className="grid grid-cols-2 gap-8 border-b py-5"><div><div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Vendor</div><div className="text-sm font-bold">{order.supplierName}</div><div>{order.supplierAddress}</div><div>{order.supplierEmail} {order.supplierPhone ? `· ${order.supplierPhone}` : ""}</div><div>GSTIN: {order.supplierGstin || "-"}</div></div><div className="grid grid-cols-2 content-start gap-3"><div><span className="text-slate-500">Order date</span><div>{order.orderDate.toLocaleDateString("en-IN")}</div></div><div><span className="text-slate-500">Expected date</span><div>{order.expectedDate?.toLocaleDateString("en-IN") ?? "-"}</div></div><div><span className="text-slate-500">Payment terms</span><div>{order.paymentTerms || "-"}</div></div><div><span className="text-slate-500">Delivery terms</span><div>{order.deliveryTerms || "-"}</div></div></div></section>
-  <section className="py-5"><table className="w-full border-collapse"><thead><tr className="bg-slate-800 text-white"><th className="border p-2 text-left">#</th><th className="border p-2 text-left">Material / Description</th><th className="border p-2">HSN</th><th className="border p-2 text-right">Qty</th><th className="border p-2 text-right">Rate</th><th className="border p-2 text-right">Disc.</th><th className="border p-2 text-right">GST</th><th className="border p-2 text-right">Amount</th></tr></thead><tbody>{order.items.map((item, index) => <tr key={item.id} className="break-inside-avoid"><td className="border p-2">{index + 1}</td><td className="border p-2"><div className="font-semibold">{item.title}</div><div className="text-slate-500">{item.supplierItemName || item.itemCode}{item.remarks ? ` · ${item.remarks}` : ""}</div></td><td className="border p-2 text-center">{item.hsnCode || "-"}</td><td className="border p-2 text-right">{Number(item.qty)} {item.unit}</td><td className="border p-2 text-right">{money(item.unitPrice)}</td><td className="border p-2 text-right">{Number(item.discountPercent)}%</td><td className="border p-2 text-right">{Number(item.gstPercent)}%</td><td className="border p-2 text-right font-semibold">{money(item.lineTotal)}</td></tr>)}</tbody></table></section>
-  <section className="ml-auto w-80 space-y-1"><div className="flex justify-between"><span>Subtotal</span><span>{money(order.subtotal)}</span></div><div className="flex justify-between"><span>Discount</span><span>- {money(order.discountTotal)}</span></div><div className="flex justify-between"><span>Taxable amount</span><span>{money(order.taxableTotal)}</span></div><div className="flex justify-between"><span>GST</span><span>{money(order.gstTotal)}</span></div><div className="flex justify-between"><span>Freight</span><span>{money(order.shippingAmount)}</span></div><div className="flex justify-between border-y-2 border-slate-800 py-2 text-base font-bold"><span>Grand Total</span><span>{money(order.grandTotal)}</span></div></section>
-  <section className="mt-8 grid grid-cols-2 gap-8"><div><div className="font-semibold">Ship to</div><p className="whitespace-pre-wrap">{order.shippingAddress || "-"}</p>{order.remarks && <><div className="mt-4 font-semibold">Remarks</div><p>{order.remarks}</p></>}</div><div><div className="font-semibold">Terms & conditions</div><p className="whitespace-pre-wrap">{order.terms || "-"}</p></div></section>
-  <footer className="mt-16 flex justify-end"><div className="w-64 border-t pt-2 text-center font-semibold">Authorised Signatory</div></footer>
-  </article></main>; }
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+export default async function PurchaseOrderCopyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const order = await prisma.purchaseOrder.findUnique({
+    where: { id },
+    include: { items: { orderBy: { sortOrder: "asc" } } },
+  });
+
+  if (!order) notFound();
+
+  const copy = {
+    number: formatFinancialDocumentNumber(order.poFy, order.poNo),
+    supplierName: order.supplierName,
+    supplierAddress: order.supplierAddress,
+    supplierEmail: order.supplierEmail,
+    supplierPhone: order.supplierPhone,
+    supplierGstin: order.supplierGstin,
+    orderDate: order.orderDate.toISOString(),
+    expectedDate: order.expectedDate?.toISOString() ?? null,
+    paymentTerms: order.paymentTerms,
+    deliveryTerms: order.deliveryTerms,
+    shippingAddress: order.shippingAddress,
+    remarks: order.remarks,
+    terms: order.terms,
+    subtotal: Number(order.subtotal),
+    discountTotal: Number(order.discountTotal),
+    taxableTotal: Number(order.taxableTotal),
+    gstTotal: Number(order.gstTotal),
+    shippingAmount: Number(order.shippingAmount),
+    grandTotal: Number(order.grandTotal),
+    items: order.items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      supplierItemName: item.supplierItemName,
+      itemCode: item.itemCode,
+      hsnCode: item.hsnCode,
+      unit: item.unit,
+      qty: Number(item.qty),
+      unitPrice: Number(item.unitPrice),
+      discountPercent: Number(item.discountPercent),
+      gstPercent: Number(item.gstPercent),
+      lineTotal: Number(item.lineTotal),
+      remarks: item.remarks,
+    })),
+  };
+
+  return (
+    <main className={`${lora.className} my-20 flex flex-col items-center justify-center gap-4 print:my-0 print:gap-0`}>
+      <PurchaseOrderCustomerCopy order={copy} />
+    </main>
+  );
+}

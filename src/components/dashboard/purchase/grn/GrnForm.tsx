@@ -129,12 +129,14 @@ export default function GrnForm({
   grnId,
   grnNo,
   grnFy,
+  isFinalized = false,
   initialDraft,
   initialDraftVersion,
 }: {
   grnId: string;
   grnNo: number;
   grnFy: string;
+  isFinalized?: boolean;
   initialDraft: GrnDraftData;
   initialDraftVersion: number;
 }) {
@@ -334,7 +336,11 @@ export default function GrnForm({
         return;
       }
 
-      toast.success("Draft saved.");
+      toast.success(
+        isFinalized
+          ? "Edits saved. Click Update GRN to apply them to inventory."
+          : "Draft saved.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -363,7 +369,10 @@ export default function GrnForm({
 
       const res = await finalizeGrnAction(grnId);
       if (!res.ok) {
-        toast.error(res.message || "Failed to finalize GRN.");
+        toast.error(
+          res.message ||
+            (isFinalized ? "Failed to update GRN." : "Failed to finalize GRN."),
+        );
         return;
       }
 
@@ -379,9 +388,14 @@ export default function GrnForm({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">GRN Draft</h1>
+          <h1 className="text-2xl font-semibold">
+            {isFinalized ? "Edit Finalized GRN" : "GRN Draft"}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Document: {documentNo}. Draft autosaves automatically.
+            Document: {documentNo}. Changes autosave automatically
+            {isFinalized
+              ? " and update inventory when you click Update GRN."
+              : "."}
           </p>
         </div>
 
@@ -397,7 +411,7 @@ export default function GrnForm({
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save now
+                {isFinalized ? "Save edits" : "Save now"}
               </>
             )}
           </Button>
@@ -406,12 +420,12 @@ export default function GrnForm({
             {isFinalizing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Finalizing...
+                {isFinalized ? "Updating..." : "Finalizing..."}
               </>
             ) : (
               <>
                 <Send className="mr-2 h-4 w-4" />
-                Finalize
+                {isFinalized ? "Update GRN" : "Finalize"}
               </>
             )}
           </Button>

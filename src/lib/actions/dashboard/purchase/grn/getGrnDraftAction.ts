@@ -52,6 +52,7 @@ export async function getGrnDraftAction(id: string) {
     grnId: grn.id,
     grnNo: grn.grnNo,
     grnFy: grn.grnFy,
+    status: grn.status,
     draft,
     draftVersion: grn.draftVersion,
   };

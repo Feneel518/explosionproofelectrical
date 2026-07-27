@@ -21,6 +21,7 @@ export default async function Page({ params }: PageProps) {
       grnId={res.grnId}
       grnNo={res.grnNo}
       grnFy={res.grnFy}
+      isFinalized={res.status === "FINALIZED"}
       initialDraft={res.draft as GrnDraftData}
       initialDraftVersion={res.draftVersion}
     />

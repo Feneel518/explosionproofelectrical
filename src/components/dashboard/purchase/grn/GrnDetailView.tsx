@@ -165,6 +165,13 @@ export default function GrnDetailView({ grn }: { grn: any }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {grn.status !== "CANCELLED" ? (
+            <Button asChild variant="outline">
+              <Link href={`/dashboard/purchase/grn/${grn.id}/edit`}>
+                Edit GRN
+              </Link>
+            </Button>
+          ) : null}
           {grn.status !== "DRAFT" ? (
             <Button asChild variant="outline">
               <Link href={`/grn/${grn.id}/view`}>Customer Copy</Link>

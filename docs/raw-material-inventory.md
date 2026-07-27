@@ -15,7 +15,7 @@
 
 GRNs dated before the configured go-live date are blocked from stock posting. Retain those documents as historical purchase records outside the live stock ledger so their quantities are not counted twice.
 
-Finalized documents are locked. Corrections should be posted as a return or adjustment instead of editing historical ledger entries.
+Finalized inventory documents are generally locked. A finalized GRN can be edited from its detail page; saving the update replaces that GRN's ledger postings and recalculates the affected stock balances in one transaction. Use a return or adjustment when the correction represents a separate physical stock event.
 
 ## Access control
 
@@ -46,5 +46,5 @@ npm run build
 - Review the reorder report daily.
 - Review employee consumption weekly.
 - Perform a physical count monthly.
-- Never delete ledger rows or change finalized documents directly in the database.
+- Never delete ledger rows or change finalized documents directly in the database. Use the GRN edit workflow, a return, or an adjustment as appropriate.
 - Investigate duplicate invoices, negative balances and unexplained manual adjustments immediately.

@@ -134,9 +134,7 @@ export async function finalizeGrnAction(id: string) {
     return { ok: false as const, message: "Cancelled GRN cannot be finalized." };
   }
 
-  if (grn.status === "FINALIZED") {
-    return { ok: false as const, message: "Finalized GRN is locked. Create a reversal to correct it." };
-  }
+  const isUpdatingFinalizedGrn = grn.status === "FINALIZED";
 
   const draft = grn.draftData as GrnDraftData | null;
   if (!draft) {
@@ -376,5 +374,10 @@ export async function finalizeGrnAction(id: string) {
   revalidatePath("/dashboard/inventory/movements");
   revalidatePath("/dashboard/inventory/go-live");
 
-  return { ok: true as const, message: "GRN finalized successfully." };
+  return {
+    ok: true as const,
+    message: isUpdatingFinalizedGrn
+      ? "GRN changes saved and inventory updated successfully."
+      : "GRN finalized successfully.",
+  };
 }

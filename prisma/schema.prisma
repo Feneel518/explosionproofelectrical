@@ -49,6 +49,12 @@ enum ProductStatus {
   INACTIVE
 }
 
+enum ProductSerialStatus {
+  AVAILABLE
+  INVOICED
+  VOID
+}
+
 enum ProductMediaKind {
   IMAGE
   DRAWING
@@ -468,8 +474,10 @@ model Product {
   updatedAt DateTime @updatedAt
 
   // Identity
-  name String // "FLP/WP Well Glass"
-  slug String @unique
+  name                  String // "FLP/WP Well Glass"
+  slug                  String  @unique
+  serialPrefix          String? @unique
+  serialTrackingEnabled Boolean @default(false)
 
   flpType    String?
   protection String?
@@ -496,13 +504,50 @@ model Product {
   // soft delete
   deletedAt       DateTime?
   deletedById     String?
-  deletedBy       User?            @relation("ProductDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+  deletedBy       User?                  @relation("ProductDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
   quotationItems  QuotationItem[]
   salesOrderItems SalesOrderItem[]
   invoiceItems    InvoiceItem[]
+  serialCounters  ProductSerialCounter[]
+  serials         ProductSerial[]
 
   @@index([name, slug])
   @@index([categoryId])
+}
+
+model ProductSerialCounter {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  year       Int
+  lastNumber Int      @default(0)
+
+  @@unique([productId, year])
+  @@map("product_serial_counters")
+}
+
+model ProductSerial {
+  id            String              @id @default(uuid())
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  productId     String
+  product       Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
+  year          Int
+  sequence      Int
+  serialNumber  String              @unique
+  batchId       String
+  status        ProductSerialStatus @default(AVAILABLE)
+  invoiceItemId String?
+  invoiceItem   InvoiceItem?        @relation(fields: [invoiceItemId], references: [id], onDelete: SetNull)
+  invoicedAt    DateTime?
+
+  @@unique([productId, year, sequence])
+  @@index([productId, status, sequence])
+  @@index([batchId])
+  @@index([invoiceItemId])
+  @@map("product_serials")
 }
 
 model ProductVariant {
@@ -1393,8 +1438,9 @@ model InvoiceItem {
   lineGstTotal   Decimal @default(0) @db.Decimal(14, 2)
   lineGrandTotal Decimal @default(0) @db.Decimal(14, 2)
 
-  sortOrder    Int                  @default(0)
-  packageItems InvoicePackageItem[]
+  sortOrder      Int                  @default(0)
+  packageItems   InvoicePackageItem[]
+  productSerials ProductSerial[]
 
   @@index([invoiceId, sortOrder])
   @@index([salesOrderItemId])

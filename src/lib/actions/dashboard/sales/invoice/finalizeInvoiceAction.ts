@@ -88,6 +88,12 @@ export const finalizeInvoiceAction = async (id: string) => {
         lineGstTotal: toNumber(it.lineGstTotal, 0),
         lineGrandTotal: lineSubtotal + toNumber(it.lineGstTotal, 0),
         sortOrder: toNumber(it.sortOrder, index),
+        cimfrNumber: it.cimfrNumber ?? null,
+        pesoNumber: it.pesoNumber ?? null,
+        selectedSerialIds: Array.isArray(it.selectedSerialIds)
+          ? Array.from(new Set(it.selectedSerialIds.filter(Boolean)))
+          : [],
+        resolvedSerialNumbers: [] as string[],
         productPicture: Array.isArray(it.productPicture)
           ? it.productPicture
           : [],
@@ -191,6 +197,73 @@ export const finalizeInvoiceAction = async (id: string) => {
         if (!item.variantId && live.variantId) {
           item.variantId = live.variantId;
         }
+      }
+
+      const productIds = Array.from(
+        new Set(
+          preparedItems
+            .map((item) => item.productId)
+            .filter((productId): productId is string => Boolean(productId)),
+        ),
+      );
+      const trackedProducts = productIds.length
+        ? await tx.product.findMany({
+            where: { id: { in: productIds }, serialTrackingEnabled: true },
+            select: { id: true, name: true },
+          })
+        : [];
+      const trackedProductById = new Map(
+        trackedProducts.map((product) => [product.id, product]),
+      );
+      const everySelectedSerialId: string[] = [];
+
+      for (const item of preparedItems) {
+        const trackedProduct = item.productId
+          ? trackedProductById.get(item.productId)
+          : null;
+
+        if (trackedProduct && item.selectedSerialIds.length !== item.qty) {
+          throw new Error(
+            `${trackedProduct.name} requires exactly ${item.qty} serial number${item.qty === 1 ? "" : "s"}`,
+          );
+        }
+        if (!trackedProduct && item.selectedSerialIds.length > 0) {
+          throw new Error(`Serial tracking is not enabled for ${item.title}`);
+        }
+        everySelectedSerialId.push(...item.selectedSerialIds);
+      }
+
+      if (new Set(everySelectedSerialId).size !== everySelectedSerialId.length) {
+        throw new Error("The same serial number cannot be used on multiple invoice items");
+      }
+
+      const selectedSerialRows = everySelectedSerialId.length
+        ? await tx.productSerial.findMany({
+            where: { id: { in: everySelectedSerialId } },
+            select: {
+              id: true,
+              productId: true,
+              status: true,
+              serialNumber: true,
+            },
+          })
+        : [];
+      const selectedSerialById = new Map(
+        selectedSerialRows.map((serial) => [serial.id, serial]),
+      );
+
+      for (const item of preparedItems) {
+        item.resolvedSerialNumbers = item.selectedSerialIds.map((serialId) => {
+          const serial = selectedSerialById.get(serialId);
+          if (!serial) throw new Error("A selected serial number no longer exists");
+          if (serial.status !== "AVAILABLE") {
+            throw new Error(`${serial.serialNumber} is no longer available`);
+          }
+          if (serial.productId !== item.productId) {
+            throw new Error(`${serial.serialNumber} does not belong to ${item.title}`);
+          }
+          return serial.serialNumber;
+        });
       }
 
       const movementDate =
@@ -400,6 +473,12 @@ export const finalizeInvoiceAction = async (id: string) => {
             description: item.description,
             hsnCode: item.hsnCode,
             unit: item.unit,
+            cimfrNumber: item.cimfrNumber,
+            pesoNumber: item.pesoNumber,
+            serialNumber:
+              item.resolvedSerialNumbers.length > 0
+                ? item.resolvedSerialNumbers.join(", ")
+                : null,
             orderedQty: item.orderedQty,
             alreadyInvoiced: item.alreadyInvoiced,
             alreadyDispatched: item.qty,
@@ -412,6 +491,25 @@ export const finalizeInvoiceAction = async (id: string) => {
           },
           select: { id: true },
         });
+
+        if (item.selectedSerialIds.length > 0) {
+          const assigned = await tx.productSerial.updateMany({
+            where: {
+              id: { in: item.selectedSerialIds },
+              productId: item.productId ?? undefined,
+              status: "AVAILABLE",
+              invoiceItemId: null,
+            },
+            data: {
+              status: "INVOICED",
+              invoiceItemId: createdInvoiceItem.id,
+              invoicedAt: new Date(),
+            },
+          });
+          if (assigned.count !== item.selectedSerialIds.length) {
+            throw new Error(`One or more serial numbers for ${item.title} were already used`);
+          }
+        }
 
         if (item.salesOrderItemId) {
           invoiceItemIdBySalesOrderItemId.set(
@@ -580,6 +678,7 @@ export const finalizeInvoiceAction = async (id: string) => {
     }
     revalidatePath("/dashboard/inventory/stock");
     revalidatePath("/dashboard/inventory/movements");
+    revalidatePath("/dashboard/serial");
 
     return { ok: true as const, message: "Invoice finalized" };
   } catch (error) {

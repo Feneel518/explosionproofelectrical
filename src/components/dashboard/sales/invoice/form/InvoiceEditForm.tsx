@@ -67,6 +67,7 @@ import { MediaItem } from "@/lib/actions/dashboard/sales/invoice/getInvoiceEditD
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { getCustomerForSelectById } from "@/lib/actions/dashboard/global/getCustomerForSelectById";
 import type { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
+import ProductSerialSelector from "./ProductSerialSelector";
 
 type PendingItem = {
   id: string;
@@ -158,6 +159,7 @@ type InvoiceEditData = {
       cimfrNumber?: string | null;
       pesoNumber?: string | null;
       serialNumber?: string | null;
+      selectedSerialIds?: string[];
       productPicture?: MediaItem[];
       unitPrice?: number;
       lineSubtotal?: number;
@@ -203,6 +205,7 @@ const itemSchema = z.object({
   cimfrNumber: z.string().nullable().optional(),
   pesoNumber: z.string().nullable().optional(),
   serialNumber: z.string().nullable().optional(),
+  selectedSerialIds: z.array(z.string()).default([]),
 
   productPicture: z.array(mediaSchema).default([]),
 
@@ -420,6 +423,7 @@ function createManualInvoiceItem(index: number): FormValues["items"][number] {
     cimfrNumber: null,
     pesoNumber: null,
     serialNumber: null,
+    selectedSerialIds: [],
     productPicture: [],
     unitPrice: 0,
     lineSubtotal: 0,
@@ -455,6 +459,9 @@ function mapDraftItemToForm(
     cimfrNumber: item.cimfrNumber ?? null,
     pesoNumber: item.pesoNumber ?? null,
     serialNumber: item.serialNumber ?? null,
+    selectedSerialIds: Array.isArray(item.selectedSerialIds)
+      ? item.selectedSerialIds
+      : [],
     productPicture: item.productPicture ?? [],
     unitPrice,
     lineSubtotal: qty * unitPrice,
@@ -568,6 +575,9 @@ function buildDefaultValues(invoice: InvoiceEditData): FormValues {
           cimfrNumber: existing?.cimfrNumber ?? null,
           pesoNumber: existing?.pesoNumber ?? null,
           serialNumber: existing?.serialNumber ?? null,
+          selectedSerialIds: Array.isArray(existing?.selectedSerialIds)
+            ? existing.selectedSerialIds
+            : [],
 
           productPicture: existing?.productPicture ?? [],
 
@@ -943,6 +953,9 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
           cimfrNumber: existing?.cimfrNumber ?? null,
           pesoNumber: existing?.pesoNumber ?? null,
           serialNumber: existing?.serialNumber ?? null,
+          selectedSerialIds: Array.isArray(existing?.selectedSerialIds)
+            ? existing.selectedSerialIds
+            : [],
 
           productPicture: existing?.productPicture ?? [],
 
@@ -1328,6 +1341,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       form.setValue(`items.${index}.typeNumber`, null, { shouldDirty: true });
       form.setValue(`items.${index}.description`, null, { shouldDirty: true });
       form.setValue(`items.${index}.hsnCode`, null, { shouldDirty: true });
+      form.setValue(`items.${index}.selectedSerialIds`, [], { shouldDirty: true });
       return;
     }
 
@@ -1335,6 +1349,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       shouldDirty: true,
       shouldTouch: true,
     });
+    form.setValue(`items.${index}.selectedSerialIds`, [], { shouldDirty: true });
     form.setValue(`items.${index}.variantId`, variant.id, {
       shouldDirty: true,
       shouldTouch: true,
@@ -2590,15 +2605,17 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
                                 <FormField
                                   control={form.control}
-                                  name={`items.${index}.serialNumber`}
+                                  name={`items.${index}.selectedSerialIds`}
                                   render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Serial Number</FormLabel>
+                                    <FormItem className="xl:col-span-2">
+                                      <FormLabel>Product serial numbers</FormLabel>
                                       <FormControl>
-                                        <Input
-                                          {...field}
-                                          value={field.value ?? ""}
-                                          placeholder="Enter serial number"
+                                        <ProductSerialSelector
+                                          productId={item.productId}
+                                          quantity={Number(item.qty || 0)}
+                                          value={field.value ?? []}
+                                          onChange={field.onChange}
+                                          disabled={!item.selected}
                                         />
                                       </FormControl>
                                       <FormMessage />

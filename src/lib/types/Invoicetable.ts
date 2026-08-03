@@ -214,6 +214,7 @@ export type InvoiceDraftData = {
     cimfrNumber?: string | null;
     pesoNumber?: string | null;
     serialNumber?: string | null;
+    selectedSerialIds?: string[];
     selected?: boolean;
     productPicture?: {
       kind: ProductMediaKind;

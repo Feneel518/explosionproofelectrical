@@ -31,6 +31,7 @@ type DraftItem = {
   cimfrNumber?: string | null;
   pesoNumber?: string | null;
   serialNumber?: string | null;
+  selectedSerialIds?: string[];
   productPicture?: DraftMedia[];
   unitPrice: number;
   lineSubtotal: number;

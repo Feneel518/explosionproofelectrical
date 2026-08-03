@@ -55,6 +55,14 @@ export async function reopenInvoiceAsDraftAction(invoiceId: string) {
             },
           },
         });
+        await tx.productSerial.updateMany({
+          where: { invoiceItem: { invoiceId } },
+          data: {
+            status: "AVAILABLE",
+            invoiceItemId: null,
+            invoicedAt: null,
+          },
+        });
         await tx.invoiceItem.deleteMany({ where: { invoiceId } });
 
         await tx.invoice.update({
@@ -92,6 +100,7 @@ export async function reopenInvoiceAsDraftAction(invoiceId: string) {
     }
     revalidatePath("/dashboard/inventory/stock");
     revalidatePath("/dashboard/inventory/movements");
+    revalidatePath("/dashboard/serial");
 
     return {
       ok: true as const,

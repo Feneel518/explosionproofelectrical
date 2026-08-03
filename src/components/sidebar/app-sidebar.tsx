@@ -54,6 +54,10 @@ const data = {
           url: "/dashboard/products",
         },
         {
+          title: "Serial Numbers",
+          url: "/dashboard/serial",
+        },
+        {
           title: "Raw Materials",
           url: "/dashboard/raw-materials",
         },

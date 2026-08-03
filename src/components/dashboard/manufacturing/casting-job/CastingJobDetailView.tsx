@@ -158,7 +158,18 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">{documentNo}</h1>
           <p className="text-sm text-muted-foreground">
-            Worker: {castingJob.workerNameSnapshot} ({workerTypeLabel(castingJob.workerType)})
+            Worker:{" "}
+            {castingJob.worker ? (
+              <Link
+                href={`/dashboard/contractors/workers/${castingJob.worker.id}`}
+                className="hover:underline"
+              >
+                {castingJob.workerNameSnapshot} ({castingJob.worker.code})
+              </Link>
+            ) : (
+              castingJob.workerNameSnapshot
+            )}{" "}
+            ({workerTypeLabel(castingJob.workerType)})
           </p>
         </div>
         <Badge variant={statusVariant(castingJob.status) as any}>{castingJob.status}</Badge>
@@ -180,7 +191,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
       <Card>
         <CardHeader>
-          <CardTitle>Issued vs Received</CardTitle>
+          <CardTitle>Worker Input / Output Position</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {(castingJob.items ?? []).length === 0 ? (
@@ -235,7 +246,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
       {canPostReceipt ? (
         <Card>
           <CardHeader>
-            <CardTitle>Post Receipt</CardTitle>
+            <CardTitle>Post IN / Receive Casting</CardTitle>
             <p className="text-sm text-muted-foreground">
               Posting receipt adds stock only to the selected casting output. Issued aluminum
               is not auto-restocked.
@@ -335,7 +346,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                     Posting...
                   </>
                 ) : (
-                  "Post Receipt"
+                  "Post IN / Receive Casting"
                 )}
               </Button>
               <Button type="button" variant="outline" onClick={onCloseJob} disabled={isClosing}>

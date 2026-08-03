@@ -16,6 +16,7 @@ function normalizeDraftData(rawDraft: unknown): CastingJobDraftData {
         : draft?.header?.workerType === "CONTRACT"
           ? "CONTRACT"
           : "IN_HOUSE",
+    workerId: draft?.header?.workerId ?? null,
     workerName: draft?.header?.workerName ?? "",
     supplierId: draft?.header?.supplierId ?? null,
     supplierName: draft?.header?.supplierName ?? null,

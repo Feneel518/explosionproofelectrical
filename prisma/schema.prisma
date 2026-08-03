@@ -1978,6 +1978,8 @@ model CastingJob {
   workerType CastingJobWorkerType @default(IN_HOUSE)
 
   workerNameSnapshot String
+  workerId           String?
+  worker             Worker?   @relation(fields: [workerId], references: [id], onDelete: SetNull)
   supplierId         String?
   supplier           Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
@@ -2011,6 +2013,7 @@ model CastingJob {
   @@index([jobFy])
   @@index([issueDate])
   @@index([supplierId])
+  @@index([workerId])
   @@index([workerNameSnapshot])
   @@map("casting_jobs")
 }
@@ -2346,6 +2349,7 @@ model Worker {
   workEntries   WorkEntry[]
   ledgerEntries WorkerLedgerEntry[]
   payouts       WorkerPayout[]
+  castingJobs   CastingJob[]
 
   @@index([name])
   @@index([code])

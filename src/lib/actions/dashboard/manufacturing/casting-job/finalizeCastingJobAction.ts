@@ -63,9 +63,9 @@ export async function finalizeCastingJobAction(id: string) {
     return { ok: false as const, message: "Casting job draft data missing." };
   }
 
-  const workerName = trimOrNull(draft.header.workerName);
-  if (!workerName) {
-    return { ok: false as const, message: "Worker name is required." };
+  const workerId = trimOrNull(draft.header.workerId);
+  if (!workerId) {
+    return { ok: false as const, message: "Select a worker from the worker master." };
   }
 
   if (!draft.items?.length) {
@@ -86,7 +86,6 @@ export async function finalizeCastingJobAction(id: string) {
     if (
       !item.inputRawMaterialId ||
       !item.outputCastingId ||
-      issuedQty <= 0 ||
       issuedWeightKg <= 0
     ) {
       throw new Error(`Invalid casting item at row ${index + 1}.`);
@@ -119,10 +118,20 @@ export async function finalizeCastingJobAction(id: string) {
     new Set(preparedItems.map((item) => item.outputCastingId)),
   );
 
-  const [inputMaterials, outputCastings] = await Promise.all([
+  const [inputMaterials, outputCastings, worker] = await Promise.all([
     prisma.rawMaterial.findMany({ where: { id: { in: inputIds } }, select: { id: true } }),
     prisma.castingMaster.findMany({ where: { id: { in: outputIds } }, select: { id: true } }),
+    prisma.worker.findFirst({
+      where: { id: workerId, status: "ACTIVE", deletedAt: null },
+      select: { id: true, name: true },
+    }),
   ]);
+
+  if (!worker) {
+    return { ok: false as const, message: "Selected worker is not active or no longer exists." };
+  }
+
+  const workerName = worker.name;
 
   if (inputMaterials.length !== inputIds.length) {
     return {
@@ -149,18 +158,21 @@ export async function finalizeCastingJobAction(id: string) {
     onHandByRawMaterialId.set(row.rawMaterialId, Number(row.qtyOnHand || 0));
   }
 
-  const requestedQtyByRawMaterialId = new Map<string, number>();
+  const requestedWeightByRawMaterialId = new Map<string, number>();
   for (const item of preparedItems) {
-    const current = requestedQtyByRawMaterialId.get(item.inputRawMaterialId) ?? 0;
-    requestedQtyByRawMaterialId.set(item.inputRawMaterialId, current + item.issuedQty);
+    const current = requestedWeightByRawMaterialId.get(item.inputRawMaterialId) ?? 0;
+    requestedWeightByRawMaterialId.set(
+      item.inputRawMaterialId,
+      current + item.issuedWeightKg,
+    );
   }
 
-  for (const [rawMaterialId, requestedQty] of requestedQtyByRawMaterialId) {
-    const availableQty = onHandByRawMaterialId.get(rawMaterialId) ?? 0;
-    if (requestedQty > availableQty) {
+  for (const [rawMaterialId, requestedWeight] of requestedWeightByRawMaterialId) {
+    const availableWeight = onHandByRawMaterialId.get(rawMaterialId) ?? 0;
+    if (requestedWeight > availableWeight) {
       return {
         ok: false as const,
-        message: `Issued qty cannot exceed available stock (requested ${requestedQty}, available ${availableQty}).`,
+        message: `Issued weight cannot exceed available stock (requested ${requestedWeight.toFixed(3)} kg, available ${availableWeight.toFixed(3)} kg).`,
       };
     }
   }
@@ -194,6 +206,7 @@ export async function finalizeCastingJobAction(id: string) {
         data: {
           status: "IN_PROGRESS",
           workerType,
+          workerId: worker.id,
           workerNameSnapshot: workerName,
           supplierId: supplierId ?? null,
           issueDate,
@@ -243,7 +256,7 @@ export async function finalizeCastingJobAction(id: string) {
           referenceType: "CASTING_JOB",
           referenceId: job.id,
           referenceNo,
-          qty: item.issuedQty,
+          qty: item.issuedWeightKg,
           movementDate: issueDate,
           actorName: workerName,
           remarks: `Casting job issue (${item.inputTitle})`,

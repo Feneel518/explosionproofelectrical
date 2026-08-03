@@ -9,6 +9,7 @@ export type CastingJobDraftData = {
     issueDate?: string | null;
     expectedReturnDate?: string | null;
     workerType?: "IN_HOUSE" | "JOB_WORK" | "CONTRACT";
+    workerId?: string | null;
     workerName?: string | null;
     supplierId?: string | null;
     supplierName?: string | null;
@@ -30,9 +31,15 @@ export type CastingJobDraftData = {
   }>;
 };
 
-export async function createDraftCastingJobAction() {
+export async function createDraftCastingJobAction(workerId?: string | null) {
   const session = await requireAuth();
   const fy = getFinancialYearLabel(new Date());
+  const worker = workerId
+    ? await prisma.worker.findFirst({
+        where: { id: workerId, status: "ACTIVE", deletedAt: null },
+        select: { id: true, name: true },
+      })
+    : null;
 
   const counter = await prisma.fiscalCounter.upsert({
     where: { key: `CASTING_JOB:${fy}` },
@@ -46,7 +53,8 @@ export async function createDraftCastingJobAction() {
       issueDate: new Date().toISOString(),
       expectedReturnDate: null,
       workerType: "IN_HOUSE",
-      workerName: "",
+      workerId: worker?.id ?? null,
+      workerName: worker?.name ?? "",
       supplierId: null,
       supplierName: null,
       remarks: "",

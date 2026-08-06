@@ -18,11 +18,8 @@ export type CastingJobDraftData = {
   items: Array<{
     id: string;
     inputRawMaterialId: string | null;
-    outputCastingId: string | null;
     inputTitle: string;
-    outputTitle: string;
     inputUnit?: string | null;
-    outputUnit?: string | null;
     issuedQty: number;
     issuedWeightKg: number;
     sortOrder: number;

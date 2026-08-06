@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CastingCombobox } from "@/components/dashboard/global/CastingCombobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { closeCastingJobAction } from "@/lib/actions/dashboard/manufacturing/casting-job/closeCastingJobAction";
@@ -65,6 +66,7 @@ function workerTypeLabel(value?: string | null) {
 }
 
 type ReceiptRowInput = {
+  outputCastingId: string | null;
   receivedQty: number;
   receivedWeightKg: number;
 };
@@ -82,7 +84,11 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
   const [rows, setRows] = React.useState<Record<string, ReceiptRowInput>>(() => {
     const initial: Record<string, ReceiptRowInput> = {};
     for (const item of castingJob.items ?? []) {
-      initial[item.id] = { receivedQty: 0, receivedWeightKg: 0 };
+      initial[item.id] = {
+        outputCastingId: item.outputCastingId ?? null,
+        receivedQty: 0,
+        receivedWeightKg: 0,
+      };
     }
     return initial;
   });
@@ -93,14 +99,32 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
   const onUpdateRow = (
     itemId: string,
-    key: keyof ReceiptRowInput,
+    key: "receivedQty" | "receivedWeightKg",
     value: number,
   ) => {
     setRows((prev) => ({
       ...prev,
       [itemId]: {
-        ...(prev[itemId] ?? { receivedQty: 0, receivedWeightKg: 0 }),
+        ...(prev[itemId] ?? {
+          outputCastingId: null,
+          receivedQty: 0,
+          receivedWeightKg: 0,
+        }),
         [key]: value,
+      },
+    }));
+  };
+
+  const onUpdateCasting = (itemId: string, outputCastingId: string | null) => {
+    setRows((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...(prev[itemId] ?? {
+          outputCastingId: null,
+          receivedQty: 0,
+          receivedWeightKg: 0,
+        }),
+        outputCastingId,
       },
     }));
   };
@@ -109,6 +133,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
     const payloadItems = (castingJob.items ?? [])
       .map((item: any) => ({
         castingJobItemId: item.id,
+        outputCastingId: rows[item.id]?.outputCastingId ?? item.outputCastingId ?? null,
         receivedQty: Number(rows[item.id]?.receivedQty || 0),
         receivedWeightKg: Number(rows[item.id]?.receivedWeightKg || 0),
       }))
@@ -202,7 +227,8 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
             (castingJob.items ?? []).map((item: any, index: number) => (
               <div key={item.id} className="rounded-xl border p-4">
                 <div className="font-medium">
-                  #{index + 1} {item.inputTitle} {"->"} {item.outputTitle}
+                  #{index + 1} {item.inputTitle} {"->"}{" "}
+                  {item.outputCastingId ? item.outputTitle : "Awaiting casting receipt"}
                 </div>
                 <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
                   <InfoInline
@@ -278,12 +304,23 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
             <div className="space-y-3">
               {(castingJob.items ?? []).map((item: any, index: number) => (
-                <div key={item.id} className="grid gap-3 rounded-xl border p-3 md:grid-cols-4">
+                <div key={item.id} className="grid gap-3 rounded-xl border p-3 md:grid-cols-5">
                   <div>
-                    <div className="text-sm font-medium">#{index + 1} {item.outputTitle}</div>
+                    <div className="text-sm font-medium">#{index + 1} {item.inputTitle}</div>
                     <div className="text-xs text-muted-foreground">
                       Pending: {formatWeight(item.pendingWeightKg)}
                     </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs">Actual Casting</label>
+                    <CastingCombobox
+                      value={rows[item.id]?.outputCastingId ?? item.outputCastingId ?? null}
+                      disabled={Boolean(item.outputCastingId)}
+                      placeholder="Select casting received"
+                      onChange={(casting) =>
+                        onUpdateCasting(item.id, casting?.id ?? null)
+                      }
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs">Receive Qty</label>
@@ -323,7 +360,11 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                       onClick={() =>
                         setRows((prev) => ({
                           ...prev,
-                          [item.id]: { receivedQty: 0, receivedWeightKg: 0 },
+                          [item.id]: {
+                            outputCastingId: item.outputCastingId ?? null,
+                            receivedQty: 0,
+                            receivedWeightKg: 0,
+                          },
                         }))
                       }
                     >

@@ -79,42 +79,49 @@ export async function finalizeCastingJobAction(id: string) {
         ? "CONTRACT"
         : "IN_HOUSE";
 
-  const preparedItems = draft.items.map((item, index) => {
+  const preparedItems: Array<{
+    id: string;
+    inputRawMaterialId: string;
+    inputTitle: string;
+    inputUnit: string | null;
+    issuedQty: number;
+    issuedWeightKg: number;
+    sortOrder: number;
+  }> = [];
+  for (let index = 0; index < draft.items.length; index += 1) {
+    const item = draft.items[index];
     const issuedQty = toInt(item.issuedQty, 0);
     const issuedWeightKg = toDecimal3(item.issuedWeightKg, 0);
 
-    if (
-      !item.inputRawMaterialId ||
-      !item.outputCastingId ||
-      issuedWeightKg <= 0
-    ) {
-      throw new Error(`Invalid casting item at row ${index + 1}.`);
+    if (!item.inputRawMaterialId) {
+      return {
+        ok: false as const,
+        message: `Select aluminum scrap or ingot at row ${index + 1}.`,
+      };
+    }
+    if (issuedWeightKg <= 0) {
+      return {
+        ok: false as const,
+        message: `Enter issued weight at row ${index + 1}.`,
+      };
     }
 
-    return {
+    preparedItems.push({
       id: item.id || crypto.randomUUID(),
       inputRawMaterialId: item.inputRawMaterialId,
-      outputCastingId: item.outputCastingId,
       inputTitle: (item.inputTitle || "Input Material").trim(),
-      outputTitle: (item.outputTitle || "Casting").trim(),
       inputUnit: trimOrNull(item.inputUnit),
-      outputUnit: trimOrNull(item.outputUnit),
       issuedQty,
       issuedWeightKg,
       sortOrder: Number.isFinite(item.sortOrder) ? item.sortOrder : index,
-    };
-  });
+    });
+  }
 
   const inputIds = Array.from(
     new Set(preparedItems.map((item) => item.inputRawMaterialId)),
   );
-  const outputIds = Array.from(
-    new Set(preparedItems.map((item) => item.outputCastingId)),
-  );
-
-  const [inputMaterials, outputCastings, worker] = await Promise.all([
+  const [inputMaterials, worker] = await Promise.all([
     prisma.rawMaterial.findMany({ where: { id: { in: inputIds } }, select: { id: true } }),
-    prisma.castingMaster.findMany({ where: { id: { in: outputIds } }, select: { id: true } }),
     prisma.worker.findFirst({
       where: { id: workerId, status: "ACTIVE", deletedAt: null },
       select: { id: true, name: true },
@@ -131,13 +138,6 @@ export async function finalizeCastingJobAction(id: string) {
     return {
       ok: false as const,
       message: "One or more input raw materials do not exist.",
-    };
-  }
-
-  if (outputCastings.length !== outputIds.length) {
-    return {
-      ok: false as const,
-      message: "One or more output casting masters do not exist.",
     };
   }
 
@@ -228,11 +228,11 @@ export async function finalizeCastingJobAction(id: string) {
             id: item.id,
             castingJobId: job.id,
             inputRawMaterialId: item.inputRawMaterialId,
-            outputCastingId: item.outputCastingId,
+            outputCastingId: null,
             inputTitle: item.inputTitle,
-            outputTitle: item.outputTitle,
+            outputTitle: "Select casting when receiving",
             inputUnit: item.inputUnit,
-            outputUnit: item.outputUnit,
+            outputUnit: null,
             issuedQty: item.issuedQty,
             issuedWeightKg: item.issuedWeightKg,
             expectedOutputQty: null,

@@ -44,6 +44,7 @@ export async function postCastingJobReceiptAction({
   remarks?: string | null;
   items: Array<{
     castingJobItemId: string;
+    outputCastingId: string | null;
     receivedQty: number;
     receivedWeightKg: number;
   }>;
@@ -57,6 +58,7 @@ export async function postCastingJobReceiptAction({
         orderBy: { sortOrder: "asc" },
         select: {
           id: true,
+          inputTitle: true,
           outputCastingId: true,
           outputTitle: true,
           issuedQty: true,
@@ -82,6 +84,7 @@ export async function postCastingJobReceiptAction({
   const cleanItems = (items ?? [])
     .map((item) => ({
       castingJobItemId: item.castingJobItemId,
+      outputCastingId: trimOrNull(item.outputCastingId),
       receivedQty: Math.max(0, toInt(item.receivedQty, 0)),
       receivedWeightKg: Math.max(0, toDecimal3(item.receivedWeightKg, 0)),
     }))
@@ -93,10 +96,54 @@ export async function postCastingJobReceiptAction({
 
   const jobItemsById = new Map(job.items.map((item) => [item.id, item]));
 
+  const outputIds = Array.from(
+    new Set(
+      cleanItems
+        .map((entry) => {
+          const jobItem = jobItemsById.get(entry.castingJobItemId);
+          return jobItem?.outputCastingId ?? entry.outputCastingId;
+        })
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
+  const outputCastings = await prisma.castingMaster.findMany({
+    where: { id: { in: outputIds }, status: "ACTIVE", deletedAt: null },
+    select: { id: true, castingItemName: true, unit: true },
+  });
+  const outputCastingById = new Map(outputCastings.map((casting) => [casting.id, casting]));
+
+  const resolvedItems: Array<
+    (typeof cleanItems)[number] & {
+      outputCasting: { id: string; castingItemName: string; unit: string };
+    }
+  > = [];
+
   for (const entry of cleanItems) {
     const jobItem = jobItemsById.get(entry.castingJobItemId);
     if (!jobItem) {
       return { ok: false as const, message: "Invalid casting receipt item." };
+    }
+
+    if (
+      jobItem.outputCastingId &&
+      entry.outputCastingId &&
+      jobItem.outputCastingId !== entry.outputCastingId
+    ) {
+      return {
+        ok: false as const,
+        message: `The casting type for ${jobItem.inputTitle ?? "this row"} cannot be changed after the first receipt.`,
+      };
+    }
+
+    const outputCastingId = jobItem.outputCastingId ?? entry.outputCastingId;
+    const outputCasting = outputCastingId
+      ? outputCastingById.get(outputCastingId)
+      : null;
+    if (!outputCasting) {
+      return {
+        ok: false as const,
+        message: "Select an active output casting for every receipt row.",
+      };
     }
 
     const nextQty = Number(jobItem.receivedQty || 0) + entry.receivedQty;
@@ -105,9 +152,11 @@ export async function postCastingJobReceiptAction({
     if (nextWeight > Number(jobItem.issuedWeightKg || 0)) {
       return {
         ok: false as const,
-        message: `Received weight cannot exceed issued weight for ${jobItem.outputTitle}.`,
+        message: `Received weight cannot exceed issued weight for ${outputCasting.castingItemName}.`,
       };
     }
+
+    resolvedItems.push({ ...entry, outputCasting });
   }
 
   const receiptDate = toDateOrNull(receivedAt) ?? new Date();
@@ -134,8 +183,8 @@ export async function postCastingJobReceiptAction({
         select: { id: true },
       });
 
-      for (let index = 0; index < cleanItems.length; index += 1) {
-        const entry = cleanItems[index];
+      for (let index = 0; index < resolvedItems.length; index += 1) {
+        const entry = resolvedItems[index];
         const jobItem = jobItemsById.get(entry.castingJobItemId)!;
 
         const nextQty = Number(jobItem.receivedQty || 0) + entry.receivedQty;
@@ -159,6 +208,9 @@ export async function postCastingJobReceiptAction({
         await tx.castingJobItem.update({
           where: { id: jobItem.id },
           data: {
+            outputCastingId: entry.outputCasting.id,
+            outputTitle: entry.outputCasting.castingItemName,
+            outputUnit: entry.outputCasting.unit,
             receivedQty: nextQty,
             receivedWeightKg: nextWeight,
             pendingWeightKg: pendingWeight,
@@ -167,7 +219,7 @@ export async function postCastingJobReceiptAction({
 
         if (entry.receivedQty > 0) {
           await postStockMovement(tx, {
-            castingMasterId: jobItem.outputCastingId,
+            castingMasterId: entry.outputCasting.id,
             movementType: "IN",
             referenceType: "CASTING_JOB",
             referenceId: job.id,
@@ -175,7 +227,7 @@ export async function postCastingJobReceiptAction({
             qty: entry.receivedQty,
             movementDate: receiptDate,
             actorName: job.workerNameSnapshot,
-            remarks: `Casting receipt (${jobItem.outputTitle})`,
+            remarks: `Casting receipt (${entry.outputCasting.castingItemName})`,
             createdById: session.user.id,
           });
         }

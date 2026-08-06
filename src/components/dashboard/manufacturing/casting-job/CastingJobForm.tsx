@@ -25,10 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CastingCombobox } from "@/components/dashboard/global/CastingCombobox";
 import { RawMaterialCombobox } from "@/components/dashboard/global/RawMaterialCombobox";
 import { SupplierCombobox } from "@/components/dashboard/global/SupplierCombobox";
-import { CastingSearchItem } from "@/lib/types/CastingSearchItem";
 import { RawMaterialSearchItem } from "@/lib/types/RawMaterialSearchItem";
 import { CastingJobDraftData } from "@/lib/actions/dashboard/manufacturing/casting-job/createDraftCastingJobAction";
 import { finalizeCastingJobAction } from "@/lib/actions/dashboard/manufacturing/casting-job/finalizeCastingJobAction";
@@ -214,11 +212,8 @@ export default function CastingJobForm({
         {
           id: crypto.randomUUID(),
           inputRawMaterialId: null,
-          outputCastingId: null,
           inputTitle: "",
-          outputTitle: "",
           inputUnit: "Nos",
-          outputUnit: "Nos",
           issuedQty: 1,
           issuedWeightKg: 0,
           sortOrder: prev.items.length,
@@ -262,25 +257,6 @@ export default function CastingJobForm({
               inputRawMaterialId: rawMaterial.id,
               inputTitle: rawMaterial.companyItemName,
               inputUnit: rawMaterial.unit || item.inputUnit || "Nos",
-            }
-          : item,
-      ),
-    }));
-  };
-
-  const updateOutputFromCasting = (
-    index: number,
-    casting: CastingSearchItem,
-  ) => {
-    setDraft((prev) => ({
-      ...prev,
-      items: prev.items.map((item, i) =>
-        i === index
-          ? {
-              ...item,
-              outputCastingId: casting.id,
-              outputTitle: casting.castingItemName,
-              outputUnit: casting.unit || item.outputUnit || "Nos",
             }
           : item,
       ),
@@ -586,35 +562,11 @@ export default function CastingJobForm({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-sm">Output Casting Material</label>
-                        <CastingCombobox
-                          value={item.outputCastingId}
-                          onChange={(casting) => {
-                            if (!casting) {
-                              updateItem(index, "outputCastingId", null);
-                              return;
-                            }
-                            updateOutputFromCasting(index, casting);
-                          }}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
                         <label className="text-sm">Input Title</label>
                         <Input
                           value={item.inputTitle ?? ""}
                           onChange={(event) =>
                             updateItem(index, "inputTitle", event.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm">Output Title</label>
-                        <Input
-                          value={item.outputTitle ?? ""}
-                          onChange={(event) =>
-                            updateItem(index, "outputTitle", event.target.value)
                           }
                         />
                       </div>

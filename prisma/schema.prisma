@@ -2029,8 +2029,8 @@ model CastingJobItem {
   inputRawMaterialId String
   inputRawMaterial   RawMaterial @relation("CastingInputRawMaterial", fields: [inputRawMaterialId], references: [id], onDelete: Restrict)
 
-  outputCastingId String
-  outputCasting   CastingMaster @relation(fields: [outputCastingId], references: [id], onDelete: Restrict)
+  outputCastingId String?
+  outputCasting   CastingMaster? @relation(fields: [outputCastingId], references: [id], onDelete: Restrict)
 
   inputTitle  String
   outputTitle String

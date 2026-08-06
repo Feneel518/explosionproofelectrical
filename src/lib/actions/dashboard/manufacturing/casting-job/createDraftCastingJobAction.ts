@@ -25,8 +25,6 @@ export type CastingJobDraftData = {
     outputUnit?: string | null;
     issuedQty: number;
     issuedWeightKg: number;
-    expectedOutputQty?: number | null;
-    expectedOutputWeightKg?: number | null;
     sortOrder: number;
   }>;
 };

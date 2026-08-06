@@ -61,7 +61,6 @@ export async function postCastingJobReceiptAction({
           outputTitle: true,
           issuedQty: true,
           issuedWeightKg: true,
-          expectedOutputQty: true,
           receivedQty: true,
           receivedWeightKg: true,
         },
@@ -102,15 +101,6 @@ export async function postCastingJobReceiptAction({
 
     const nextQty = Number(jobItem.receivedQty || 0) + entry.receivedQty;
     const nextWeight = Number(jobItem.receivedWeightKg || 0) + entry.receivedWeightKg;
-
-    const expectedQty =
-      jobItem.expectedOutputQty == null ? null : Number(jobItem.expectedOutputQty || 0);
-    if (expectedQty != null && expectedQty > 0 && nextQty > expectedQty) {
-      return {
-        ok: false as const,
-        message: `Received qty cannot exceed expected qty for ${jobItem.outputTitle}.`,
-      };
-    }
 
     if (nextWeight > Number(jobItem.issuedWeightKg || 0)) {
       return {

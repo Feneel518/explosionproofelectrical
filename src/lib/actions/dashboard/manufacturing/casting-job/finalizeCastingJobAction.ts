@@ -101,12 +101,6 @@ export async function finalizeCastingJobAction(id: string) {
       outputUnit: trimOrNull(item.outputUnit),
       issuedQty,
       issuedWeightKg,
-      expectedOutputQty:
-        item.expectedOutputQty == null ? null : Math.max(0, toInt(item.expectedOutputQty, 0)),
-      expectedOutputWeightKg:
-        item.expectedOutputWeightKg == null
-          ? null
-          : Math.max(0, toDecimal3(item.expectedOutputWeightKg, 0)),
       sortOrder: Number.isFinite(item.sortOrder) ? item.sortOrder : index,
     };
   });
@@ -241,8 +235,8 @@ export async function finalizeCastingJobAction(id: string) {
             outputUnit: item.outputUnit,
             issuedQty: item.issuedQty,
             issuedWeightKg: item.issuedWeightKg,
-            expectedOutputQty: item.expectedOutputQty,
-            expectedOutputWeightKg: item.expectedOutputWeightKg,
+            expectedOutputQty: null,
+            expectedOutputWeightKg: null,
             receivedQty: 0,
             receivedWeightKg: 0,
             pendingWeightKg: item.issuedWeightKg,

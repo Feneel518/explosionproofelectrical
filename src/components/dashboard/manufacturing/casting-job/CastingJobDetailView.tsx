@@ -204,7 +204,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                 <div className="font-medium">
                   #{index + 1} {item.inputTitle} {"->"} {item.outputTitle}
                 </div>
-                <div className="mt-2 grid gap-2 text-sm md:grid-cols-4">
+                <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
                   <InfoInline
                     label="Issued"
                     value={`${item.issuedQty} / ${formatWeight(item.issuedWeightKg)}`}
@@ -216,10 +216,6 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                   <InfoInline
                     label="Jalan / Pending Weight"
                     value={formatWeight(item.pendingWeightKg)}
-                  />
-                  <InfoInline
-                    label="Expected"
-                    value={`${item.expectedOutputQty ?? 0} / ${formatWeight(item.expectedOutputWeightKg)}`}
                   />
                 </div>
               </div>

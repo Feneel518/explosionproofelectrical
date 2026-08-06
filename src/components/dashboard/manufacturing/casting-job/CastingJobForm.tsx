@@ -221,8 +221,6 @@ export default function CastingJobForm({
           outputUnit: "Nos",
           issuedQty: 1,
           issuedWeightKg: 0,
-          expectedOutputQty: 0,
-          expectedOutputWeightKg: 0,
           sortOrder: prev.items.length,
         },
       ],
@@ -665,38 +663,6 @@ export default function CastingJobForm({
                         ) : null}
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-sm">Expected Output Qty</label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={item.expectedOutputQty ?? 0}
-                          onChange={(event) =>
-                            updateItem(
-                              index,
-                              "expectedOutputQty",
-                              Math.max(0, Number(event.target.value || 0)),
-                            )
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm">Expected Output Weight (Kg)</label>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.001"
-                          value={item.expectedOutputWeightKg ?? 0}
-                          onChange={(event) =>
-                            updateItem(
-                              index,
-                              "expectedOutputWeightKg",
-                              Math.max(0, toNumber(event.target.value, 0)),
-                            )
-                          }
-                        />
-                      </div>
                     </div>
                   </div>
                 ))

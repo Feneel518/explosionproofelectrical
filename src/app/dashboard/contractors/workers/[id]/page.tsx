@@ -348,7 +348,7 @@ const page: FC<pageProps> = async ({ params }) => {
           </div>
           <Button asChild variant="outline">
             <Link href={`/dashboard/manufacturing/casting-jobs/new?workerId=${worker.id}`}>
-              New Casting Job
+              Post OUT / Issue Aluminum
             </Link>
           </Button>
         </div>
@@ -361,12 +361,13 @@ const page: FC<pageProps> = async ({ params }) => {
                 <TableHead className="text-right text-white">Aluminum Issued</TableHead>
                 <TableHead className="text-right text-white">Castings Received</TableHead>
                 <TableHead className="text-right text-white">Pending Weight</TableHead>
+                <TableHead className="text-right text-white">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {recentCastingJobs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
                     No casting jobs linked to this worker yet.
                   </TableCell>
                 </TableRow>
@@ -391,6 +392,23 @@ const page: FC<pageProps> = async ({ params }) => {
                     </TableCell>
                     <TableCell className="text-right">
                       {Number(job.totalPendingWeightKg).toFixed(3)} kg
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={
+                            job.status === "DRAFT"
+                              ? `/dashboard/manufacturing/casting-jobs/${job.id}/edit`
+                              : `/dashboard/manufacturing/casting-jobs/${job.id}`
+                          }
+                        >
+                          {job.status === "DRAFT"
+                            ? "Post OUT"
+                            : job.status === "IN_PROGRESS" || job.status === "PARTIAL_RECEIVED"
+                              ? "Post IN"
+                              : "View"}
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))

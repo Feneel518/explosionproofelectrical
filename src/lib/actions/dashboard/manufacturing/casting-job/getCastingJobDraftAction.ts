@@ -35,14 +35,6 @@ function normalizeDraftData(rawDraft: unknown): CastingJobDraftData {
         outputUnit: item?.outputUnit ?? null,
         issuedQty: Number(item?.issuedQty ?? 0) || 0,
         issuedWeightKg: Number(item?.issuedWeightKg ?? 0) || 0,
-        expectedOutputQty:
-          item?.expectedOutputQty == null
-            ? null
-            : Number(item.expectedOutputQty) || 0,
-        expectedOutputWeightKg:
-          item?.expectedOutputWeightKg == null
-            ? null
-            : Number(item.expectedOutputWeightKg) || 0,
         sortOrder: Number.isFinite(Number(item?.sortOrder))
           ? Number(item.sortOrder)
           : index,

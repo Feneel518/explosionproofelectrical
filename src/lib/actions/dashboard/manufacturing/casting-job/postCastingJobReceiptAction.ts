@@ -47,6 +47,7 @@ export async function postCastingJobReceiptAction({
     outputCastingId: string | null;
     receivedQty: number;
     receivedWeightKg: number;
+    ratePerKg: number;
   }>;
 }) {
   const session = await requireAuth();
@@ -87,6 +88,7 @@ export async function postCastingJobReceiptAction({
       outputCastingId: trimOrNull(item.outputCastingId),
       receivedQty: Math.max(0, toInt(item.receivedQty, 0)),
       receivedWeightKg: Math.max(0, toDecimal3(item.receivedWeightKg, 0)),
+      ratePerKg: Math.max(0, Number(Number(item.ratePerKg || 0).toFixed(2))),
     }))
     .filter((item) => item.receivedQty > 0 || item.receivedWeightKg > 0);
 
@@ -145,6 +147,12 @@ export async function postCastingJobReceiptAction({
         message: "Select an active output casting for every receipt row.",
       };
     }
+    if (!job.workerId || entry.ratePerKg <= 0) {
+      return {
+        ok: false as const,
+        message: "Enter a rate per kg for every casting receipt row.",
+      };
+    }
 
     const nextQty = Number(jobItem.receivedQty || 0) + entry.receivedQty;
     const nextWeight = Number(jobItem.receivedWeightKg || 0) + entry.receivedWeightKg;
@@ -201,8 +209,25 @@ export async function postCastingJobReceiptAction({
             castingJobItemId: jobItem.id,
             receivedQty: entry.receivedQty,
             receivedWeightKg: entry.receivedWeightKg,
+            ratePerKg: entry.ratePerKg,
+            laborAmount: Number((entry.receivedWeightKg * entry.ratePerKg).toFixed(2)),
             sortOrder: index,
           },
+        });
+
+        await tx.castingWorkerRate.upsert({
+          where: {
+            workerId_castingMasterId: {
+              workerId: job.workerId!,
+              castingMasterId: entry.outputCasting.id,
+            },
+          },
+          create: {
+            workerId: job.workerId!,
+            castingMasterId: entry.outputCasting.id,
+            ratePerKg: entry.ratePerKg,
+          },
+          update: { ratePerKg: entry.ratePerKg },
         });
 
         await tx.castingJobItem.update({

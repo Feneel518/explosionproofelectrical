@@ -426,6 +426,7 @@ model CastingMaster {
   updatedById String?
 
   castingJobItems    CastingJobItem[]
+  workerRates        CastingWorkerRate[]
   bomItems           VariantBomItem[]
   stockBalance       StockBalance?
   stockLedgerEntries StockLedger[]
@@ -2091,12 +2092,33 @@ model CastingJobReceiptItem {
 
   receivedQty      Int     @default(0)
   receivedWeightKg Decimal @default(0) @db.Decimal(14, 3)
+  ratePerKg        Decimal @default(0) @db.Decimal(10, 2)
+  laborAmount      Decimal @default(0) @db.Decimal(14, 2)
 
   sortOrder Int @default(0)
 
   @@index([castingJobReceiptId, sortOrder])
   @@index([castingJobItemId])
   @@map("casting_job_receipt_items")
+}
+
+model CastingWorkerRate {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  castingMasterId String
+  castingMaster   CastingMaster @relation(fields: [castingMasterId], references: [id], onDelete: Cascade)
+
+  ratePerKg Decimal @db.Decimal(10, 2)
+
+  @@unique([workerId, castingMasterId])
+  @@index([workerId])
+  @@index([castingMasterId])
+  @@map("casting_worker_rates")
 }
 
 model StockAdjustment {
@@ -2350,6 +2372,7 @@ model Worker {
   ledgerEntries WorkerLedgerEntry[]
   payouts       WorkerPayout[]
   castingJobs   CastingJob[]
+  castingRates  CastingWorkerRate[]
 
   @@index([name])
   @@index([code])

@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CastingCombobox } from "@/components/dashboard/global/CastingCombobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { closeCastingJobAction } from "@/lib/actions/dashboard/manufacturing/casting-job/closeCastingJobAction";
@@ -65,6 +66,7 @@ function workerTypeLabel(value?: string | null) {
 }
 
 type ReceiptRowInput = {
+  outputCastingId: string | null;
   receivedQty: number;
   receivedWeightKg: number;
 };
@@ -82,7 +84,11 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
   const [rows, setRows] = React.useState<Record<string, ReceiptRowInput>>(() => {
     const initial: Record<string, ReceiptRowInput> = {};
     for (const item of castingJob.items ?? []) {
-      initial[item.id] = { receivedQty: 0, receivedWeightKg: 0 };
+      initial[item.id] = {
+        outputCastingId: item.outputCastingId ?? null,
+        receivedQty: 0,
+        receivedWeightKg: 0,
+      };
     }
     return initial;
   });
@@ -93,14 +99,32 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
   const onUpdateRow = (
     itemId: string,
-    key: keyof ReceiptRowInput,
+    key: "receivedQty" | "receivedWeightKg",
     value: number,
   ) => {
     setRows((prev) => ({
       ...prev,
       [itemId]: {
-        ...(prev[itemId] ?? { receivedQty: 0, receivedWeightKg: 0 }),
+        ...(prev[itemId] ?? {
+          outputCastingId: null,
+          receivedQty: 0,
+          receivedWeightKg: 0,
+        }),
         [key]: value,
+      },
+    }));
+  };
+
+  const onUpdateCasting = (itemId: string, outputCastingId: string | null) => {
+    setRows((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...(prev[itemId] ?? {
+          outputCastingId: null,
+          receivedQty: 0,
+          receivedWeightKg: 0,
+        }),
+        outputCastingId,
       },
     }));
   };
@@ -109,6 +133,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
     const payloadItems = (castingJob.items ?? [])
       .map((item: any) => ({
         castingJobItemId: item.id,
+        outputCastingId: rows[item.id]?.outputCastingId ?? item.outputCastingId ?? null,
         receivedQty: Number(rows[item.id]?.receivedQty || 0),
         receivedWeightKg: Number(rows[item.id]?.receivedWeightKg || 0),
       }))
@@ -158,7 +183,18 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">{documentNo}</h1>
           <p className="text-sm text-muted-foreground">
-            Worker: {castingJob.workerNameSnapshot} ({workerTypeLabel(castingJob.workerType)})
+            Worker:{" "}
+            {castingJob.worker ? (
+              <Link
+                href={`/dashboard/contractors/workers/${castingJob.worker.id}`}
+                className="hover:underline"
+              >
+                {castingJob.workerNameSnapshot} ({castingJob.worker.code})
+              </Link>
+            ) : (
+              castingJob.workerNameSnapshot
+            )}{" "}
+            ({workerTypeLabel(castingJob.workerType)})
           </p>
         </div>
         <Badge variant={statusVariant(castingJob.status) as any}>{castingJob.status}</Badge>
@@ -180,7 +216,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
       <Card>
         <CardHeader>
-          <CardTitle>Issued vs Received</CardTitle>
+          <CardTitle>Worker Input / Output Position</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {(castingJob.items ?? []).length === 0 ? (
@@ -191,9 +227,10 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
             (castingJob.items ?? []).map((item: any, index: number) => (
               <div key={item.id} className="rounded-xl border p-4">
                 <div className="font-medium">
-                  #{index + 1} {item.inputTitle} {"->"} {item.outputTitle}
+                  #{index + 1} {item.inputTitle} {"->"}{" "}
+                  {item.outputCastingId ? item.outputTitle : "Awaiting casting receipt"}
                 </div>
-                <div className="mt-2 grid gap-2 text-sm md:grid-cols-4">
+                <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
                   <InfoInline
                     label="Issued"
                     value={`${item.issuedQty} / ${formatWeight(item.issuedWeightKg)}`}
@@ -205,10 +242,6 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                   <InfoInline
                     label="Jalan / Pending Weight"
                     value={formatWeight(item.pendingWeightKg)}
-                  />
-                  <InfoInline
-                    label="Expected"
-                    value={`${item.expectedOutputQty ?? 0} / ${formatWeight(item.expectedOutputWeightKg)}`}
                   />
                 </div>
               </div>
@@ -235,7 +268,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
       {canPostReceipt ? (
         <Card>
           <CardHeader>
-            <CardTitle>Post Receipt</CardTitle>
+            <CardTitle>Post IN / Receive Casting</CardTitle>
             <p className="text-sm text-muted-foreground">
               Posting receipt adds stock only to the selected casting output. Issued aluminum
               is not auto-restocked.
@@ -271,12 +304,23 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
             <div className="space-y-3">
               {(castingJob.items ?? []).map((item: any, index: number) => (
-                <div key={item.id} className="grid gap-3 rounded-xl border p-3 md:grid-cols-4">
+                <div key={item.id} className="grid gap-3 rounded-xl border p-3 md:grid-cols-5">
                   <div>
-                    <div className="text-sm font-medium">#{index + 1} {item.outputTitle}</div>
+                    <div className="text-sm font-medium">#{index + 1} {item.inputTitle}</div>
                     <div className="text-xs text-muted-foreground">
                       Pending: {formatWeight(item.pendingWeightKg)}
                     </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs">Actual Casting</label>
+                    <CastingCombobox
+                      value={rows[item.id]?.outputCastingId ?? item.outputCastingId ?? null}
+                      disabled={Boolean(item.outputCastingId)}
+                      placeholder="Select casting received"
+                      onChange={(casting) =>
+                        onUpdateCasting(item.id, casting?.id ?? null)
+                      }
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs">Receive Qty</label>
@@ -316,7 +360,11 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                       onClick={() =>
                         setRows((prev) => ({
                           ...prev,
-                          [item.id]: { receivedQty: 0, receivedWeightKg: 0 },
+                          [item.id]: {
+                            outputCastingId: item.outputCastingId ?? null,
+                            receivedQty: 0,
+                            receivedWeightKg: 0,
+                          },
                         }))
                       }
                     >
@@ -335,7 +383,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                     Posting...
                   </>
                 ) : (
-                  "Post Receipt"
+                  "Post IN / Receive Casting"
                 )}
               </Button>
               <Button type="button" variant="outline" onClick={onCloseJob} disabled={isClosing}>

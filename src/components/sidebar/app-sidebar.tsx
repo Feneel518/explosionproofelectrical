@@ -54,10 +54,6 @@ const data = {
           url: "/dashboard/products",
         },
         {
-          title: "Serial Numbers",
-          url: "/dashboard/serial",
-        },
-        {
           title: "Raw Materials",
           url: "/dashboard/raw-materials",
         },
@@ -125,6 +121,10 @@ const data = {
         {
           title: "BOM",
           url: "/dashboard/manufacturing/bom",
+        },
+        {
+          title: "Serial Numbers",
+          url: "/dashboard/serial",
         },
         {
           title: "Casting Jobs",

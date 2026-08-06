@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { buildContractorRateLabel } from "@/lib/helpers/globalHelpers/contractorLabels";
+import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -68,7 +69,7 @@ const page: FC<pageProps> = async ({ params }) => {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-  const [thisMonthAgg, allTimeAgg, recentEntries, recentLedger] =
+  const [thisMonthAgg, allTimeAgg, recentEntries, recentLedger, recentCastingJobs] =
     await Promise.all([
       prisma.workEntry.aggregate({
         where: {
@@ -113,10 +114,79 @@ const page: FC<pageProps> = async ({ params }) => {
           notes: true,
         },
       }),
+      prisma.castingJob.findMany({
+        where: { workerId: id },
+        orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
+        take: 100,
+        select: {
+          id: true,
+          jobNo: true,
+          jobFy: true,
+          status: true,
+          issueDate: true,
+          totalIssuedWeightKg: true,
+          totalReceivedQty: true,
+          totalReceivedWeightKg: true,
+          totalPendingWeightKg: true,
+          items: {
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              inputTitle: true,
+              issuedWeightKg: true,
+            },
+          },
+          receipts: {
+            orderBy: [{ receivedAt: "desc" }, { receiptNo: "desc" }],
+            select: {
+              id: true,
+              receiptNo: true,
+              receivedAt: true,
+              items: {
+                orderBy: { sortOrder: "asc" },
+                select: {
+                  id: true,
+                  receivedQty: true,
+                  receivedWeightKg: true,
+                  castingJobItem: { select: { outputTitle: true } },
+                },
+              },
+            },
+          },
+        },
+      }),
     ]);
 
   const thisMonthEarnings = Number(thisMonthAgg._sum.amount ?? 0);
   const allTimeEarnings = Number(allTimeAgg._sum.amount ?? 0);
+  const materialLedger = recentCastingJobs
+    .flatMap((job) => {
+      const referenceNo = formatFinancialDocumentNumber(job.jobFy, job.jobNo);
+      const issues = job.items.map((item) => ({
+        id: `issue-${item.id}`,
+        date: job.issueDate,
+        direction: "OUT" as const,
+        item: item.inputTitle,
+        qty: null as number | null,
+        weightKg: Number(item.issuedWeightKg),
+        referenceNo,
+        jobId: job.id,
+      }));
+      const receipts = job.receipts.flatMap((receipt) =>
+        receipt.items.map((item) => ({
+          id: `receipt-${item.id}`,
+          date: receipt.receivedAt,
+          direction: "IN" as const,
+          item: item.castingJobItem.outputTitle,
+          qty: item.receivedQty,
+          weightKg: Number(item.receivedWeightKg),
+          referenceNo: `${referenceNo} / R${receipt.receiptNo}`,
+          jobId: job.id,
+        })),
+      );
+      return [...issues, ...receipts];
+    })
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   return (
     <div className="space-y-6">
@@ -211,6 +281,140 @@ const page: FC<pageProps> = async ({ params }) => {
             <span className="text-muted-foreground">Notes:</span>{" "}
             {worker.notes ?? "-"}
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-card p-5 space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Worker Material Ledger</h2>
+          <p className="text-sm text-muted-foreground">
+            OUT is aluminum scrap/ingot handed to the worker. IN is casting received back.
+          </p>
+        </div>
+        <div className="rounded-xl border p-2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-white">Date</TableHead>
+                <TableHead className="text-white">Entry</TableHead>
+                <TableHead className="text-white">Material</TableHead>
+                <TableHead className="text-right text-white">Qty</TableHead>
+                <TableHead className="text-right text-white">Weight</TableHead>
+                <TableHead className="text-white">Reference</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {materialLedger.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                    No aluminum or casting entries for this worker.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                materialLedger.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell>{formatDate(entry.date)}</TableCell>
+                    <TableCell>
+                      <Badge variant={entry.direction === "OUT" ? "destructive" : "default"}>
+                        {entry.direction}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{entry.item}</TableCell>
+                    <TableCell className="text-right">{entry.qty ?? "-"}</TableCell>
+                    <TableCell className="text-right">{entry.weightKg.toFixed(3)} kg</TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/manufacturing/casting-jobs/${entry.jobId}`}
+                        className="hover:underline"
+                      >
+                        {entry.referenceNo}
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-card p-5 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-semibold">Aluminum & Casting Jobs</h2>
+            <p className="text-sm text-muted-foreground">
+              Aluminum issued to this worker and castings received back.
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <Link href={`/dashboard/manufacturing/casting-jobs/new?workerId=${worker.id}`}>
+              Post OUT / Issue Aluminum
+            </Link>
+          </Button>
+        </div>
+        <div className="rounded-xl border p-2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-white">Date / Job</TableHead>
+                <TableHead className="text-white">Status</TableHead>
+                <TableHead className="text-right text-white">Aluminum Issued</TableHead>
+                <TableHead className="text-right text-white">Castings Received</TableHead>
+                <TableHead className="text-right text-white">Pending Weight</TableHead>
+                <TableHead className="text-right text-white">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentCastingJobs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                    No casting jobs linked to this worker yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                recentCastingJobs.map((job) => (
+                  <TableRow key={job.id}>
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/manufacturing/casting-jobs/${job.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {formatFinancialDocumentNumber(job.jobFy, job.jobNo)}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">{formatDate(job.issueDate)}</div>
+                    </TableCell>
+                    <TableCell><Badge variant="outline">{job.status}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      {Number(job.totalIssuedWeightKg).toFixed(3)} kg
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {job.totalReceivedQty} / {Number(job.totalReceivedWeightKg).toFixed(3)} kg
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {Number(job.totalPendingWeightKg).toFixed(3)} kg
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={
+                            job.status === "DRAFT"
+                              ? `/dashboard/manufacturing/casting-jobs/${job.id}/edit`
+                              : `/dashboard/manufacturing/casting-jobs/${job.id}`
+                          }
+                        >
+                          {job.status === "DRAFT"
+                            ? "Post OUT"
+                            : job.status === "IN_PROGRESS" || job.status === "PARTIAL_RECEIVED"
+                              ? "Post IN"
+                              : "View"}
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

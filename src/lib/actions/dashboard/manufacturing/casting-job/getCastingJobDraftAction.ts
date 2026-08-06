@@ -16,6 +16,7 @@ function normalizeDraftData(rawDraft: unknown): CastingJobDraftData {
         : draft?.header?.workerType === "CONTRACT"
           ? "CONTRACT"
           : "IN_HOUSE",
+    workerId: draft?.header?.workerId ?? null,
     workerName: draft?.header?.workerName ?? "",
     supplierId: draft?.header?.supplierId ?? null,
     supplierName: draft?.header?.supplierName ?? null,
@@ -26,22 +27,10 @@ function normalizeDraftData(rawDraft: unknown): CastingJobDraftData {
     ? draft.items.map((item: any, index: number) => ({
         id: item?.id || crypto.randomUUID(),
         inputRawMaterialId: item?.inputRawMaterialId ?? null,
-        outputCastingId:
-          item?.outputCastingId ?? item?.outputRawMaterialId ?? null,
         inputTitle: item?.inputTitle ?? "",
-        outputTitle: item?.outputTitle ?? "",
         inputUnit: item?.inputUnit ?? null,
-        outputUnit: item?.outputUnit ?? null,
         issuedQty: Number(item?.issuedQty ?? 0) || 0,
         issuedWeightKg: Number(item?.issuedWeightKg ?? 0) || 0,
-        expectedOutputQty:
-          item?.expectedOutputQty == null
-            ? null
-            : Number(item.expectedOutputQty) || 0,
-        expectedOutputWeightKg:
-          item?.expectedOutputWeightKg == null
-            ? null
-            : Number(item.expectedOutputWeightKg) || 0,
         sortOrder: Number.isFinite(Number(item?.sortOrder))
           ? Number(item.sortOrder)
           : index,

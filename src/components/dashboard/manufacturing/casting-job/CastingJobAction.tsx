@@ -27,14 +27,23 @@ export default function CastingJobAction({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href={`/dashboard/manufacturing/casting-jobs/${id}`}>View</Link>
-        </DropdownMenuItem>
         {status === "DRAFT" ? (
           <DropdownMenuItem asChild>
-            <Link href={`/dashboard/manufacturing/casting-jobs/${id}/edit`}>Edit</Link>
+            <Link href={`/dashboard/manufacturing/casting-jobs/${id}/edit`}>
+              Post OUT / Issue Aluminum
+            </Link>
           </DropdownMenuItem>
-        ) : null}
+        ) : status === "IN_PROGRESS" || status === "PARTIAL_RECEIVED" ? (
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/manufacturing/casting-jobs/${id}`}>
+              Post IN / Receive Casting
+            </Link>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/manufacturing/casting-jobs/${id}`}>View</Link>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

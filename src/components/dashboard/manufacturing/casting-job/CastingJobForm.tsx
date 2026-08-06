@@ -25,10 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CastingCombobox } from "@/components/dashboard/global/CastingCombobox";
 import { RawMaterialCombobox } from "@/components/dashboard/global/RawMaterialCombobox";
 import { SupplierCombobox } from "@/components/dashboard/global/SupplierCombobox";
-import { CastingSearchItem } from "@/lib/types/CastingSearchItem";
 import { RawMaterialSearchItem } from "@/lib/types/RawMaterialSearchItem";
 import { CastingJobDraftData } from "@/lib/actions/dashboard/manufacturing/casting-job/createDraftCastingJobAction";
 import { finalizeCastingJobAction } from "@/lib/actions/dashboard/manufacturing/casting-job/finalizeCastingJobAction";
@@ -86,12 +84,14 @@ export default function CastingJobForm({
   jobFy,
   initialDraft,
   initialDraftVersion,
+  workers,
 }: {
   castingJobId: string;
   jobNo: number;
   jobFy: string;
   initialDraft: CastingJobDraftData;
   initialDraftVersion: number;
+  workers: Array<{ id: string; name: string; code: string; role: string }>;
 }) {
   const router = useRouter();
   const [draft, setDraft] = React.useState<CastingJobDraftData>(initialDraft);
@@ -212,15 +212,10 @@ export default function CastingJobForm({
         {
           id: crypto.randomUUID(),
           inputRawMaterialId: null,
-          outputCastingId: null,
           inputTitle: "",
-          outputTitle: "",
           inputUnit: "Nos",
-          outputUnit: "Nos",
           issuedQty: 1,
           issuedWeightKg: 0,
-          expectedOutputQty: 0,
-          expectedOutputWeightKg: 0,
           sortOrder: prev.items.length,
         },
       ],
@@ -268,25 +263,6 @@ export default function CastingJobForm({
     }));
   };
 
-  const updateOutputFromCasting = (
-    index: number,
-    casting: CastingSearchItem,
-  ) => {
-    setDraft((prev) => ({
-      ...prev,
-      items: prev.items.map((item, i) =>
-        i === index
-          ? {
-              ...item,
-              outputCastingId: casting.id,
-              outputTitle: casting.castingItemName,
-              outputUnit: casting.unit || item.outputUnit || "Nos",
-            }
-          : item,
-      ),
-    }));
-  };
-
   const totalIssuedQty = draft.items.reduce(
     (sum, item) => sum + Number(item.issuedQty || 0),
     0,
@@ -301,7 +277,7 @@ export default function CastingJobForm({
     return Number(balanceByRawMaterialId[rawMaterialId] ?? 0);
   };
 
-  const getMaxIssueQtyForRow = (rowIndex: number) => {
+  const getMaxIssueWeightForRow = (rowIndex: number) => {
     const row = draft.items[rowIndex];
     if (!row?.inputRawMaterialId) return Number.MAX_SAFE_INTEGER;
 
@@ -309,10 +285,22 @@ export default function CastingJobForm({
     const allocatedInOtherRows = draft.items.reduce((sum, item, idx) => {
       if (idx === rowIndex) return sum;
       if (item.inputRawMaterialId !== row.inputRawMaterialId) return sum;
-      return sum + Number(item.issuedQty || 0);
+      return sum + Number(item.issuedWeightKg || 0);
     }, 0);
 
     return Math.max(0, available - allocatedInOtherRows);
+  };
+
+  const selectWorker = (workerId: string) => {
+    const worker = workers.find((row) => row.id === workerId);
+    setDraft((prev) => ({
+      ...prev,
+      header: {
+        ...prev.header,
+        workerId: worker?.id ?? null,
+        workerName: worker?.name ?? "",
+      },
+    }));
   };
 
   async function handleManualSave() {
@@ -412,7 +400,7 @@ export default function CastingJobForm({
             ) : (
               <>
                 <Send className="mr-2 h-4 w-4" />
-                Start Job
+                Post OUT / Issue Material
               </>
             )}
           </Button>
@@ -483,12 +471,28 @@ export default function CastingJobForm({
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm">Worker Name</label>
-                <Input
-                  value={draft.header.workerName ?? ""}
-                  onChange={(event) => setHeaderValue("workerName", event.target.value)}
-                  placeholder="Name of worker / contractor"
-                />
+                <label className="text-sm">Worker</label>
+                <Select
+                  value={draft.header.workerId ?? "__none"}
+                  onValueChange={selectWorker}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select worker" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Select worker</SelectItem>
+                    {workers.map((worker) => (
+                      <SelectItem key={worker.id} value={worker.id}>
+                        {worker.name} ({worker.code}) · {worker.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {workers.length === 0 ? (
+                  <p className="text-xs text-destructive">
+                    Add an active worker under Contractors → Workers first.
+                  </p>
+                ) : null}
               </div>
 
               <div className="space-y-1 md:col-span-2">
@@ -545,26 +549,14 @@ export default function CastingJobForm({
                         <label className="text-sm">Input Raw Material (Aluminium)</label>
                         <RawMaterialCombobox
                           value={item.inputRawMaterialId}
+                          inventoryOnly
+                          placeholder="Select aluminum scrap or ingot"
                           onChange={(rawMaterial) => {
                             if (!rawMaterial) {
                               updateItem(index, "inputRawMaterialId", null);
                               return;
                             }
                             updateInputFromRawMaterial(index, rawMaterial);
-                          }}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm">Output Casting Material</label>
-                        <CastingCombobox
-                          value={item.outputCastingId}
-                          onChange={(casting) => {
-                            if (!casting) {
-                              updateItem(index, "outputCastingId", null);
-                              return;
-                            }
-                            updateOutputFromCasting(index, casting);
                           }}
                         />
                       </div>
@@ -580,17 +572,7 @@ export default function CastingJobForm({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-sm">Output Title</label>
-                        <Input
-                          value={item.outputTitle ?? ""}
-                          onChange={(event) =>
-                            updateItem(index, "outputTitle", event.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm">Issued Qty</label>
+                        <label className="text-sm">Issued Lots / Pieces (Optional)</label>
                         <Input
                           type="number"
                           min={0}
@@ -599,21 +581,10 @@ export default function CastingJobForm({
                             updateItem(
                               index,
                               "issuedQty",
-                              Math.max(
-                                0,
-                                Math.min(
-                                  Number(event.target.value || 0),
-                                  getMaxIssueQtyForRow(index),
-                                ),
-                              ),
+                              Math.max(0, Number(event.target.value || 0)),
                             )
                           }
                         />
-                        {item.inputRawMaterialId ? (
-                          <p className="text-xs text-muted-foreground">
-                            Balance Qty: {getAvailableBalance(item.inputRawMaterialId)}
-                          </p>
-                        ) : null}
                       </div>
 
                       <div className="space-y-1">
@@ -627,44 +598,23 @@ export default function CastingJobForm({
                             updateItem(
                               index,
                               "issuedWeightKg",
-                              Math.max(0, toNumber(event.target.value, 0)),
+                              Math.max(
+                                0,
+                                Math.min(
+                                  toNumber(event.target.value, 0),
+                                  getMaxIssueWeightForRow(index),
+                                ),
+                              ),
                             )
                           }
                         />
+                        {item.inputRawMaterialId ? (
+                          <p className="text-xs text-muted-foreground">
+                            Available stock: {getAvailableBalance(item.inputRawMaterialId).toFixed(3)} kg
+                          </p>
+                        ) : null}
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-sm">Expected Output Qty</label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={item.expectedOutputQty ?? 0}
-                          onChange={(event) =>
-                            updateItem(
-                              index,
-                              "expectedOutputQty",
-                              Math.max(0, Number(event.target.value || 0)),
-                            )
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm">Expected Output Weight (Kg)</label>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.001"
-                          value={item.expectedOutputWeightKg ?? 0}
-                          onChange={(event) =>
-                            updateItem(
-                              index,
-                              "expectedOutputWeightKg",
-                              Math.max(0, toNumber(event.target.value, 0)),
-                            )
-                          }
-                        />
-                      </div>
                     </div>
                   </div>
                 ))

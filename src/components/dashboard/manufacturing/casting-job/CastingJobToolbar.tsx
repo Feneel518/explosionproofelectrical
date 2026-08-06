@@ -180,7 +180,7 @@ export default function CastingJobToolbar({ qp }: { qp: CastingJobQP }) {
       <Button asChild className="col-span-2 lg:col-span-1">
         <Link href="/dashboard/manufacturing/casting-jobs/new">
           <Plus className="mr-2 h-4 w-4" />
-          New Casting Job
+          Post OUT / Issue Aluminum
         </Link>
       </Button>
     </div>

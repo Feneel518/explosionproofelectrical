@@ -10,6 +10,13 @@ export async function getCastingJobByIdAction(id: string) {
   const castingJob = await prisma.castingJob.findUnique({
     where: { id },
     include: {
+      worker: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+        },
+      },
       supplier: {
         select: {
           id: true,

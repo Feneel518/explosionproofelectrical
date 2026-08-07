@@ -57,9 +57,11 @@ type WorkerFormValues = z.input<typeof WorkerSchema>;
 export default function WorkerForm({
   mode,
   initial,
+  workerKind = "MACHINING",
 }: {
   mode: "create" | "edit";
   initial?: Initial;
+  workerKind?: "MACHINING" | "CASTING";
 }) {
   const router = useRouter();
   const [pending, start] = React.useTransition();
@@ -80,6 +82,7 @@ export default function WorkerForm({
       joinedAt: joinedAtDefault,
       notes: initial?.notes ?? "",
       status: (initial?.status as WorkerStatusValue | undefined) ?? "ACTIVE",
+      kind: workerKind,
     },
   });
 
@@ -97,17 +100,19 @@ export default function WorkerForm({
         return;
       }
       toast.success(res.message);
-      router.push("/dashboard/contractors/workers");
+      router.push(workerKind === "CASTING" ? "/dashboard/casting-workers" : "/dashboard/contractors/workers");
       router.refresh();
     });
   };
 
   return (
     <FormLayout
-      title={mode === "create" ? "New Worker" : "Edit Worker"}
+      title={mode === "create" ? `New ${workerKind === "CASTING" ? "Casting " : ""}Worker` : "Edit Worker"}
       description={
         mode === "create"
-          ? "Add a contractor / piece-rate worker (turner, assembly, etc.)."
+          ? workerKind === "CASTING"
+            ? "Add a worker who receives aluminum and returns castings."
+            : "Add a contractor / piece-rate worker (turner, assembly, etc.)."
           : "Update worker details."
       }
       footer={
@@ -165,7 +170,7 @@ export default function WorkerForm({
               )}
             />
 
-            <FormField
+            {workerKind === "MACHINING" ? <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
@@ -188,7 +193,7 @@ export default function WorkerForm({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> : null}
 
             <FormField
               control={form.control}

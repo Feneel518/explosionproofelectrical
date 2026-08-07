@@ -35,12 +35,14 @@ export const updateWorkerAction = async (values: WorkerSchemaRequest) => {
         joinedAt: data.joinedAt ?? null,
         notes: data.notes || null,
         status: data.status ?? "ACTIVE",
+        kind: data.kind ?? "MACHINING",
         updatedById: session.user.id,
       },
       select: { id: true, code: true, name: true },
     });
 
     revalidatePath("/dashboard/contractors/workers");
+    revalidatePath("/dashboard/casting-workers");
     revalidatePath(`/dashboard/contractors/workers/${data.id}`);
     return {
       ok: true,

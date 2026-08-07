@@ -18,7 +18,7 @@ export default async function Page({ params }: PageProps) {
   if (!res.ok) redirect("/dashboard/manufacturing/casting-jobs");
 
   const workers = await prisma.worker.findMany({
-    where: { status: "ACTIVE", deletedAt: null },
+    where: { status: "ACTIVE", kind: "CASTING", deletedAt: null },
     orderBy: [{ name: "asc" }, { code: "asc" }],
     select: { id: true, name: true, code: true, role: true },
   });

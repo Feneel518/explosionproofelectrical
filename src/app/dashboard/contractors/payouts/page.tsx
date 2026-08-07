@@ -15,18 +15,24 @@ export default async function Page({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const raw = await searchParams;
+  const castingMode = raw.workforce === "casting";
   const sp = payoutsSearchParamsCache.parse(raw);
   const currentMonth = new Date().toISOString().slice(0, 7);
   const monthYear = sp.monthYear || currentMonth;
 
   const [workers, payouts] = await Promise.all([
     prisma.worker.findMany({
-      where: { deletedAt: null, status: "ACTIVE" },
+      where: { deletedAt: null, status: "ACTIVE", kind: castingMode ? "CASTING" : "MACHINING" },
       orderBy: { name: "asc" },
       select: { id: true, name: true, code: true },
     }),
     prisma.workerPayout.findMany({
-      where: buildPayoutWhere({ ...sp, monthYear }),
+      where: {
+        AND: [
+          buildPayoutWhere({ ...sp, monthYear }),
+          { worker: { kind: castingMode ? "CASTING" : "MACHINING" } },
+        ],
+      },
       orderBy: buildPayoutOrderBy({ ...sp, monthYear }),
       take: 100,
       select: {
@@ -197,9 +203,13 @@ export default async function Page({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Monthly Payouts</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {castingMode ? "Casting Worker Payroll" : "Monthly Payouts"}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Track advances, deductions, bonuses, and close each worker month with a saved payout record.
+          {castingMode
+            ? "Pay casting workers from accepted casting weight and saved worker-casting rates."
+            : "Track advances, deductions, bonuses, and close each worker month with a saved payout record."}
         </p>
       </div>
 

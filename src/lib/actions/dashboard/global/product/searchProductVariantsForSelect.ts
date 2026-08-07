@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
+import type { Prisma } from "@prisma/client";
 
 interface SearchProductVariantsForSelectArgs {
   query?: string;
@@ -20,26 +21,73 @@ export const searchProductVariantsForSelectAction = async ({
   await requireAuth();
 
   const q = (query ?? "").trim();
-
   const takeQty = Math.min(Math.max(take ?? 50, 5), 50);
 
+  // Users often know several fragments rather than the exact variant name,
+  // e.g. "well glass 45w 4 terminal". Let each fragment match a different
+  // product, variant, or component attribute while requiring every fragment.
+  const terms = Array.from(
+    new Set(q.split(/\s+/).map((term) => term.trim()).filter(Boolean)),
+  ).slice(0, 10);
+
+  const searchForTerm = (term: string): Prisma.ProductVariantWhereInput => ({
+    OR: [
+      { variant: { contains: term, mode: "insensitive" } },
+      { sku: { contains: term, mode: "insensitive" } },
+      { typeNumber: { contains: term, mode: "insensitive" } },
+      { rating: { contains: term, mode: "insensitive" } },
+      { terminals: { contains: term, mode: "insensitive" } },
+      { gasket: { contains: term, mode: "insensitive" } },
+      { mounting: { contains: term, mode: "insensitive" } },
+      { cableEntry: { contains: term, mode: "insensitive" } },
+      { earthing: { contains: term, mode: "insensitive" } },
+      { cutoutSize: { contains: term, mode: "insensitive" } },
+      { plateSize: { contains: term, mode: "insensitive" } },
+      { glass: { contains: term, mode: "insensitive" } },
+      { wireGuard: { contains: term, mode: "insensitive" } },
+      { size: { contains: term, mode: "insensitive" } },
+      { rpm: { contains: term, mode: "insensitive" } },
+      { kW: { contains: term, mode: "insensitive" } },
+      { horsePower: { contains: term, mode: "insensitive" } },
+      {
+        product: {
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { slug: { contains: term, mode: "insensitive" } },
+            { flpType: { contains: term, mode: "insensitive" } },
+            { protection: { contains: term, mode: "insensitive" } },
+            { gasGroup: { contains: term, mode: "insensitive" } },
+            { material: { contains: term, mode: "insensitive" } },
+            { finish: { contains: term, mode: "insensitive" } },
+            { hardware: { contains: term, mode: "insensitive" } },
+            { hsnCode: { contains: term, mode: "insensitive" } },
+            { shortDesc: { contains: term, mode: "insensitive" } },
+            { longDesc: { contains: term, mode: "insensitive" } },
+            { category: { name: { contains: term, mode: "insensitive" } } },
+          ],
+        },
+      },
+      {
+        components: {
+          some: {
+            component: {
+              item: { contains: term, mode: "insensitive" },
+            },
+          },
+        },
+      },
+    ],
+  });
+
   const rows = await prisma.productVariant.findMany({
-    take: take + 1,
+    take: takeQty + 1,
     skip: cursor ? 1 : 0,
     cursor: cursor ? { id: cursor } : undefined,
     where: {
-      // adjust according to your schema
       product: {
         deletedAt: null,
       },
-      OR: q
-        ? [
-            { variant: { contains: q, mode: "insensitive" } },
-            { sku: { contains: q, mode: "insensitive" } },
-            { typeNumber: { contains: q, mode: "insensitive" } },
-            { product: { name: { contains: q, mode: "insensitive" } } },
-          ]
-        : undefined,
+      AND: terms.length > 0 ? terms.map(searchForTerm) : undefined,
     },
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     select: {
@@ -98,8 +146,8 @@ export const searchProductVariantsForSelectAction = async ({
     },
   });
 
-  const hasMore = rows.length > take;
-  const sliced = hasMore ? rows.slice(0, take) : rows;
+  const hasMore = rows.length > takeQty;
+  const sliced = hasMore ? rows.slice(0, takeQty) : rows;
 
   return {
     items: sliced.map((v) => ({

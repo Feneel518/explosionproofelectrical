@@ -127,17 +127,21 @@ const data = {
           url: "/dashboard/serial",
         },
         {
-          title: "Casting Jobs",
-          url: "/dashboard/manufacturing/casting-jobs",
-        },
-        {
-          title: "Worker Ledger",
-          url: "/dashboard/manufacturing/worker-ledger",
-        },
-        {
           title: "Production Planning",
           url: "/dashboard/manufacturing/planning",
         },
+      ],
+    },
+    {
+      title: "Casting Workers",
+      url: "#",
+      icon: AudioWaveform,
+      items: [
+        { title: "Workers", url: "/dashboard/casting-workers" },
+        { title: "Casting Masters", url: "/dashboard/casting-masters" },
+        { title: "Post IN / OUT", url: "/dashboard/manufacturing/casting-jobs" },
+        { title: "Material Ledger", url: "/dashboard/manufacturing/worker-ledger" },
+        { title: "Monthly Payroll", url: "/dashboard/contractors/payouts?workforce=casting" },
       ],
     },
     {

@@ -31,7 +31,7 @@ export async function createDraftCastingJobAction(workerId?: string | null) {
   const fy = getFinancialYearLabel(new Date());
   const worker = workerId
     ? await prisma.worker.findFirst({
-        where: { id: workerId, status: "ACTIVE", deletedAt: null },
+        where: { id: workerId, status: "ACTIVE", kind: "CASTING", deletedAt: null },
         select: { id: true, name: true },
       })
     : null;

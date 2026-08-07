@@ -2329,6 +2329,11 @@ enum WorkerStatus {
   INACTIVE
 }
 
+enum WorkerKind {
+  MACHINING
+  CASTING
+}
+
 enum ContractorCatalogStatus {
   ACTIVE
   INACTIVE
@@ -2356,6 +2361,7 @@ model Worker {
   joinedAt DateTime?
   notes    String?
   status   WorkerStatus @default(ACTIVE)
+  kind     WorkerKind   @default(MACHINING)
 
   // Soft delete + audit
   deletedAt   DateTime?
@@ -2378,6 +2384,7 @@ model Worker {
   @@index([code])
   @@index([role])
   @@index([status])
+  @@index([kind])
   @@index([deletedAt])
   @@map("workers")
 }

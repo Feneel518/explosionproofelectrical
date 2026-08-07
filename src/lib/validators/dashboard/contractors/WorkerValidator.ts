@@ -10,6 +10,7 @@ export const WorkerRoleEnum = z.enum([
 ]);
 
 export const WorkerStatusEnum = z.enum(["ACTIVE", "INACTIVE"]);
+export const WorkerKindEnum = z.enum(["MACHINING", "CASTING"]);
 
 export const WorkerSchema = z.object({
   id: z.uuid().optional(),
@@ -74,6 +75,7 @@ export const WorkerSchema = z.object({
     .nullable(),
 
   status: WorkerStatusEnum.optional().default("ACTIVE"),
+  kind: WorkerKindEnum.optional().default("MACHINING"),
 });
 
 export type WorkerSchemaRequest = z.infer<typeof WorkerSchema>;

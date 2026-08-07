@@ -23,6 +23,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -126,6 +127,7 @@ type InvoiceEditData = {
       invoiceDate?: string | null;
       dispatchDate?: string | null;
       poNumber?: string | null;
+      poDate?: string | null;
       transporterName?: string | null;
       vehicleNumber?: string | null;
       driverName?: string | null;
@@ -237,6 +239,7 @@ const formSchema = z
       invoiceDate: z.date("Invoice date is required"),
       dispatchDate: z.date().nullable().optional(),
       poNumber: z.string().optional(),
+      poDate: z.date().nullable().optional(),
       transporterName: z.string().optional(),
       vehicleNumber: z.string().optional(),
       driverName: z.string().optional(),
@@ -511,6 +514,7 @@ function buildDefaultValues(invoice: InvoiceEditData): FormValues {
         toDate(invoice.dispatchDate) ??
         null,
       poNumber: draftHeader.poNumber ?? invoice.poNumber ?? "",
+      poDate: toDate(draftHeader.poDate) ?? toDate(invoice.poDate) ?? null,
       transporterName:
         draftHeader.transporterName ?? invoice.transporterName ?? "",
       vehicleNumber: draftHeader.vehicleNumber ?? invoice.vehicleNumber ?? "",
@@ -819,6 +823,9 @@ function buildInvoiceDraftPayload(values: FormValues) {
     header: {
       ...values.header,
       invoiceDate: values.header.invoiceDate.toISOString(),
+      poDate: values.header.poDate
+        ? values.header.poDate.toISOString()
+        : null,
       dispatchDate: values.header.dispatchDate
         ? values.header.dispatchDate.toISOString()
         : null,
@@ -889,6 +896,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
         toDate(invoice.dispatchDate) ??
         null,
       poNumber: draftHeader.poNumber ?? invoice.poNumber ?? "",
+      poDate: toDate(draftHeader.poDate) ?? toDate(invoice.poDate) ?? null,
       transporterName:
         draftHeader.transporterName ?? invoice.transporterName ?? "",
       vehicleNumber: draftHeader.vehicleNumber ?? invoice.vehicleNumber ?? "",
@@ -1589,7 +1597,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       }
 
       toast.success("Invoice finalized");
-      router.push(`/dashboard/sales/invoices/${invoice.id}`);
+      router.push("/dashboard/sales/invoices");
     } finally {
       setIsFinalizing(false);
     }
@@ -1866,6 +1874,24 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                             {...field}
                             value={field.value ?? ""}
                             placeholder="Enter PO number"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="header.poDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col gap-2">
+                        <FormLabel>PO Date</FormLabel>
+                        <FormControl>
+                          <DatePickerField
+                            value={field.value ?? null}
+                            onChange={(date) => field.onChange(date ?? null)}
+                            placeholder="Pick PO date"
                           />
                         </FormControl>
                         <FormMessage />
@@ -3041,6 +3067,15 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                   <span>{formatCurrency(subtotal * 1.18)}</span>
                 </div>
               </CardContent>
+
+              <CardFooter className="justify-end border-t pt-6">
+                <Button
+                  type="button"
+                  onClick={onFinalize}
+                  disabled={isSaving || isFinalizing}>
+                  {isFinalizing ? "Finalizing..." : "Finalize Invoice"}
+                </Button>
+              </CardFooter>
             </Card>
           </form>
         </Form>

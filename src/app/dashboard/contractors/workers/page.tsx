@@ -19,7 +19,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
   const pageParams = Math.max(1, sp.page);
   const pageSizeParams = Math.min(50, Math.max(5, sp.pageSize));
 
-  const where = buildWorkerWhere(sp);
+  const where = { AND: [buildWorkerWhere(sp), { kind: "MACHINING" as const }] };
   const orderBy = buildWorkerOrderBy(sp);
 
   const [items, total] = await Promise.all([

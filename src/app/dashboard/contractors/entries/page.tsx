@@ -25,7 +25,7 @@ export default async function Page({
 
   const [workers, rates, entries] = await Promise.all([
     prisma.worker.findMany({
-      where: { deletedAt: null, status: "ACTIVE" },
+      where: { deletedAt: null, status: "ACTIVE", kind: "MACHINING" },
       orderBy: { name: "asc" },
       select: { id: true, name: true, code: true, role: true },
     }),

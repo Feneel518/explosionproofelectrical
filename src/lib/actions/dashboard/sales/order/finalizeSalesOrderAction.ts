@@ -18,6 +18,11 @@ function toNumber(value: unknown, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
+function normalizeString(value?: string | null) {
+  const trimmed = value?.trim();
+  return trimmed || null;
+}
+
 export const finalizeSalesOrderAction = async (id: string) => {
   const session = await requireAuth();
 
@@ -178,14 +183,44 @@ export const finalizeSalesOrderAction = async (id: string) => {
         title: file.title ?? null,
       })) ?? [];
 
+    const customer = draftCustomerId
+      ? await prisma.customer.findUnique({
+          where: { id: draftCustomerId },
+          select: {
+            companyName: true,
+            city: true,
+            state: true,
+            gstin: true,
+          },
+        })
+      : null;
+
+    const clientNameSnapshot =
+      normalizeString(customer?.companyName) ??
+      normalizeString(draft.header?.clientNameSnapshot) ??
+      normalizeString(draft.header?.clientName) ??
+      normalizeString(draft.header?.receivedFromName);
+    const citySnapshot =
+      normalizeString(customer?.city) ??
+      normalizeString(draft.header?.citySnapshot);
+    const stateSnapshot =
+      normalizeString(customer?.state) ??
+      normalizeString(draft.header?.stateSnapshot);
+    const gstinSnapshot =
+      normalizeString(customer?.gstin) ??
+      normalizeString(draft.header?.gstinSnapshot);
+
     await prisma.$transaction(async (tx) => {
       await tx.salesOrder.update({
         where: { id },
         data: {
           status: "CONFIRMED",
           customerId: draft.header?.customerId ?? null,
-          clientName: draft.header?.clientName ?? null,
-          clientNameSnapshot: draft.header?.clientName ?? null,
+          clientName: clientNameSnapshot,
+          clientNameSnapshot,
+          citySnapshot,
+          stateSnapshot,
+          gstinSnapshot,
           quotationId,
           sourceType: quotationId ? "QUOTATION" : "DIRECT",
           isConvertedFromQuotation: Boolean(quotationId),

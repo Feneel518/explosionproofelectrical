@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma/db";
 import { getFinancialYearLabelFromStartYear } from "@/lib/helpers/globalHelpers/financialYear";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
+import { resolveSalesOrderCustomerSnapshot } from "./resolveSalesOrderCustomerSnapshot";
 
 function getFinancialYearStartYear(date = new Date()) {
   const month = date.getMonth() + 1;
@@ -25,6 +26,7 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             status: true,
             orderVersion: true,
             customerId: true,
+            clientName: true,
             poNumber: true,
             poDate: true,
             clientNameSnapshot: true,
@@ -32,6 +34,14 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             stateSnapshot: true,
             gstinSnapshot: true,
             transportationPayment: true,
+            customer: {
+              select: {
+                companyName: true,
+                city: true,
+                state: true,
+                gstin: true,
+              },
+            },
             items: {
               orderBy: { sortOrder: "asc" },
               select: {
@@ -97,6 +107,8 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
           };
         }
 
+        const customerSnapshot = resolveSalesOrderCustomerSnapshot(order);
+
         const fyStartYear = getFinancialYearStartYear();
         const invoiceFy = getFinancialYearLabelFromStartYear(fyStartYear);
 
@@ -161,10 +173,7 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             dueDate: null,
             poNumber: order.poNumber ?? "",
             poDate: order.poDate ? order.poDate.toISOString() : null,
-            clientNameSnapshot: order.clientNameSnapshot ?? "",
-            citySnapshot: order.citySnapshot ?? "",
-            stateSnapshot: order.stateSnapshot ?? "",
-            gstinSnapshot: order.gstinSnapshot ?? "",
+            ...customerSnapshot,
             dispatchDate: null,
             transporterName: null,
             vehicleNumber: null,
@@ -198,10 +207,10 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
 
             poNumber: order.poNumber ?? null,
             poDate: order.poDate ?? null,
-            clientNameSnapshot: order.clientNameSnapshot ?? null,
-            citySnapshot: order.citySnapshot ?? null,
-            stateSnapshot: order.stateSnapshot ?? null,
-            gstinSnapshot: order.gstinSnapshot ?? null,
+            clientNameSnapshot: customerSnapshot.clientNameSnapshot || null,
+            citySnapshot: customerSnapshot.citySnapshot || null,
+            stateSnapshot: customerSnapshot.stateSnapshot || null,
+            gstinSnapshot: customerSnapshot.gstinSnapshot || null,
             transportationPayment: order.transportationPayment ?? "TO_PAY",
             transportationAmount: null,
 

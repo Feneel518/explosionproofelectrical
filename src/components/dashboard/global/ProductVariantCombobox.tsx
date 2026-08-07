@@ -45,8 +45,43 @@ function subLine(v: ProductVariantSearchItem) {
 }
 
 function metaLine(v: ProductVariantSearchItem) {
-  const parts = [v.sku, v.typeNumber].filter(Boolean);
+  const parts = [
+    v.sku && `SKU: ${v.sku}`,
+    v.typeNumber && `Type: ${v.typeNumber}`,
+    v.hsnCode && `HSN: ${v.hsnCode}`,
+  ].filter(Boolean);
   return parts.join(" • ");
+}
+
+function specificationLine(v: ProductVariantSearchItem) {
+  const parts = [
+    v.rating && `Rating: ${v.rating}`,
+    v.terminals && `Terminals: ${v.terminals}`,
+    v.size && `Size: ${v.size}`,
+    v.mounting && `Mounting: ${v.mounting}`,
+    v.cableEntry && `Cable entry: ${v.cableEntry}`,
+    v.gasket && `Gasket: ${v.gasket}`,
+    v.earthing && `Earthing: ${v.earthing}`,
+    v.cutoutSize && `Cutout: ${v.cutoutSize}`,
+    v.plateSize && `Plate: ${v.plateSize}`,
+    v.glass && `Glass: ${v.glass}`,
+    v.wireGuard && `Wire guard: ${v.wireGuard}`,
+    v.hardware && `Hardware: ${v.hardware}`,
+    v.rpm && `RPM: ${v.rpm}`,
+    v.kW && `kW: ${v.kW}`,
+    v.horsePower && `HP: ${v.horsePower}`,
+  ].filter(Boolean);
+  return parts.join(" • ");
+}
+
+function componentLine(v: ProductVariantSearchItem) {
+  const componentNames = v.component
+    .map((component) => component.item?.trim())
+    .filter(Boolean);
+
+  return componentNames.length > 0
+    ? `Components: ${componentNames.join(", ")}`
+    : "";
 }
 
 export function ProductVariantCombobox({
@@ -157,7 +192,7 @@ export function ProductVariantCombobox({
   const content = (
     <Command shouldFilter={false}>
       <CommandInput
-        placeholder="Search by product, variant, SKU, type number…"
+        placeholder="Try product + rating + size, SKU, type, HSN, component..."
         value={search}
         onValueChange={setSearch}
       />
@@ -215,6 +250,24 @@ export function ProductVariantCombobox({
                   {metaLine(v) ? (
                     <div className="truncate text-xs text-muted-foreground">
                       {metaLine(v)}
+                    </div>
+                  ) : null}
+
+                  {specificationLine(v) ? (
+                    <div className="line-clamp-2 text-xs text-muted-foreground">
+                      {specificationLine(v)}
+                    </div>
+                  ) : null}
+
+                  {componentLine(v) ? (
+                    <div className="truncate text-xs text-muted-foreground">
+                      {componentLine(v)}
+                    </div>
+                  ) : null}
+
+                  {v.description ? (
+                    <div className="truncate text-xs text-muted-foreground">
+                      {v.description}
                     </div>
                   ) : null}
                 </div>

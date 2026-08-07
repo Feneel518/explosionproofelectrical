@@ -536,8 +536,8 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
     const current = form.getValues();
     const customer = quotation.customer;
     const clientName =
-      quotation.clientName ??
       customer?.companyName ??
+      quotation.clientName ??
       quotation.receivedFromName ??
       current.header.clientName ??
       "";

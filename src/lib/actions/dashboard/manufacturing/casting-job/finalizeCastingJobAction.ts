@@ -123,7 +123,7 @@ export async function finalizeCastingJobAction(id: string) {
   const [inputMaterials, worker] = await Promise.all([
     prisma.rawMaterial.findMany({ where: { id: { in: inputIds } }, select: { id: true } }),
     prisma.worker.findFirst({
-      where: { id: workerId, status: "ACTIVE", deletedAt: null },
+      where: { id: workerId, status: "ACTIVE", kind: "CASTING", deletedAt: null },
       select: { id: true, name: true },
     }),
   ]);

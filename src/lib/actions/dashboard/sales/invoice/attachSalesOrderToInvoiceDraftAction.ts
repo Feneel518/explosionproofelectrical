@@ -8,6 +8,7 @@ import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 
 import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
 import { getInvoiceEditDataAction } from "./getInvoiceEditDataAction";
+import { resolveSalesOrderCustomerSnapshot } from "./resolveSalesOrderCustomerSnapshot";
 
 export async function attachSalesOrderToInvoiceDraftAction(
   invoiceId: string,
@@ -74,6 +75,7 @@ export async function attachSalesOrderToInvoiceDraftAction(
             status: true,
             orderVersion: true,
             customerId: true,
+            clientName: true,
             poNumber: true,
             poDate: true,
             clientNameSnapshot: true,
@@ -81,6 +83,14 @@ export async function attachSalesOrderToInvoiceDraftAction(
             stateSnapshot: true,
             gstinSnapshot: true,
             transportationPayment: true,
+            customer: {
+              select: {
+                companyName: true,
+                city: true,
+                state: true,
+                gstin: true,
+              },
+            },
             items: {
               orderBy: { sortOrder: "asc" },
               select: {
@@ -131,6 +141,8 @@ export async function attachSalesOrderToInvoiceDraftAction(
             message: "No remaining quantity left to invoice",
           };
         }
+
+        const customerSnapshot = resolveSalesOrderCustomerSnapshot(order);
 
         const draftItems: InvoiceDraftData["items"] = invoiceableItems.map(
           (item, index) => ({
@@ -184,10 +196,7 @@ export async function attachSalesOrderToInvoiceDraftAction(
             dueDate: null,
             poNumber: order.poNumber ?? "",
             poDate: order.poDate ? order.poDate.toISOString() : null,
-            clientNameSnapshot: order.clientNameSnapshot ?? "",
-            citySnapshot: order.citySnapshot ?? "",
-            stateSnapshot: order.stateSnapshot ?? "",
-            gstinSnapshot: order.gstinSnapshot ?? "",
+            ...customerSnapshot,
             dispatchDate:
               draftData.header?.dispatchDate ??
               (invoice.dispatchDate ? invoice.dispatchDate.toISOString() : null),
@@ -241,10 +250,10 @@ export async function attachSalesOrderToInvoiceDraftAction(
             customerId: order.customerId ?? invoice.customerId ?? null,
             poNumber: order.poNumber ?? null,
             poDate: order.poDate ?? null,
-            clientNameSnapshot: order.clientNameSnapshot ?? null,
-            citySnapshot: order.citySnapshot ?? null,
-            stateSnapshot: order.stateSnapshot ?? null,
-            gstinSnapshot: order.gstinSnapshot ?? null,
+            clientNameSnapshot: customerSnapshot.clientNameSnapshot || null,
+            citySnapshot: customerSnapshot.citySnapshot || null,
+            stateSnapshot: customerSnapshot.stateSnapshot || null,
+            gstinSnapshot: customerSnapshot.gstinSnapshot || null,
             transportationPayment:
               nextDraftData.header.transportationPayment === "PAID"
                 ? "PAID"

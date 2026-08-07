@@ -263,8 +263,8 @@ export const createDraftSalesOrderAction = async (quotationId?: string | null) =
     );
 
     const resolvedClientName =
-      normalizeString(quotation.clientName) ??
       normalizeString(quotation.customer?.companyName) ??
+      normalizeString(quotation.clientName) ??
       normalizeString(quotation.receivedFromName);
 
     draftData = {

@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import type { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
+import { resolveSalesOrderCustomerSnapshot } from "./resolveSalesOrderCustomerSnapshot";
 
 function normalizeInvoiceDraftData(
   value: Prisma.JsonValue,
@@ -85,6 +86,19 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
             orderFy: true,
             poNumber: true,
             customerId: true,
+            clientName: true,
+            clientNameSnapshot: true,
+            citySnapshot: true,
+            stateSnapshot: true,
+            gstinSnapshot: true,
+            customer: {
+              select: {
+                companyName: true,
+                city: true,
+                state: true,
+                gstin: true,
+              },
+            },
             items: {
               orderBy: { sortOrder: "asc" },
               select: {
@@ -144,11 +158,49 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
       }));
 
     const draftData = normalizeInvoiceDraftData(invoice.draftData);
+    const linkedCustomerSnapshot = invoice.salesOrder
+      ? resolveSalesOrderCustomerSnapshot(invoice.salesOrder)
+      : null;
+    const resolvedDraftData =
+      draftData && linkedCustomerSnapshot
+        ? {
+            ...draftData,
+            header: {
+              ...draftData.header,
+              clientNameSnapshot:
+                draftData.header.clientNameSnapshot?.trim() ||
+                linkedCustomerSnapshot.clientNameSnapshot,
+              citySnapshot:
+                draftData.header.citySnapshot?.trim() ||
+                linkedCustomerSnapshot.citySnapshot,
+              stateSnapshot:
+                draftData.header.stateSnapshot?.trim() ||
+                linkedCustomerSnapshot.stateSnapshot,
+              gstinSnapshot:
+                draftData.header.gstinSnapshot?.trim() ||
+                linkedCustomerSnapshot.gstinSnapshot,
+            },
+          }
+        : draftData;
 
     return {
       ok: true as const,
       invoice: serializeForClient({
         ...invoice,
+        clientNameSnapshot:
+          invoice.clientNameSnapshot ||
+          linkedCustomerSnapshot?.clientNameSnapshot ||
+          null,
+        citySnapshot:
+          invoice.citySnapshot || linkedCustomerSnapshot?.citySnapshot || null,
+        stateSnapshot:
+          invoice.stateSnapshot ||
+          linkedCustomerSnapshot?.stateSnapshot ||
+          null,
+        gstinSnapshot:
+          invoice.gstinSnapshot ||
+          linkedCustomerSnapshot?.gstinSnapshot ||
+          null,
         subtotal: Number(invoice.subtotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
         grandTotal: Number(invoice.grandTotal ?? 0),
@@ -158,7 +210,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
             ? null
             : Number(invoice.transportationAmount),
         lrCopy,
-        draftData,
+        draftData: resolvedDraftData,
         pendingItems,
       }),
     };

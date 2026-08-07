@@ -65,6 +65,7 @@ type DraftHeader = {
   invoiceDate: string;
   dispatchDate?: string | null;
   poNumber?: string | null;
+  poDate?: string | null;
   transporterName?: string | null;
   vehicleNumber?: string | null;
   driverName?: string | null;
@@ -164,6 +165,9 @@ export async function updateInvoiceDraftAction(
               : null,
 
             poNumber: payload.header.poNumber || null,
+            poDate: payload.header.poDate
+              ? new Date(payload.header.poDate)
+              : null,
             clientNameSnapshot: payload.header.clientNameSnapshot || null,
             citySnapshot: payload.header.citySnapshot || null,
             stateSnapshot: payload.header.stateSnapshot || null,

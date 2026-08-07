@@ -79,17 +79,73 @@ export const searchProductVariantsForSelectAction = async ({
     ],
   });
 
-  const rows = await prisma.productVariant.findMany({
-    take: takeQty + 1,
-    skip: cursor ? 1 : 0,
-    cursor: cursor ? { id: cursor } : undefined,
-    where: {
-      product: {
-        deletedAt: null,
-      },
-      AND: terms.length > 0 ? terms.map(searchForTerm) : undefined,
+  const variantWhere: Prisma.ProductVariantWhereInput = {
+    product: {
+      deletedAt: null,
     },
+    AND: terms.length > 0 ? terms.map(searchForTerm) : undefined,
+  };
+
+  // Rank matching variants by the total quantity on real sales orders. Draft
+  // and cancelled orders are excluded so incomplete data does not affect the
+  // suggestions. Updated time and id provide stable tie-breakers.
+  const candidates = await prisma.productVariant.findMany({
+    where: variantWhere,
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    select: {
+      id: true,
+      updatedAt: true,
+    },
+  });
+
+  const candidateIds = candidates.map((variant) => variant.id);
+  const usageRows = candidateIds.length
+    ? await prisma.salesOrderItem.groupBy({
+        by: ["variantId"],
+        where: {
+          variantId: { in: candidateIds },
+          salesOrder: {
+            deletedAt: null,
+            status: { notIn: ["DRAFT", "CANCELLED"] },
+          },
+        },
+        _sum: { qty: true },
+      })
+    : [];
+
+  const usedQtyByVariant = new Map(
+    usageRows.flatMap((row) =>
+      row.variantId ? [[row.variantId, row._sum.qty ?? 0] as const] : [],
+    ),
+  );
+
+  candidates.sort((a, b) => {
+    const qtyDifference =
+      (usedQtyByVariant.get(b.id) ?? 0) -
+      (usedQtyByVariant.get(a.id) ?? 0);
+
+    if (qtyDifference !== 0) return qtyDifference;
+
+    const updatedDifference = b.updatedAt.getTime() - a.updatedAt.getTime();
+    if (updatedDifference !== 0) return updatedDifference;
+
+    return b.id.localeCompare(a.id);
+  });
+
+  const cursorIndex = cursor
+    ? candidates.findIndex((variant) => variant.id === cursor)
+    : -1;
+  const startIndex = cursorIndex >= 0 ? cursorIndex + 1 : 0;
+  const pageCandidates = candidates.slice(startIndex, startIndex + takeQty + 1);
+  const hasMore = pageCandidates.length > takeQty;
+  const pageIds = pageCandidates
+    .slice(0, takeQty)
+    .map((variant) => variant.id);
+
+  const unorderedRows = await prisma.productVariant.findMany({
+    where: {
+      id: { in: pageIds },
+    },
     select: {
       id: true,
       productId: true,
@@ -146,11 +202,14 @@ export const searchProductVariantsForSelectAction = async ({
     },
   });
 
-  const hasMore = rows.length > takeQty;
-  const sliced = hasMore ? rows.slice(0, takeQty) : rows;
+  const rowById = new Map(unorderedRows.map((row) => [row.id, row]));
+  const rows = pageIds.flatMap((id) => {
+    const row = rowById.get(id);
+    return row ? [row] : [];
+  });
 
   return {
-    items: sliced.map((v) => ({
+    items: rows.map((v) => ({
       id: v.id,
       description: v.product.shortDesc,
       hardware: v.product.hardware,
@@ -185,6 +244,6 @@ export const searchProductVariantsForSelectAction = async ({
         };
       }),
     })),
-    nextCursor: hasMore ? (sliced[sliced.length - 1]?.id ?? null) : null,
+    nextCursor: hasMore ? (pageIds[pageIds.length - 1] ?? null) : null,
   };
 };

@@ -76,9 +76,9 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
   const statusBadge = getSalesOrderStatusBadge(order.status);
 
   const clientName =
+    order.customer?.companyName ||
     order.clientNameSnapshot ||
     order.clientName ||
-    order.customer?.companyName ||
     order.receivedFromName ||
     "-";
 
@@ -534,11 +534,24 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             <CardContent className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-1">
               <Info
                 label="Client Name"
-                value={order.clientNameSnapshot || "-"}
+                value={
+                  order.customer?.companyName ||
+                  order.clientNameSnapshot ||
+                  "-"
+                }
               />
-              <Info label="City" value={order.citySnapshot || "-"} />
-              <Info label="State" value={order.stateSnapshot || "-"} />
-              <Info label="GSTIN" value={order.gstinSnapshot || "-"} />
+              <Info
+                label="City"
+                value={order.customer?.city || order.citySnapshot || "-"}
+              />
+              <Info
+                label="State"
+                value={order.customer?.state || order.stateSnapshot || "-"}
+              />
+              <Info
+                label="GSTIN"
+                value={order.customer?.gstin || order.gstinSnapshot || "-"}
+              />
               <Info label="Phone" value={order.receivedFromPhone || "-"} />
               <Info label="Email" value={order.receivedFromEmail || "-"} />
             </CardContent>

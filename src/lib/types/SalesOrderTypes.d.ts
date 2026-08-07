@@ -61,6 +61,10 @@ export type SalesOrderDraftItem = {
 export type SalesOrderDraftHeader = {
   customerId?: string | null;
   clientName?: string | null;
+  clientNameSnapshot?: string | null;
+  citySnapshot?: string | null;
+  stateSnapshot?: string | null;
+  gstinSnapshot?: string | null;
 
   quotationId?: string | null;
 

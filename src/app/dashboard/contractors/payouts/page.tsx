@@ -79,7 +79,7 @@ export default async function Page({
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 1);
 
-    const [entryAgg, entries, ledger, existingPayout, worker] = await Promise.all([
+    const [entryAgg, castingAgg, entries, ledger, existingPayout, worker] = await Promise.all([
       prisma.workEntry.aggregate({
         where: {
           workerId: sp.workerId,
@@ -87,6 +87,15 @@ export default async function Page({
           date: { gte: start, lt: end },
         },
         _sum: { amount: true },
+      }),
+      prisma.castingJobReceiptItem.aggregate({
+        where: {
+          castingJobReceipt: {
+            receivedAt: { gte: start, lt: end },
+            castingJob: { workerId: sp.workerId },
+          },
+        },
+        _sum: { laborAmount: true, receivedWeightKg: true },
       }),
       prisma.workEntry.findMany({
         where: {
@@ -141,7 +150,8 @@ export default async function Page({
         .filter((row) => row.kind === kind)
         .reduce((sum, row) => sum + Number(row.amount), 0);
 
-    const earnings = Number(entryAgg._sum.amount ?? 0);
+    const earnings =
+      Number(entryAgg._sum.amount ?? 0) + Number(castingAgg._sum.laborAmount ?? 0);
     const advances = sumByKind("ADVANCE");
     const deductions = sumByKind("DEDUCTION");
     const adjustments = sumByKind("ADJUSTMENT");

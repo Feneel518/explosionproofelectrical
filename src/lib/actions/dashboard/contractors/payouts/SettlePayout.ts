@@ -24,14 +24,25 @@ export const settlePayoutAction = async (values: SettlePayoutSchemaRequest) => {
   const { start, end } = monthRange(data.monthYear);
 
   try {
-    const entries = await prisma.workEntry.aggregate({
-      where: {
-        workerId: data.workerId,
-        deletedAt: null,
-        date: { gte: start, lt: end },
-      },
-      _sum: { amount: true, qty: true },
-    });
+    const [entries, castingEntries] = await Promise.all([
+      prisma.workEntry.aggregate({
+        where: {
+          workerId: data.workerId,
+          deletedAt: null,
+          date: { gte: start, lt: end },
+        },
+        _sum: { amount: true, qty: true },
+      }),
+      prisma.castingJobReceiptItem.aggregate({
+        where: {
+          castingJobReceipt: {
+            receivedAt: { gte: start, lt: end },
+            castingJob: { workerId: data.workerId },
+          },
+        },
+        _sum: { laborAmount: true, receivedWeightKg: true },
+      }),
+    ]);
 
     const ledger = await prisma.workerLedgerEntry.findMany({
       where: {
@@ -53,7 +64,9 @@ export const settlePayoutAction = async (values: SettlePayoutSchemaRequest) => {
       .filter((l) => l.kind === "BONUS")
       .reduce((s, l) => s + Number(l.amount), 0);
 
-    const earnings = Number(entries._sum.amount ?? 0);
+    const earnings =
+      Number(entries._sum.amount ?? 0) +
+      Number(castingEntries._sum.laborAmount ?? 0);
 
     const advanceApplied = data.applyAdvances ? advances : 0;
     const netPayable = Math.max(0, earnings + bonus - advanceApplied - deductions);

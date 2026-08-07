@@ -534,6 +534,13 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
 
   function applyQuotationToOrder(quotation: any) {
     const current = form.getValues();
+    const customer = quotation.customer;
+    const clientName =
+      quotation.clientName ??
+      customer?.companyName ??
+      quotation.receivedFromName ??
+      current.header.clientName ??
+      "";
 
     const mappedItems =
       quotation.items?.map((item: any, index: number) => ({
@@ -606,7 +613,26 @@ const SalesOrderFormNew: FC<SalesOrderFormNewProps> = ({
         isFullyInvoiced: false,
         isOverdueForDispatch: false,
         customerId: quotation.customerId ?? current.header.customerId ?? null,
-        clientName: quotation.clientName ?? current.header.clientName ?? "",
+        clientName,
+        clientNameSnapshot: clientName,
+        citySnapshot: customer?.city ?? current.header.citySnapshot ?? "",
+        stateSnapshot: customer?.state ?? current.header.stateSnapshot ?? "",
+        gstinSnapshot: customer?.gstin ?? current.header.gstinSnapshot ?? "",
+        receivedFromName:
+          quotation.receivedFromName ??
+          customer?.companyName ??
+          current.header.receivedFromName ??
+          "",
+        receivedFromPhone:
+          quotation.receivedFromPhone ??
+          customer?.companyPhone ??
+          current.header.receivedFromPhone ??
+          "",
+        receivedFromEmail:
+          quotation.receivedFromEmail ??
+          customer?.companyEmail ??
+          current.header.receivedFromEmail ??
+          "",
         additionalNotes: quotation.additionalNotes ?? "",
         deliveryDate: quotation.deliveryDate ?? "",
         gst: quotation.gst ?? current.header.gst,

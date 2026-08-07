@@ -49,6 +49,16 @@ export const getPendingQuotationsForCustomerAction = async (
       transportationPayment: true,
       discount: true,
       customerId: true,
+      customer: {
+        select: {
+          companyName: true,
+          companyPhone: true,
+          companyEmail: true,
+          city: true,
+          state: true,
+          gstin: true,
+        },
+      },
       items: {
         orderBy: {
           sortOrder: "asc",

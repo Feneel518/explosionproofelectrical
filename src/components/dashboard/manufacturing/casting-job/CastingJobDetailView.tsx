@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { closeCastingJobAction } from "@/lib/actions/dashboard/manufacturing/casting-job/closeCastingJobAction";
 import { postCastingJobReceiptAction } from "@/lib/actions/dashboard/manufacturing/casting-job/postCastingJobReceiptAction";
+import { getCastingWorkerRateAction } from "@/lib/actions/dashboard/manufacturing/casting-job/getCastingWorkerRateAction";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 
 function formatDate(value?: Date | string | null) {
@@ -69,6 +70,7 @@ type ReceiptRowInput = {
   outputCastingId: string | null;
   receivedQty: number;
   receivedWeightKg: number;
+  ratePerKg: number;
 };
 
 export default function CastingJobDetailView({ castingJob }: { castingJob: any }) {
@@ -88,6 +90,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
         outputCastingId: item.outputCastingId ?? null,
         receivedQty: 0,
         receivedWeightKg: 0,
+        ratePerKg: 0,
       };
     }
     return initial;
@@ -99,7 +102,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
   const onUpdateRow = (
     itemId: string,
-    key: "receivedQty" | "receivedWeightKg",
+    key: "receivedQty" | "receivedWeightKg" | "ratePerKg",
     value: number,
   ) => {
     setRows((prev) => ({
@@ -109,6 +112,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
           outputCastingId: null,
           receivedQty: 0,
           receivedWeightKg: 0,
+          ratePerKg: 0,
         }),
         [key]: value,
       },
@@ -123,10 +127,18 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
           outputCastingId: null,
           receivedQty: 0,
           receivedWeightKg: 0,
+          ratePerKg: 0,
         }),
         outputCastingId,
       },
     }));
+  };
+
+  const selectCastingAndRate = async (itemId: string, castingId: string | null) => {
+    onUpdateCasting(itemId, castingId);
+    if (!castingId || !castingJob.workerId) return;
+    const result = await getCastingWorkerRateAction(castingJob.workerId, castingId);
+    if (result.ok) onUpdateRow(itemId, "ratePerKg", result.ratePerKg);
   };
 
   const onPostReceipt = () => {
@@ -136,6 +148,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
         outputCastingId: rows[item.id]?.outputCastingId ?? item.outputCastingId ?? null,
         receivedQty: Number(rows[item.id]?.receivedQty || 0),
         receivedWeightKg: Number(rows[item.id]?.receivedWeightKg || 0),
+        ratePerKg: Number(rows[item.id]?.ratePerKg || 0),
       }))
       .filter(
         (item: any) => Number(item.receivedQty || 0) > 0 || Number(item.receivedWeightKg || 0) > 0,
@@ -304,7 +317,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
 
             <div className="space-y-3">
               {(castingJob.items ?? []).map((item: any, index: number) => (
-                <div key={item.id} className="grid gap-3 rounded-xl border p-3 md:grid-cols-5">
+                <div key={item.id} className="grid gap-3 rounded-xl border p-3 md:grid-cols-6">
                   <div>
                     <div className="text-sm font-medium">#{index + 1} {item.inputTitle}</div>
                     <div className="text-xs text-muted-foreground">
@@ -317,9 +330,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                       value={rows[item.id]?.outputCastingId ?? item.outputCastingId ?? null}
                       disabled={Boolean(item.outputCastingId)}
                       placeholder="Select casting received"
-                      onChange={(casting) =>
-                        onUpdateCasting(item.id, casting?.id ?? null)
-                      }
+                      onChange={(casting) => void selectCastingAndRate(item.id, casting?.id ?? null)}
                     />
                   </div>
                   <div className="space-y-1">
@@ -353,6 +364,18 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                       }
                     />
                   </div>
+                  <div className="space-y-1">
+                    <label className="text-xs">Rate / Kg</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={rows[item.id]?.ratePerKg ?? 0}
+                      onChange={(event) =>
+                        onUpdateRow(item.id, "ratePerKg", Math.max(0, Number(event.target.value || 0)))
+                      }
+                    />
+                  </div>
                   <div className="flex items-end justify-end">
                     <Button
                       type="button"
@@ -364,6 +387,7 @@ export default function CastingJobDetailView({ castingJob }: { castingJob: any }
                             outputCastingId: item.outputCastingId ?? null,
                             receivedQty: 0,
                             receivedWeightKg: 0,
+                            ratePerKg: rows[item.id]?.ratePerKg ?? 0,
                           },
                         }))
                       }

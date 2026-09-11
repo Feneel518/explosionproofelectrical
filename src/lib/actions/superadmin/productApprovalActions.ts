@@ -4,7 +4,9 @@ import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
   APPROVAL_SETTINGS_ID,
+  applyVariantUpdate,
   productCreateData,
+  productUpdateData,
   variantCreateData,
 } from "@/lib/products/approval";
 import { requireProductOwner } from "@/lib/check/requireProductOwner";
@@ -16,6 +18,8 @@ import { z } from "zod";
 const settingsSchema = z.object({
   sendEmailNotifications: z.boolean(),
 });
+const ProductUpdateSchema = ProductSchema.extend({ id: z.uuid() });
+const VariantUpdateSchema = ProductVariantSchema.extend({ id: z.uuid() });
 
 export async function updateProductApprovalSettingsAction(values: {
   sendEmailNotifications: boolean;
@@ -73,13 +77,17 @@ export async function reviewProductApprovalAction(
     });
     if (changed.count !== 1) return fail("This request was already reviewed.");
     revalidatePath("/superadmin");
-    return { ok: true as const, message: "Request rejected. Nothing was added." };
+    return { ok: true as const, message: "Request rejected. Nothing was changed." };
   }
 
-  const parsed =
-    request.type === "PRODUCT_CREATE"
-      ? ProductSchema.safeParse(request.payload)
-      : ProductVariantSchema.safeParse(request.payload);
+  const parsed = (() => {
+    switch (request.type) {
+      case "PRODUCT_CREATE": return ProductSchema.safeParse(request.payload);
+      case "PRODUCT_UPDATE": return ProductUpdateSchema.safeParse(request.payload);
+      case "VARIANT_CREATE": return ProductVariantSchema.safeParse(request.payload);
+      case "VARIANT_UPDATE": return VariantUpdateSchema.safeParse(request.payload);
+    }
+  })();
   if (!parsed.success) return fail("The stored request is invalid and cannot be approved.");
 
   try {
@@ -101,7 +109,19 @@ export async function reviewProductApprovalAction(
           data: productCreateData(ProductSchema.parse(request.payload)),
           select: { id: true },
         });
-      } else {
+      } else if (request.type === "PRODUCT_UPDATE") {
+        const data = ProductUpdateSchema.parse(request.payload);
+        const target = await tx.product.findFirst({
+          where: { id: data.id, deletedAt: null },
+          select: { id: true },
+        });
+        if (!target) throw new Error("TARGET_UNAVAILABLE");
+        created = await tx.product.update({
+          where: { id: data.id },
+          data: productUpdateData(data),
+          select: { id: true },
+        });
+      } else if (request.type === "VARIANT_CREATE") {
         const data = ProductVariantSchema.parse(request.payload);
         const parent = await tx.product.findFirst({
           where: { id: data.productId, deletedAt: null },
@@ -112,6 +132,21 @@ export async function reviewProductApprovalAction(
           data: variantCreateData(data),
           select: { id: true },
         });
+      } else {
+        const data = VariantUpdateSchema.parse(request.payload);
+        const target = await tx.productVariant.findUnique({
+          where: { id: data.id },
+          select: { productId: true },
+        });
+        if (!target || target.productId !== data.productId) {
+          throw new Error("TARGET_UNAVAILABLE");
+        }
+        const parent = await tx.product.findFirst({
+          where: { id: data.productId, deletedAt: null },
+          select: { id: true },
+        });
+        if (!parent) throw new Error("PARENT_UNAVAILABLE");
+        created = await applyVariantUpdate(tx, data);
       }
 
       await tx.productApprovalRequest.update({
@@ -125,15 +160,21 @@ export async function reviewProductApprovalAction(
     revalidatePath("/dashboard/products");
     revalidatePath("/catalog", "layout");
     revalidatePath("/");
-    if (request.type === "VARIANT_CREATE") {
+    if (request.type === "VARIANT_CREATE" || request.type === "VARIANT_UPDATE") {
       const payload = ProductVariantSchema.parse(request.payload);
       revalidatePath(`/dashboard/products/${payload.productId}`);
     }
+    const changed = request.type.endsWith("_UPDATE");
     return {
       ok: true as const,
-      message: `Approved and added to the catalogue (${createdId.slice(0, 8)}).`,
+      message: changed
+        ? `Approved and applied (${createdId.slice(0, 8)}).`
+        : `Approved and added to the catalogue (${createdId.slice(0, 8)}).`,
     };
   } catch (error) {
+    if (error instanceof Error && error.message === "TARGET_UNAVAILABLE") {
+      return fail("The product or variant no longer exists, so this edit cannot be applied.");
+    }
     if (error instanceof Error && error.message === "PARENT_UNAVAILABLE") {
       return fail("The parent product was removed. Restore it before approving this variant.");
     }

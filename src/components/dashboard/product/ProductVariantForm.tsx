@@ -161,7 +161,7 @@ const ProductVariantForm: FC<ProductVariantFormProps> = ({
       }
       description={
         isEditMode
-          ? "Update product details."
+          ? "Submit variant changes for owner approval. The current variant stays unchanged until approval."
           : isDuplicateMode
             ? "Adjust the copied variant and submit it for owner approval."
             : "Submit a variant for owner approval. It becomes available only after approval."
@@ -433,7 +433,7 @@ const ProductVariantForm: FC<ProductVariantFormProps> = ({
               ) : mode === "create" ? (
                 "Submit for approval"
               ) : (
-                "Save Changes"
+              "Submit changes for approval"
               )}
             </Button>
           </div>

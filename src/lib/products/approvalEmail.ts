@@ -1,5 +1,11 @@
 import { sendEmail } from "@/lib/actions/emails/send-emails.action";
 
+export type ProductApprovalRequestKind =
+  | "PRODUCT_CREATE"
+  | "PRODUCT_UPDATE"
+  | "VARIANT_CREATE"
+  | "VARIANT_UPDATE";
+
 export async function sendProductApprovalEmail({
   email,
   title,
@@ -7,18 +13,19 @@ export async function sendProductApprovalEmail({
 }: {
   email: string;
   title: string;
-  type: "PRODUCT_CREATE" | "VARIANT_CREATE";
+  type: ProductApprovalRequestKind;
 }) {
   const baseUrl =
     process.env.BETTER_AUTH_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     "http://localhost:3000";
-  const label = type === "PRODUCT_CREATE" ? "product" : "product variant";
+  const label = type.startsWith("PRODUCT_") ? "product" : "product variant";
+  const action = type.endsWith("_CREATE") ? "creation" : "edit";
 
   try {
     return await sendEmail(email, `Approval required: ${title}`, {
-    description: `A new ${label} build, “${title}”, is waiting for your approval. It has not been added to the live catalogue.`,
-    link: new URL("/superadmin", baseUrl).toString(),
+      description: `A ${label} ${action}, “${title}”, is waiting for your approval. The live catalogue has not been changed.`,
+      link: new URL("/superadmin", baseUrl).toString(),
     });
   } catch {
     // The request is already saved; notification failures must not invite resubmission.

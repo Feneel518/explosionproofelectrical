@@ -28,13 +28,21 @@ const id = '11111111-1111-4111-8111-111111111111';
 const product = { name: 'Test light', slug: 'test-light', categoryId: id, zones: ['1'] };
 const variant = { productId: id, variant: '100W', sku: 'TEST-100' };
 function setup(type = 'PRODUCT_CREATE', payload = product) {
-  const state = { request: { id, type, payload, status: 'PENDING' }, products: [], variants: [], submissions: [], parent: true };
+  const state = {
+    request: { id, type, payload, status: 'PENDING', targetRecordId: type.endsWith('_UPDATE') ? id : null },
+    products: [], variants: [], productUpdates: [], variantUpdates: [], submissions: [], parent: true,
+  };
   state.user = { id, email: 'feneelp@gmail.com', emailVerified: true };
   const prisma = {
     productApprovalSettings: { upsert: async () => ({ approvalEmail: 'feneelp@gmail.com', sendEmailNotifications: false }) },
     productApprovalRequest: {
       findUnique: async () => ({ ...state.request }),
-      create: async ({ data }) => { state.submissions.push(data); return { id, ...data }; },
+      create: async ({ data }) => {
+        if (data.targetRecordId && state.submissions.some(row => row.type === data.type && row.targetRecordId === data.targetRecordId)) {
+          throw new Error('pending target conflict');
+        }
+        state.submissions.push(data); return { id, ...data };
+      },
       updateMany: async ({ where, data }) => {
         if (state.request.status !== where.status) return { count: 0 };
         Object.assign(state.request, data);
@@ -44,9 +52,15 @@ function setup(type = 'PRODUCT_CREATE', payload = product) {
     },
     product: {
       findFirst: async () => state.parent ? { id, name: 'Test light' } : null,
+      findUnique: async () => state.parent ? { id, deletedAt: null } : null,
       create: async ({ data }) => { state.products.push(data); return { id }; },
+      update: async ({ data }) => { state.productUpdates.push(data); return { id }; },
     },
-    productVariant: { create: async ({ data }) => { state.variants.push(data); return { id }; } },
+    productVariant: {
+      findUnique: async () => state.parent ? { id, productId: id, product: { name: 'Test light', deletedAt: null } } : null,
+      create: async ({ data }) => { state.variants.push(data); return { id }; },
+      update: async ({ data }) => { state.variantUpdates.push(data); return { id }; },
+    },
     $transaction: async callback => {
       const before = structuredClone(state);
       try { return await callback(prisma); }
@@ -91,6 +105,40 @@ for (const [type, payload, filename, action, collection] of [
     assert.equal((await env.actions().reviewProductApprovalAction(id, 'REJECT')).ok, true);
     assert.equal(env.state.request.status, 'REJECTED');
     assert.equal(env.state.products.length + env.state.variants.length, 0);
+  });
+}
+
+for (const [type, payload, filename, action, updates] of [
+  ['PRODUCT_UPDATE', { ...product, id, name: 'Edited light' }, 'updateProductAction', 'updateProductAction', 'productUpdates'],
+  ['VARIANT_UPDATE', { ...variant, id, variant: 'Edited 100W' }, 'UpdateProductVariant', 'updateProductVariantAction', 'variantUpdates'],
+]) {
+  test(`${type}: submission leaves the live record unchanged`, async () => {
+    const env = setup(type, payload);
+    const result = await load('src/lib/actions/dashboard/products/' + filename, env.mocks)[action](payload);
+    assert.equal(result.ok, true);
+    assert.equal(env.state.submissions[0].type, type);
+    assert.equal(env.state.submissions[0].targetRecordId, id);
+    assert.equal(env.state[updates].length, 0);
+  });
+  test(`${type}: approval applies the edit exactly once`, async () => {
+    const env = setup(type, payload);
+    const { reviewProductApprovalAction: review } = env.actions();
+    assert.equal((await review(id, 'APPROVE')).ok, true);
+    assert.equal(env.state[updates].length, 1);
+    assert.equal((await review(id, 'APPROVE')).ok, false);
+    assert.equal(env.state[updates].length, 1);
+  });
+  test(`${type}: rejection leaves the live record unchanged`, async () => {
+    const env = setup(type, payload);
+    assert.equal((await env.actions().reviewProductApprovalAction(id, 'REJECT')).ok, true);
+    assert.equal(env.state[updates].length, 0);
+  });
+  test(`${type}: a second pending edit is refused`, async () => {
+    const env = setup(type, payload);
+    const update = load('src/lib/actions/dashboard/products/' + filename, env.mocks)[action];
+    assert.equal((await update(payload)).ok, true);
+    assert.equal((await update(payload)).ok, false);
+    assert.equal(env.state.submissions.length, 1);
   });
 }
 

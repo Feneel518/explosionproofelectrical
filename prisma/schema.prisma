@@ -62,7 +62,9 @@ enum ProductMediaKind {
 
 enum ProductApprovalRequestType {
   PRODUCT_CREATE
+  PRODUCT_UPDATE
   VARIANT_CREATE
+  VARIANT_UPDATE
 }
 
 enum ProductApprovalStatus {
@@ -545,9 +547,11 @@ model ProductApprovalRequest {
   reviewedAt      DateTime?
   reviewNote      String?
   createdRecordId String?
+  targetRecordId  String?
 
   @@index([status, createdAt])
   @@index([requesterId])
+  @@index([type, targetRecordId, status])
   @@map("product_approval_requests")
 }
 

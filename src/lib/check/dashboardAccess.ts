@@ -14,7 +14,7 @@ const parseAllowedDashboardEmails = () => {
   const values =
     envList.length > 0 ? envList : FALLBACK_ALLOWED_DASHBOARD_EMAILS;
 
-  return new Set(values.map(normalizeEmail));
+  return new Set([...FALLBACK_ALLOWED_DASHBOARD_EMAILS, ...values].map(normalizeEmail));
 };
 
 export const isDashboardEmailAllowed = (email?: string | null) => {

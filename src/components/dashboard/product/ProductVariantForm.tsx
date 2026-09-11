@@ -163,8 +163,8 @@ const ProductVariantForm: FC<ProductVariantFormProps> = ({
         isEditMode
           ? "Update product details."
           : isDuplicateMode
-            ? "Clone an existing variant and adjust only changed fields like rating."
-            : "Create a product record for billing and quotations."
+            ? "Adjust the copied variant and submit it for owner approval."
+            : "Submit a variant for owner approval. It becomes available only after approval."
       }
       footerHint={
         <div className="text-xl md:text-3xl max-md:hidden">{productName}</div>
@@ -431,7 +431,7 @@ const ProductVariantForm: FC<ProductVariantFormProps> = ({
               {isPending ? (
                 <LoadingButton></LoadingButton>
               ) : mode === "create" ? (
-                isDuplicateMode ? "Create Duplicate Variant" : "Create Product Variant"
+                "Submit for approval"
               ) : (
                 "Save Changes"
               )}

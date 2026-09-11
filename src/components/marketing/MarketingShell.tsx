@@ -39,7 +39,7 @@ export async function MarketingShell({
   ]);
 
   return (
-    <main
+    <main data-public-theme
       className={`${bebas.variable} ${inter.variable} ${spaceMono.variable} min-h-screen bg-[#04121b] px-3 text-white antialiased sm:px-5 xl:px-8`}>
       <div className="mx-auto w-full max-w-[1500px] border-x border-white/12 bg-[#04121b] font-[family-name:var(--font-marketing-sans)]">
         <UtilityBar showDashboardLink={showDashboardLink} />

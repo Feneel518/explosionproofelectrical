@@ -11,6 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
+import {
+  restoreProductAction,
+  softDeleteProductAction,
+} from "@/lib/actions/dashboard/products/DeleteProduct";
+import { toast } from "sonner";
+import { useRouter } from "nextjs-toploader/app";
 
 export default function ProductAction({
   id,
@@ -20,6 +26,19 @@ export default function ProductAction({
   deletedAt: Date | null;
 }) {
   const [pending, start] = React.useTransition();
+  const router = useRouter();
+
+  const runAction = (restore: boolean) => {
+    if (!restore && !window.confirm("Remove this product from the catalogue? Linked historical records will be preserved.")) return;
+    start(async () => {
+      const result = restore
+        ? await restoreProductAction(id)
+        : await softDeleteProductAction(id);
+      if (result.ok) toast.success(result.message);
+      else toast.error(result.message);
+      router.refresh();
+    });
+  };
 
   return (
     <DropdownMenu>
@@ -34,22 +53,18 @@ export default function ProductAction({
           <Link href={`/dashboard/products/${id}/edit`}>Edit</Link>
         </DropdownMenuItem>
 
-        {/* {!deletedAt ? (
+        {!deletedAt ? (
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
-            onClick={() =>
-              start(async () => void (await softDeleteProductAction(id)))
-            }>
-            Soft delete
+            onClick={() => runAction(false)}>
+            Remove duplicate
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem
-            onClick={() =>
-              start(async () => void (await restoreProductAction(id)))
-            }>
+            onClick={() => runAction(true)}>
             Restore
           </DropdownMenuItem>
-        )} */}
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

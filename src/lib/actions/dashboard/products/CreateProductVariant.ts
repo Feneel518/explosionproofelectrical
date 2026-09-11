@@ -1,11 +1,13 @@
 "use server";
 
 import { requireAuth } from "@/lib/check/requireAuth";
-import {
-  fail,
-  isUniqueConstraintError,
-} from "@/lib/helpers/actionHelpers/ActionResult";
+import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
+import {
+  getProductApprovalSettings,
+  toApprovalPayload,
+} from "@/lib/products/approval";
+import { sendProductApprovalEmail } from "@/lib/products/approvalEmail";
 import {
   ProductVariantSchema,
   ProductVariantSchemaRequest,
@@ -15,93 +17,46 @@ import { revalidatePath } from "next/cache";
 export const createProductVariantAction = async (
   values: ProductVariantSchemaRequest,
 ) => {
-  await requireAuth();
-
+  const session = await requireAuth();
   const parsed = ProductVariantSchema.safeParse(values);
 
-  if (!parsed.success || parsed.error) {
-    return {
-      ok: false,
-      message: "Enter the fields properly.",
-    };
+  if (!parsed.success) {
+    return { ok: false, message: "Enter the fields properly." };
   }
 
   const data = parsed.data;
-
   try {
-    const response = await prisma.productVariant.create({
-      data: {
-        productId: data.productId,
-        variant: data.variant,
-        cableEntry: data.cableEntry,
-        cutoutSize: data.cutoutSize,
-        earthing: data.earthing,
-        gasket: data.gasket,
-        glass: data.glass,
-        horsePower: data.horsePower,
-        kW: data.kW,
-        mounting: data.mounting,
-        rating: data.rating,
-        rpm: data.rpm,
-        plateSize: data.plateSize,
-        size: data.size,
-        sku: data.sku,
-        status: data.status,
-        terminals: data.terminals,
-        typeNumber: data.typeNumber,
-        wireGuard: data.wireGuard,
-        images: {
-          create: data.images?.map((img) => {
-            return {
-              kind: img.kind,
-              url: img.url,
-              title: img.title,
-            };
-          }),
-        },
+    const settings = await getProductApprovalSettings();
+    const product = await prisma.product.findFirst({
+      where: { id: data.productId, deletedAt: null },
+      select: { name: true },
+    });
+    if (!product) return fail("Product not found");
 
-        drawings: {
-          create: data.drawings?.map((dwg) => {
-            return {
-              kind: dwg.kind,
-              url: dwg.url,
-              title: dwg.title,
-            };
-          }),
-        },
-        components: {
-          create: data.component?.map((comp) => {
-            return {
-              component: {
-                create: {
-                  item: comp.item!,
-                  unit: comp.unit,
-                },
-              },
-            };
-          }),
-        },
+    const title = `${product.name} — ${data.variant}`;
+    await prisma.productApprovalRequest.create({
+      data: {
+        type: "VARIANT_CREATE",
+        title,
+        payload: toApprovalPayload(data),
+        requesterId: session.user.id,
       },
     });
 
-    revalidatePath("/dashboard/products");
-    revalidatePath(`/dashboard/products/${data.productId}`);
+    if (settings.sendEmailNotifications) {
+      await sendProductApprovalEmail({
+        email: settings.approvalEmail,
+        title,
+        type: "VARIANT_CREATE",
+      });
+    }
+
+    revalidatePath("/superadmin");
     return {
       ok: true,
-      message: "Product Variant Created",
+      message: "Variant submitted for owner approval. It is not live yet.",
     };
-  } catch (error) {
-    if (isUniqueConstraintError(error, "sku")) {
-      return fail("SKU already exists. Please use a different SKU.");
-    }
-
-    if (
-      isUniqueConstraintError(error, "variant") ||
-      isUniqueConstraintError(error, "productId")
-    ) {
-      return fail("Variant name already exists for this product.");
-    }
-
-    return fail("Failed to create product variant");
+  } catch {
+    return fail("Failed to submit product variant for approval");
   }
 };

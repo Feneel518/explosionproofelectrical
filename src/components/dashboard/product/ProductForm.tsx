@@ -130,7 +130,7 @@ export default function ProductForm({
       title={mode === "create" ? "New Product" : "Edit Product"}
       description={
         mode === "create"
-          ? "Create a product record for billing & quotations."
+          ? "Submit a new product for owner approval. It becomes available only after approval."
           : "Update product details."
       }
       footer={
@@ -150,7 +150,7 @@ export default function ProductForm({
             {pending ? (
               <LoadingButton></LoadingButton>
             ) : mode === "create" ? (
-              "Create Product"
+              "Submit for approval"
             ) : (
               "Save Changes"
             )}

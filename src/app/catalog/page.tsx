@@ -1,25 +1,20 @@
-import Link from "next/link";
-import { CatalogFilters } from "@/components/marketing/CatalogFilters";
-import { MarketingShell } from "@/components/marketing/MarketingShell";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
+import { IndustrialCatalog } from "@/components/marketing/design-preview/IndustrialCatalog";
 import { getCatalogData } from "@/lib/marketing/catalog";
+import { absoluteUrl } from "@/lib/seo/site";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Product Catalog",
+  description: "Explore ExEC flameproof lighting, control panels, instrumentation and enclosures. Browse specifications and share products with your team.",
+  alternates: { canonical: "/catalog" },
+  openGraph: { title: "ExEC | Product Catalog", description: "The complete ExEC product collection. Engineered in Vapi since 1996.", url: absoluteUrl("/catalog"), type: "website" },
+};
 
 export default async function CatalogPage() {
-  const { filters, products } = await getCatalogData();
-
-  return (
-    <MarketingShell active="catalog">
-      <section className="border-b border-white/12 bg-[#061d2b] px-5 py-14 sm:px-10 lg:px-[60px] lg:py-[74px]">
-        <div className="mb-6 font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.18em] text-white/55">
-          <Link href="/" className="text-[#F17D1E]">Home</Link> &nbsp;/&nbsp; Catalog
-        </div>
-        <h1 className="font-[family-name:var(--font-marketing-display)] text-6xl uppercase leading-none sm:text-[84px]">
-          Product Catalog
-        </h1>
-        <p className="mt-6 max-w-2xl text-base font-light leading-7 text-white/70">
-          Flameproof lighting, control panels, instrumentation and enclosures for certified hazardous-area installations.
-        </p>
-      </section>
-      <CatalogFilters filters={filters} products={products} />
-    </MarketingShell>
-  );
+  const data = await getCatalogData();
+  return <IndustrialFonts><IndustrialShell><Suspense fallback={<p style={{ padding: 36 }}>Loading product collection...</p>}><IndustrialCatalog {...data} /></Suspense></IndustrialShell></IndustrialFonts>;
 }

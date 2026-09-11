@@ -34,7 +34,19 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
         </TableHeader>
         <TableBody>
           {quotationItems.map((items, index) => {
-            console.log("items", items);
+            const variantImageUrl = items.variant?.images[0]?.url;
+            const firstDrawing = Array.isArray(items.variantDrawingsSnapshot)
+              ? items.variantDrawingsSnapshot[0]
+              : null;
+            const variantDrawingUrl =
+              firstDrawing &&
+              typeof firstDrawing === "object" &&
+              !Array.isArray(firstDrawing) &&
+              "url" in firstDrawing &&
+              typeof firstDrawing.url === "string"
+                ? firstDrawing.url
+                : "";
+
             return (
               <TableRow key={items.id} className="">
                 <TableCell className="font-medium">
@@ -350,12 +362,7 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                     <div className="flex ">
                       <p className="w-[120px]">Drawing</p>
                       <a
-                        href={
-                          Array.isArray(items.variantDrawingsSnapshot)
-                            ? // @ts-ignore
-                              items.variantDrawingsSnapshot[0]?.url || ""
-                            : ""
-                        }
+                        href={variantDrawingUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="text-sm underline">
@@ -369,11 +376,11 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                       <p>:{items.poReference}</p>
                     </div>
                   )}
-                  {items.showVariantImages && items.variant?.images[0].url && (
+                  {items.showVariantImages && variantImageUrl && (
                     <div className="w-full h-[150px] flex justify-start">
                       <Image
                         draggable={false}
-                        src={items.variant?.images[0].url}
+                        src={variantImageUrl}
                         alt={items.title}
                         width={100}
                         height={150}

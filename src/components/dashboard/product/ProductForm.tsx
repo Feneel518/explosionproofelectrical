@@ -131,7 +131,7 @@ export default function ProductForm({
       description={
         mode === "create"
           ? "Submit a new product for owner approval. It becomes available only after approval."
-          : "Update product details."
+          : "Submit product changes for owner approval. The current product stays unchanged until approval."
       }
       footer={
         <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
@@ -152,7 +152,7 @@ export default function ProductForm({
             ) : mode === "create" ? (
               "Submit for approval"
             ) : (
-              "Save Changes"
+              "Submit changes for approval"
             )}
           </Button>
         </div>

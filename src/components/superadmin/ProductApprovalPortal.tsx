@@ -26,7 +26,7 @@ import {
 
 type ApprovalItem = {
   id: string;
-  type: "PRODUCT_CREATE" | "VARIANT_CREATE";
+  type: "PRODUCT_CREATE" | "PRODUCT_UPDATE" | "VARIANT_CREATE" | "VARIANT_UPDATE";
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   title: string;
   createdAt: string;
@@ -175,7 +175,12 @@ export default function ProductApprovalPortal({
                     <div>
                       <div className="mb-2 flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className="rounded-sm border-orange-400/40 text-orange-300">
-                          {item.type === "PRODUCT_CREATE" ? "NEW PRODUCT" : "NEW VARIANT"}
+                          {{
+                            PRODUCT_CREATE: "NEW PRODUCT",
+                            PRODUCT_UPDATE: "PRODUCT EDIT",
+                            VARIANT_CREATE: "NEW VARIANT",
+                            VARIANT_UPDATE: "VARIANT EDIT",
+                          }[item.type]}
                         </Badge>
                         <span className="font-mono text-[11px] text-slate-500">#{item.id.slice(0, 8)}</span>
                       </div>
@@ -231,8 +236,8 @@ export default function ProductApprovalPortal({
               <div className="mb-2 flex items-center gap-2 text-orange-400"><SlidersHorizontal className="size-4" /><span className="font-mono text-[10px] uppercase tracking-[.22em]">Approval settings</span></div>
               <h2 className="font-serif text-xl">Creation controls</h2>
               <div className="mt-3">
-                <ToggleRow checked={true} locked onChange={() => undefined} label="Approve new products · mandatory" description="Every new product stays outside the catalogue until you approve it." />
-                <ToggleRow checked={true} locked onChange={() => undefined} label="Approve new variants · mandatory" description="Every new variant, including copies, is held for review." />
+                <ToggleRow checked={true} locked onChange={() => undefined} label="Approve product creation and edits · mandatory" description="New products stay unpublished and edits leave the current product unchanged until approval." />
+                <ToggleRow checked={true} locked onChange={() => undefined} label="Approve variant creation and edits · mandatory" description="New variants and changes to existing variants are held for review." />
                 <ToggleRow checked={settings.sendEmailNotifications} onChange={(checked) => setSettings({ ...settings, sendEmailNotifications: checked })} label="Email alerts" description={`Send requests to ${settings.approvalEmail}.`} />
               </div>
               <Button onClick={saveSettings} disabled={pending} className="mt-4 w-full rounded-sm">Save controls</Button>

@@ -115,11 +115,11 @@ export function NavUser({
                   Dashboard
                 </Link>
               </DropdownMenuItem>
-              {user.role === "ADMIN" || user.role === "OWNER" ? (
+              {user.email.trim().toLowerCase() === "feneelp@gmail.com" ? (
                 <DropdownMenuItem asChild>
                   <Link href="/superadmin">
                     <ShieldCheck />
-                    Super Admin
+                    Product approvals
                   </Link>
                 </DropdownMenuItem>
               ) : null}

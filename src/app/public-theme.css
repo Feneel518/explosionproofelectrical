@@ -1,0 +1,18 @@
+/* Shared monochrome surface for the remaining public-site layouts. */
+@media screen {
+  body:has([data-public-theme]) { background: #072436; }
+  [data-public-theme] {
+    background: #072436 !important;
+    color: #f0f2ed;
+    --background: #072436;
+    --foreground: #f0f2ed;
+  }
+  [data-public-theme] :is(section, article, header, footer, nav, aside, input, textarea, select, button, [class*="bg-"], [style*="background"]) {
+    background-color: #072436 !important;
+    background-image: none !important;
+  }
+  [data-public-theme] :is(h1, h2, h3, h4, p, a, button, label, input, textarea, select, [class*="text-[#"], [class*="text-black"]) { color: #f0f2ed; }
+  [data-public-theme] :is(input, textarea)::placeholder { color: #b7cbd7; }
+  [data-public-theme] .pointer-events-none.mix-blend-screen { display: none; }
+  [data-public-theme] :is(a, button, input, textarea, select):focus-visible { outline: 2px solid #bfd8e4; outline-offset: 3px; }
+}

@@ -130,7 +130,7 @@ export default function FrontendLayout({ children }: Readonly<LayoutProps>) {
   };
 
   return (
-    <div className="max-w-screen-2xl mx-auto text-white max-lg:mx-4 flex flex-col min-h-screen">
+    <div data-public-theme className="max-w-screen-2xl mx-auto text-white max-lg:mx-4 flex flex-col min-h-screen">
       <Script
         id="organization-jsonld"
         type="application/ld+json"

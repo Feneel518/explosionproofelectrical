@@ -1,6 +1,6 @@
 import type { ProductCardProduct } from "@/components/marketing/ProductCard";
 import { prisma } from "@/lib/prisma/db";
-import { marketingAsset } from "@/lib/marketing/data";
+import { cache } from "react";
 
 export type CatalogFilterOption = {
   label: string;
@@ -9,6 +9,9 @@ export type CatalogFilterOption = {
 
 export type CatalogProductCard = ProductCardProduct & {
   filter: string;
+  description: string;
+  variantCount: number;
+  searchText: string;
 };
 
 export type CatalogProductDetail = CatalogProductCard & {
@@ -24,16 +27,25 @@ export type CatalogProductDetail = CatalogProductCard & {
   hardware?: string | null;
   hsnCode?: string | null;
   zones: string[];
+  variants: CatalogVariant[];
 };
 
-const fallbackProductImages = [
-  marketingAsset("wellglass.png"),
-  marketingAsset("panel.png"),
-  marketingAsset("flood.png"),
-  marketingAsset("Tubeloight.png"),
-  marketingAsset("flame.png"),
-  marketingAsset("sketchfl.png"),
-];
+export type CatalogVariant = {
+  id: string;
+  variant: string;
+  typeNumber: string | null;
+  sku: string | null;
+  images: { url: string; title: string | null }[];
+  drawings: { url: string; title: string | null }[];
+  specs: [string, string][];
+};
+
+const variantFields = {
+  rating: "Rating", terminals: "Terminals", gasket: "Gasket", mounting: "Mounting",
+  cableEntry: "Cable entry", earthing: "Earthing", cutoutSize: "Cutout size",
+  plateSize: "Plate size", size: "Size", glass: "Glass", wireGuard: "Wire guard",
+  rpm: "RPM", kW: "kW", horsePower: "Horsepower",
+} as const;
 
 type CatalogProductRow = {
   name: string;
@@ -54,15 +66,10 @@ type CatalogProductRow = {
     name: string;
     slug: string;
   };
-  variants: {
-    typeNumber: string | null;
-    images: {
-      url: string;
-    }[];
-  }[];
+  variants: (Omit<CatalogVariant, "specs"> & Partial<Record<keyof typeof variantFields, string | null>>)[];
 };
 
-export async function getCatalogData() {
+export const getCatalogData = cache(async () => {
   const [categories, products] = await Promise.all([
     prisma.category.findMany({
       where: {
@@ -94,11 +101,11 @@ export async function getCatalogData() {
         value: category.slug,
       })),
     ],
-    products: products.map((product, index) => toCatalogProductCard(product, index)),
+    products: products.map(toCatalogProductCard),
   };
-}
+});
 
-export async function getCatalogProductDetail(slug: string) {
+export const getCatalogProductDetail = cache(async (slug: string) => {
   const product = await prisma.product.findFirst({
     where: {
       ...activeCatalogProductWhere(),
@@ -125,9 +132,23 @@ export async function getCatalogProductDetail(slug: string) {
   });
 
   return {
-    product: toCatalogProductDetail(product, 0),
-    related: related.map((item, index) => toCatalogProductCard(item, index + 1)),
+    product: toCatalogProductDetail(product),
+    related: related.map(toCatalogProductCard),
   };
+});
+
+/** The PDF uses exactly the same publication rules and fields as the website. */
+export async function getCatalogPdfProducts(): Promise<CatalogProductDetail[]> {
+  if (process.env.CATALOG_PDF_TRANSPORT === "neon-http") {
+    const { readCatalogOverNeonHttp } = await import("./catalogNeonHttp");
+    return readCatalogOverNeonHttp();
+  }
+  const products = await prisma.product.findMany({
+    where: activeCatalogProductWhere(),
+    orderBy: [{ category: { name: "asc" } }, { createdAt: "asc" }],
+    select: catalogProductSelect(),
+  });
+  return products.map(toCatalogProductDetail);
 }
 
 function activeCatalogProductWhere() {
@@ -170,16 +191,20 @@ function catalogProductSelect() {
       orderBy: {
         createdAt: "asc" as const,
       },
-      take: 1,
       select: {
+        id: true, variant: true, sku: true,
+        rating: true, terminals: true, gasket: true, mounting: true,
+        cableEntry: true, earthing: true, cutoutSize: true, plateSize: true,
+        size: true, glass: true, wireGuard: true, rpm: true, kW: true, horsePower: true,
+        drawings: { orderBy: { sortOrder: "asc" as const }, select: { url: true, title: true } },
         typeNumber: true,
         images: {
           orderBy: {
             sortOrder: "asc" as const,
           },
-          take: 1,
           select: {
             url: true,
+            title: true,
           },
         },
       },
@@ -189,36 +214,35 @@ function catalogProductSelect() {
 
 function toCatalogProductCard(
   product: CatalogProductRow,
-  index: number,
 ): CatalogProductCard {
   const variant = product.variants[0];
-  const image =
-    variant?.images[0]?.url?.trim() ||
-    fallbackProductImages[index % fallbackProductImages.length];
+  const image = product.variants.flatMap((item) => item.images).find((item) => item.url.trim())?.url || "";
 
   return {
     slug: product.slug,
     name: product.name,
     cat: product.category.name,
     image,
-    ip: formatProtectionLabel(product.protection) || "IP-66",
-    group: formatGasGroupLabel(product.gasGroup) || "Ex d IIB",
+    ip: formatProtectionLabel(product.protection) || "",
+    group: formatGasGroupLabel(product.gasGroup) || "",
     type: variant?.typeNumber?.trim() || product.flpType?.trim() || "EXEC",
     filter: product.category.slug,
+    description: product.shortDesc?.trim() || `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
+    variantCount: product.variants.length,
+    searchText: product.variants.map((item) => [item.variant, item.typeNumber, item.sku, item.rating].filter(Boolean).join(" ")).join(" "),
   };
 }
 
-function toCatalogProductDetail(
+export function toCatalogProductDetail(
   product: CatalogProductRow,
-  index: number,
 ): CatalogProductDetail {
   return {
-    ...toCatalogProductCard(product, index),
+    ...toCatalogProductCard(product),
     categoryId: product.categoryId,
     categorySlug: product.category.slug,
     description:
       product.shortDesc?.trim() ||
-      `The ${product.name} is a CIMFR tested, PESO approved ${product.category.name.toLowerCase()} unit engineered to contain an internal explosion and prevent ignition of the surrounding atmosphere.`,
+      `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range. Speak with our team about your application and specification.`,
     longDescription: product.longDesc,
     flpType: product.flpType,
     protection: product.protection,
@@ -228,6 +252,14 @@ function toCatalogProductDetail(
     hardware: product.hardware,
     hsnCode: product.hsnCode,
     zones: product.zones ?? [],
+    variants: product.variants.map((variant) => ({
+      id: variant.id, variant: variant.variant, typeNumber: variant.typeNumber,
+      sku: variant.sku, images: variant.images, drawings: variant.drawings,
+      specs: Object.entries(variantFields).flatMap(([key, label]): [string, string][] => {
+        const value = variant[key as keyof typeof variantFields]?.trim();
+        return value ? [[label, value]] : [];
+      }),
+    })),
   };
 }
 

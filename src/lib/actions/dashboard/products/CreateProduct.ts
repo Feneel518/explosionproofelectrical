@@ -1,11 +1,12 @@
 "use server";
 
 import { requireAuth } from "@/lib/check/requireAuth";
-import {
-  fail,
-  isUniqueConstraintError,
-} from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
+import {
+  getProductApprovalSettings,
+  toApprovalPayload,
+} from "@/lib/products/approval";
+import { sendProductApprovalEmail } from "@/lib/products/approvalEmail";
 import {
   ProductSchema,
   ProductSchemaRequest,
@@ -14,49 +15,38 @@ import { revalidatePath } from "next/cache";
 
 export const createProductAction = async (values: ProductSchemaRequest) => {
   const session = await requireAuth();
-
   const parsed = ProductSchema.safeParse(values);
 
-  if (!parsed.success || parsed.error) {
-    return {
-      ok: false,
-      message: "Enter the fields properly.",
-    };
+  if (!parsed.success) {
+    return { ok: false, message: "Enter the fields properly." };
   }
 
   const data = parsed.data;
-
   try {
-    const created = await prisma.product.create({
+    const settings = await getProductApprovalSettings();
+    await prisma.productApprovalRequest.create({
       data: {
-        name: data.name,
-        slug: data.slug,
-
-        flpType: data.flpType ?? null,
-        protection: data.protection ?? null,
-        gasGroup: data.gasGroup ?? null,
-        material: data.material ?? null,
-        finish: data.finish ?? null,
-        hardware: data.hardware ?? null,
-        hsnCode: data.hsnCode ?? null,
-        zones: data.zones,
-
-        shortDesc: data.shortDesc ?? null,
-        longDesc: data.longDesc ?? null,
-
-        categoryId: data.categoryId,
-        status: data.status ?? "ACTIVE",
+        type: "PRODUCT_CREATE",
+        title: data.name,
+        payload: toApprovalPayload(data),
+        requesterId: session.user.id,
       },
-      select: { id: true },
     });
 
-    revalidatePath("/dashboard/products");
-
-    return { ok: true, message: "Product created" };
-  } catch (e) {
-    if (isUniqueConstraintError(e, "slug")) {
-      return fail("Slug already exists");
+    if (settings.sendEmailNotifications) {
+      await sendProductApprovalEmail({
+        email: settings.approvalEmail,
+        title: data.name,
+        type: "PRODUCT_CREATE",
+      });
     }
-    return fail("Failed to create product");
+
+    revalidatePath("/superadmin");
+    return {
+      ok: true,
+      message: "Product submitted for owner approval. It is not live yet.",
+    };
+  } catch {
+    return { ok: false, message: "Failed to submit product for approval" };
   }
 };

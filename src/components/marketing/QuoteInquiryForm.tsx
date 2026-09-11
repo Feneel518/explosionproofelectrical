@@ -134,6 +134,7 @@ export function QuoteInquiryForm({
             value={values.fullName}
             onChange={(event) => setValue("fullName", event.target.value)}
             placeholder="Your name"
+            aria-label="Full name"
             disabled={isPending}
             className={inputClass}
           />
@@ -144,6 +145,7 @@ export function QuoteInquiryForm({
             value={values.company}
             onChange={(event) => setValue("company", event.target.value)}
             placeholder="Organisation"
+            aria-label="Company"
             disabled={isPending}
             className={inputClass}
           />
@@ -154,6 +156,7 @@ export function QuoteInquiryForm({
             value={values.email}
             onChange={(event) => setValue("email", event.target.value)}
             placeholder="you@company.com"
+            aria-label="Email"
             disabled={isPending}
             className={inputClass}
           />
@@ -164,6 +167,7 @@ export function QuoteInquiryForm({
             value={values.phone}
             onChange={(event) => setValue("phone", event.target.value)}
             placeholder="+91"
+            aria-label="Phone"
             disabled={isPending}
             className={inputClass}
           />
@@ -185,6 +189,7 @@ export function QuoteInquiryForm({
             value={values.quantity}
             onChange={(event) => setValue("quantity", event.target.value)}
             placeholder="e.g. 12 Nos"
+            aria-label="Quantity"
             disabled={isPending}
             className={inputClass}
           />
@@ -198,6 +203,7 @@ export function QuoteInquiryForm({
             value={values.requirement}
             onChange={(event) => setValue("requirement", event.target.value)}
             placeholder="Zone, gas group, load, quantity, timelines..."
+            aria-label="Your requirement"
             disabled={isPending}
             className={`${inputClass} resize-y leading-6`}
           />
@@ -247,6 +253,7 @@ function ProductInterestCombobox({
           type="button"
           variant="outline"
           role="combobox"
+          aria-label="Product interest"
           aria-expanded={open}
           disabled={disabled}
           className={cn(

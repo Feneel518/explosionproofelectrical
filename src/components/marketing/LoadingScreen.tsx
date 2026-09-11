@@ -52,7 +52,7 @@ export function LoadingScreen() {
   if (gone) return null;
 
   return (
-    <div
+    <div data-public-theme
       className={`${bebas.variable} ${inter.variable} ${spaceMono.variable} fixed inset-0 z-[9999] flex items-center justify-center bg-[#04121b] font-[family-name:var(--font-marketing-sans)]`}
       style={{ opacity: fading ? 0 : 1, transition: "opacity 0.7s ease", pointerEvents: fading ? "none" : "auto" }}
     >

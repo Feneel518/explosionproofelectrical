@@ -60,6 +60,18 @@ enum ProductMediaKind {
   DRAWING
 }
 
+enum ProductApprovalRequestType {
+  PRODUCT_CREATE
+  VARIANT_CREATE
+}
+
+enum ProductApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 enum NewsletterStatus {
   SUBSCRIBED
   UNSUBSCRIBED
@@ -149,31 +161,33 @@ model User {
 
   accounts                   Account[]
   sessions                   Session[]
-  customerCreatedBy          Customer[]          @relation("CustomerCreatedBy")
-  customerDeletedBy          Customer[]          @relation("CustomerDeletedBy")
-  customerUpdatedBy          Customer[]          @relation("CustomerUpdatedBy")
-  supplierCreatedBy          Supplier[]          @relation("SupplierCreatedBy")
-  supplierDeletedBy          Supplier[]          @relation("SupplierDeletedBy")
-  supplierUpdatedBy          Supplier[]          @relation("SupplierUpdatedBy")
-  rawMaterialCreatedBy       RawMaterial[]       @relation("RawMaterialCreatedBy")
-  rawMaterialDeletedBy       RawMaterial[]       @relation("RawMaterialDeletedBy")
-  rawMaterialUpdatedBy       RawMaterial[]       @relation("RawMaterialUpdatedBy")
-  categoriesCreatedBY        Category[]          @relation("CategoryCreatedBy")
-  categoriesDeletedBy        Category[]          @relation("CategoryDeletedBy")
-  categoriesUpdatedBY        Category[]          @relation("CategoryUpdatedBy")
-  productDeletedBy           Product[]           @relation("ProductDeletedBy")
-  quotationsCreatedBy        Quotation[]         @relation("QuotationCreatedBy")
-  quotationsUpdatedBy        Quotation[]         @relation("QuotationUpdatedBy")
-  quotationsDeletedBy        Quotation[]         @relation("QuotationDeletedBy")
-  quotationFollowups         QuotationFollowup[] @relation("QuotationFollowupCreatedBy")
-  deliveryChallanCreatedBy   DeliveryChallan[]   @relation("DeliveryChallanCreatedBy")
-  deliveryChallanUpdatedBy   DeliveryChallan[]   @relation("DeliveryChallanUpdatedBy")
-  deliveryChallanFinalizedBy DeliveryChallan[]   @relation("DeliveryChallanFinalizedBy")
-  deliveryChallanClosedBy    DeliveryChallan[]   @relation("DeliveryChallanClosedBy")
-  deliveryChallanDeletedBy   DeliveryChallan[]   @relation("DeliveryChallanDeletedBy")
-  salesOrderCreatedBy        SalesOrder[]        @relation("SalesOrderCreatedBy")
-  salesOrderUpdatedBy        SalesOrder[]        @relation("SalesOrderUpdatedBy")
-  salesOrderDeletedBy        SalesOrder[]        @relation("SalesOrderDeletedBy")
+  customerCreatedBy          Customer[]               @relation("CustomerCreatedBy")
+  customerDeletedBy          Customer[]               @relation("CustomerDeletedBy")
+  customerUpdatedBy          Customer[]               @relation("CustomerUpdatedBy")
+  supplierCreatedBy          Supplier[]               @relation("SupplierCreatedBy")
+  supplierDeletedBy          Supplier[]               @relation("SupplierDeletedBy")
+  supplierUpdatedBy          Supplier[]               @relation("SupplierUpdatedBy")
+  rawMaterialCreatedBy       RawMaterial[]            @relation("RawMaterialCreatedBy")
+  rawMaterialDeletedBy       RawMaterial[]            @relation("RawMaterialDeletedBy")
+  rawMaterialUpdatedBy       RawMaterial[]            @relation("RawMaterialUpdatedBy")
+  categoriesCreatedBY        Category[]               @relation("CategoryCreatedBy")
+  categoriesDeletedBy        Category[]               @relation("CategoryDeletedBy")
+  categoriesUpdatedBY        Category[]               @relation("CategoryUpdatedBy")
+  productDeletedBy           Product[]                @relation("ProductDeletedBy")
+  productApprovalRequests    ProductApprovalRequest[] @relation("ProductApprovalRequestedBy")
+  productApprovalReviews     ProductApprovalRequest[] @relation("ProductApprovalReviewedBy")
+  quotationsCreatedBy        Quotation[]              @relation("QuotationCreatedBy")
+  quotationsUpdatedBy        Quotation[]              @relation("QuotationUpdatedBy")
+  quotationsDeletedBy        Quotation[]              @relation("QuotationDeletedBy")
+  quotationFollowups         QuotationFollowup[]      @relation("QuotationFollowupCreatedBy")
+  deliveryChallanCreatedBy   DeliveryChallan[]        @relation("DeliveryChallanCreatedBy")
+  deliveryChallanUpdatedBy   DeliveryChallan[]        @relation("DeliveryChallanUpdatedBy")
+  deliveryChallanFinalizedBy DeliveryChallan[]        @relation("DeliveryChallanFinalizedBy")
+  deliveryChallanClosedBy    DeliveryChallan[]        @relation("DeliveryChallanClosedBy")
+  deliveryChallanDeletedBy   DeliveryChallan[]        @relation("DeliveryChallanDeletedBy")
+  salesOrderCreatedBy        SalesOrder[]             @relation("SalesOrderCreatedBy")
+  salesOrderUpdatedBy        SalesOrder[]             @relation("SalesOrderUpdatedBy")
+  salesOrderDeletedBy        SalesOrder[]             @relation("SalesOrderDeletedBy")
 
   // Contractor work tracker audit relations
   workersCreatedBy              Worker[]              @relation("WorkerCreatedBy")
@@ -514,6 +528,39 @@ model Product {
 
   @@index([name, slug])
   @@index([categoryId])
+}
+
+model ProductApprovalRequest {
+  id              String                     @id @default(uuid())
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  type            ProductApprovalRequestType
+  status          ProductApprovalStatus      @default(PENDING)
+  title           String
+  payload         Json
+  requesterId     String
+  requester       User                       @relation("ProductApprovalRequestedBy", fields: [requesterId], references: [id], onDelete: Restrict)
+  reviewedById    String?
+  reviewedBy      User?                      @relation("ProductApprovalReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt      DateTime?
+  reviewNote      String?
+  createdRecordId String?
+
+  @@index([status, createdAt])
+  @@index([requesterId])
+  @@map("product_approval_requests")
+}
+
+model ProductApprovalSettings {
+  id                     String   @id @default("product-approval")
+  approvalEmail          String   @default("feneelp@gmail.com")
+  requireProductApproval Boolean  @default(true)
+  requireVariantApproval Boolean  @default(true)
+  sendEmailNotifications Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("product_approval_settings")
 }
 
 model ProductSerialCounter {

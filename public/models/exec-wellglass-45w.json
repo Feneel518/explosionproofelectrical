@@ -1,0 +1,63 @@
+{
+  "presentation": "Original STL geometry with inferred assembly placement. Dome glass and wire guard are added visual approximations.",
+  "bytes": 1472704,
+  "parts": [
+    {
+      "part": "body",
+      "sourceFile": "45w well glass body for RPT.stl",
+      "sourceBytes": 2663484,
+      "triangles": 53268,
+      "vertices": 26578,
+      "originalBounds": {
+        "min": [
+          -112.49786376953125,
+          -112.5,
+          -87.5
+        ],
+        "max": [
+          112.49786376953125,
+          98,
+          0
+        ]
+      }
+    },
+    {
+      "part": "cover",
+      "sourceFile": "WELL GLASS 45W- COVER.stl",
+      "sourceBytes": 968884,
+      "triangles": 19376,
+      "vertices": 9690,
+      "originalBounds": {
+        "min": [
+          -80.64979553222656,
+          14.110029220581055,
+          -30.998884201049805
+        ],
+        "max": [
+          80.64979553222656,
+          175.70420837402344,
+          16.799394607543945
+        ]
+      }
+    },
+    {
+      "part": "ring",
+      "sourceFile": "WELL GLASS 45W- RING.stl",
+      "sourceBytes": 696484,
+      "triangles": 13928,
+      "vertices": 6964,
+      "originalBounds": {
+        "min": [
+          -73.6107177734375,
+          -169.88844299316406,
+          1.799935221672058
+        ],
+        "max": [
+          80.9073715209961,
+          -15.525949478149414,
+          33.79878234863281
+        ]
+      }
+    }
+  ]
+}

@@ -9,11 +9,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QuoteInquiryForm } from "@/components/marketing/QuoteInquiryForm";
+import { cn } from "@/lib/utils";
 
 export function RequestQuoteModal({
   productOptions,
+  contentClassName,
 }: {
   productOptions: string[];
+  contentClassName?: string;
 }) {
   return (
     <Dialog>
@@ -24,7 +27,7 @@ export function RequestQuoteModal({
           Request a Quote
         </button>
       </DialogTrigger>
-      <DialogContent className="max-h-[92vh] overflow-y-auto rounded-none border-white/14 bg-[#04121b] p-0 text-white shadow-[0_24px_90px_rgba(0,0,0,0.55)] sm:max-w-[720px]">
+      <DialogContent data-public-theme className={cn("max-h-[92vh] overflow-y-auto rounded-none border-white/14 bg-[#04121b] p-0 text-white shadow-[0_24px_90px_rgba(0,0,0,0.55)] sm:max-w-[720px]", contentClassName)}>
         <div className="border-b border-white/12 bg-[#061d2b] px-6 py-6 sm:px-8">
           <DialogHeader>
             <div className="font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.22em] text-[#F17D1E]">

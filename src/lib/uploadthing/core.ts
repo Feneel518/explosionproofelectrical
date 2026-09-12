@@ -46,6 +46,12 @@ export const fileRouter = {
     .onUploadComplete(async ({ file }) => {
       return { url: file.url, name: file.name };
     }),
+
+  blogCover: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(middleware)
+    .onUploadComplete(async ({ file }) => {
+      return { url: file.url, name: file.name };
+    }),
 } satisfies FileRouter;
 
 export type AppFileRouter = typeof fileRouter;

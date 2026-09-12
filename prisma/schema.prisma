@@ -79,6 +79,35 @@ enum NewsletterStatus {
   UNSUBSCRIBED
 }
 
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model BlogPost {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  title          String
+  slug           String         @unique
+  excerpt        String
+  content        String
+  category       String
+  coverImage     String
+  coverImageAlt  String
+  authorName     String         @default("ExEC Engineering Team")
+  status         BlogPostStatus @default(DRAFT)
+  featured       Boolean        @default(false)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  keywords       String[]       @default([])
+
+  @@index([status, publishedAt])
+  @@index([featured, status])
+  @@map("blog_posts")
+}
+
 enum QuotationStatus {
   DRAFT
   SENT

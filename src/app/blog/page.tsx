@@ -1,9 +1,18 @@
 import Link from "next/link";
 import { BlogCard } from "@/components/marketing/BlogCard";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
-import { posts } from "@/lib/marketing/data";
+import { getPublishedBlogPosts } from "@/lib/marketing/blog";
 
-export default function BlogPage() {
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Flameproof Engineering Blog",
+  description: "Practical guides about hazardous-area classification, flameproof equipment, PESO and CIMFR certification, lighting, installation and maintenance.",
+  alternates: { canonical: "/blog" },
+};
+
+export default async function BlogPage() {
+  const posts = await getPublishedBlogPosts();
   const [featured, ...gridPosts] = posts;
 
   return (
@@ -20,7 +29,7 @@ export default function BlogPage() {
         </p>
       </section>
 
-      <BlogCard post={featured} featured />
+      {featured ? <BlogCard post={featured} featured /> : <div className="border-b border-white/12 px-6 py-20 text-center text-white/60">Engineering notes are coming soon.</div>}
 
       <section className="grid md:grid-cols-2 xl:grid-cols-3">
         {gridPosts.map((post) => (

@@ -15,7 +15,7 @@ type MediaItem = {
 };
 
 type FileUploadProps = {
-  endpoint: "productImage" | "productDrawing" | "galleryImages";
+  endpoint: "productImage" | "productDrawing" | "galleryImages" | "blogCover";
   kind: ProductMediaKind; // e.g. "IMAGE" or "DRAWING"
 
   value?: MediaItem[] | undefined; // array now

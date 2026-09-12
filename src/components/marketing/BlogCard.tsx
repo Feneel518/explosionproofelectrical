@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MarketingPost } from "@/lib/marketing/data";
+import type { PublicBlogPost } from "@/lib/marketing/blog";
 
 type BlogCardProps = {
-  post: MarketingPost;
+  post: PublicBlogPost;
   featured?: boolean;
 };
 
@@ -12,7 +12,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
     return (
       <Link href={`/blog/${post.slug}`} className="group grid border-t border-white/12 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="relative min-h-[380px] overflow-hidden border-r border-white/12">
-          <Image src={post.image} alt="" fill className="object-cover opacity-70 transition-transform duration-500 group-hover:scale-105" />
+          <Image src={post.image} alt={post.imageAlt} fill className="object-cover opacity-70 transition-transform duration-500 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#04121b]/30 to-[#04121b]/70" />
         </div>
         <div className="flex flex-col justify-center bg-[#061d2b] p-8 lg:p-12">
@@ -32,7 +32,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
   return (
     <Link href={`/blog/${post.slug}`} className="group flex min-h-[430px] flex-col border-b border-r border-white/12 bg-[#061d2b] transition-colors hover:bg-[#082739]">
       <div className="relative h-[210px] overflow-hidden">
-        <Image src={post.image} alt="" fill className="object-cover opacity-75 transition-transform duration-500 group-hover:scale-105" />
+        <Image src={post.image} alt={post.imageAlt} fill className="object-cover opacity-75 transition-transform duration-500 group-hover:scale-105" />
         <div className="absolute left-5 top-5 bg-[#E46414] px-3 py-2 font-[family-name:var(--font-marketing-mono)] text-[10px] uppercase tracking-[0.12em]">
           {post.cat}
         </div>
@@ -48,7 +48,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
   );
 }
 
-function Meta({ post }: { post: MarketingPost }) {
+function Meta({ post }: { post: PublicBlogPost }) {
   return (
     <div className="flex flex-wrap items-center gap-3 font-[family-name:var(--font-marketing-mono)] text-[10px] uppercase tracking-[0.12em] text-white/50">
       <span>{post.cat}</span>

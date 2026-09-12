@@ -207,6 +207,10 @@ const data = {
           title: "Visitor Analytics",
           url: "/dashboard/website-analytics",
         },
+        {
+          title: "Blog Articles",
+          url: "/dashboard/blog",
+        },
       ],
     },
   ],

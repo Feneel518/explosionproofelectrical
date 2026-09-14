@@ -9,6 +9,7 @@ import { IndustrialFonts } from "@/components/marketing/design-preview/Industria
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { IndustrialBlogCard } from "@/components/marketing/design-preview/IndustrialBlogCard";
 import { getPublishedBlogPost, getPublishedBlogPosts } from "@/lib/marketing/blog";
+import { sanitizeBlogContent } from "@/lib/editor/sanitizeBlogContent";
 import { absoluteUrl, SITE_NAME } from "@/lib/seo/site";
 import styles from "@/components/marketing/design-preview/blog.module.css";
 
@@ -35,9 +36,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const morePosts = posts.filter((item) => item.slug !== post.slug).slice(0, 3);
   const contentHtml = isHtmlContent(post.content);
   const contentBlocks = contentHtml ? [] : parseArticleContent(post.content);
+  const preparedHtml = contentHtml ? prepareHtmlContent(sanitizeBlogContent(post.content)) : null;
   const sections: ArticleSection[] = [
     { id: "article-overview", title: "Article overview" },
-    ...contentBlocks.filter((block) => block.type === "heading").map((block) => ({ id: block.id!, title: block.text })),
+    ...(preparedHtml?.sections ?? contentBlocks.filter((block) => block.type === "heading").map((block) => ({ id: block.id!, title: block.text }))),
   ];
   const schema = [
     { "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, image: [absoluteUrl(post.image)], datePublished: post.publishedAt.toISOString(), dateModified: post.updatedAt.toISOString(), author: { "@type": "Organization", name: post.authorName, url: absoluteUrl("/story") }, publisher: { "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/"), logo: { "@type": "ImageObject", url: absoluteUrl("/asset/shortLogo.png") } }, mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl(`/blog/${post.slug}`) } },
@@ -68,7 +70,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </aside>
         <div className={styles.articleContent}>
           <span id="article-overview" className={styles.anchorTarget} aria-hidden="true" />
-          {contentHtml ? <div className={styles.prose} dangerouslySetInnerHTML={{ __html: post.content }} /> : <div className={styles.prose}><ArticleContent blocks={contentBlocks} /></div>}
+          {preparedHtml ? <div className={styles.prose} dangerouslySetInnerHTML={{ __html: preparedHtml.html }} /> : <div className={styles.prose}><ArticleContent blocks={contentBlocks} /></div>}
         </div>
       </section>
     </article>
@@ -178,6 +180,31 @@ function stripMarkdown(text: string) {
 
 function isHtmlContent(content: string) {
   return /<\/?[a-z][\s\S]*>/i.test(content);
+}
+
+function prepareHtmlContent(content: string) {
+  const usedIds = new Map<string, number>();
+  const sections: ArticleSection[] = [];
+  const html = content.replace(/<h([2-4])([^>]*)>([\s\S]*?)<\/h\1>/gi, (_match, level: string, attributes: string, innerHtml: string) => {
+    const title = decodeBasicEntities(innerHtml.replace(/<[^>]+>/g, "")).trim();
+    const baseId = title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || "section";
+    const count = usedIds.get(baseId) ?? 0;
+    usedIds.set(baseId, count + 1);
+    const id = count ? `${baseId}-${count + 1}` : baseId;
+    sections.push({ id, title: title || "Untitled section" });
+    return `<h${level}${attributes} id="${id}">${innerHtml}</h${level}>`;
+  });
+  return { html, sections };
+}
+
+function decodeBasicEntities(value: string) {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&nbsp;/g, " ");
 }
 
 function renderInline(text: string): ReactNode[] {

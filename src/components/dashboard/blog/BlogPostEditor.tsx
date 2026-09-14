@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { ArrowLeft, Eye, ExternalLink, Save } from "lucide-react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
 import { toast } from "sonner";
+import { RichTextEditor } from "@/components/dashboard/blog/RichTextEditor";
 import { FileUpload } from "@/components/dashboard/global/FileUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,7 +175,7 @@ function BlogPostPreview({ values }: { values: BlogPostInput }) {
 
 function PreviewContent({ content }: { content: string }) {
   if (isHtmlContent(content)) {
-    return <div className="max-w-3xl space-y-7 text-lg font-light leading-8 text-white/75 [&_h2]:pt-5 [&_h2]:text-4xl [&_h2]:font-medium [&_h2]:uppercase [&_h2]:leading-tight [&_h2]:tracking-[-0.04em] [&_h2]:text-white [&_h3]:pt-5 [&_h3]:text-3xl [&_h3]:font-medium [&_h3]:uppercase [&_h3]:leading-tight [&_h3]:tracking-[-0.04em] [&_h3]:text-white [&_p]:text-white/75 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_li]:marker:text-[#f17d1e] [&_blockquote]:border-l-2 [&_blockquote]:border-[#f17d1e] [&_blockquote]:pl-4 [&_blockquote]:text-white/80 [&_a]:text-[#b8def7] [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold [&_em]:italic" dangerouslySetInnerHTML={{ __html: content }} />;
+    return <div className="max-w-3xl space-y-7 overflow-hidden text-lg font-light leading-8 text-white/75 [&_h2]:pt-5 [&_h2]:text-4xl [&_h2]:font-medium [&_h2]:uppercase [&_h2]:leading-tight [&_h2]:tracking-[-0.04em] [&_h2]:text-white [&_h3]:pt-5 [&_h3]:text-3xl [&_h3]:font-medium [&_h3]:uppercase [&_h3]:leading-tight [&_h3]:tracking-[-0.04em] [&_h3]:text-white [&_h4]:pt-3 [&_h4]:text-xl [&_h4]:font-semibold [&_h4]:text-white [&_p]:text-white/75 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_li]:marker:text-[#f17d1e] [&_blockquote]:rounded-r-lg [&_blockquote]:border-l-2 [&_blockquote]:border-[#f17d1e] [&_blockquote]:bg-white/5 [&_blockquote]:p-4 [&_blockquote]:text-white/80 [&_a]:text-[#b8def7] [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold [&_em]:italic [&_mark]:rounded-sm [&_mark]:bg-[#f17d1e]/30 [&_mark]:px-1 [&_mark]:text-white [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/30 [&_pre]:p-5 [&_pre]:text-sm [&_table]:min-w-[560px] [&_table]:border-collapse [&_table]:text-sm [&_.tableWrapper]:overflow-x-auto [&_th]:border [&_th]:border-white/15 [&_th]:bg-white/10 [&_th]:p-3 [&_td]:border [&_td]:border-white/15 [&_td]:p-3" dangerouslySetInnerHTML={{ __html: content }} />;
   }
 
   const blocks = content.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
@@ -189,49 +187,6 @@ function PreviewContent({ content }: { content: string }) {
         if (lines.every((line) => line.startsWith("- "))) return <ul key={index} className="list-disc space-y-2 pl-6 marker:text-[#f17d1e]">{lines.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}>{line.slice(2)}</li>)}</ul>;
         return <p key={index}>{block}</p>;
       })}
-    </div>
-  );
-}
-
-function RichTextEditor({ value, onChange }: { value: string; onChange: (content: string) => void }) {
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: "Start with a strong introduction...",
-      }),
-    ],
-    content: value || "",
-    editorProps: {
-      attributes: {
-        class: "min-h-[420px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm leading-6 text-foreground focus:outline-none",
-      },
-    },
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
-  });
-
-  useEffect(() => {
-    if (!editor) return;
-    if (value !== editor.getHTML()) {
-      editor.commands.setContent(value || "", { emitUpdate: false });
-    }
-  }, [editor, value]);
-
-  if (!editor) return null;
-
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2 rounded-md border border-input bg-muted/30 p-2">
-        <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">Bold</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">Italic</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">H2</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">H3</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">Bullets</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">Numbered</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className="rounded border border-input bg-background px-2 py-1 text-xs font-medium">Quote</button>
-      </div>
-      <EditorContent editor={editor} />
     </div>
   );
 }

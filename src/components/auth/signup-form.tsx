@@ -1,36 +1,37 @@
-﻿"use client";
+"use client";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Controller, useForm } from "react-hook-form";
+import { signUpEmailAction } from "@/lib/actions/auth/sign-up-email.action";
+import { signIn } from "@/lib/auth/authClient";
 import {
   registerValidator,
-  RegisterValidatorSchema,
+  type RegisterValidatorSchema,
 } from "@/lib/validators/registerValidator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUp } from "@/lib/auth/authClient";
-import { toast } from "sonner";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
-import React from "react";
-import { Spinner } from "../ui/spinner";
 import { useRouter } from "nextjs-toploader/app";
-import { signUpEmailAction } from "@/lib/actions/auth/sign-up-email.action";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
+import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
+import { Spinner } from "../ui/spinner";
+import { GoogleMark } from "./google-mark";
+import styles from "./signup-form.module.css";
 
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+export function SignupForm() {
   const [isPending, setIsPending] = React.useState(false);
-
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmation, setShowConfirmation] = React.useState(false);
   const router = useRouter();
 
   const form = useForm<RegisterValidatorSchema>({
@@ -43,44 +44,74 @@ export function SignupForm({
     },
   });
 
-  const onsubmit = async (data: RegisterValidatorSchema) => {
+  const onSubmit = async (data: RegisterValidatorSchema) => {
     setIsPending(true);
     const response = await signUpEmailAction(data);
+
     if (response?.error) {
       toast.error(response.error);
       setIsPending(false);
-    } else {
-      setIsPending(false);
-      toast.success("Account created successfully! Please verify your email.");
-      router.push("/auth/register/success");
+      return;
     }
+
+    toast.success("Account created. Check your inbox to verify your email.");
+    router.push("/auth/register/success");
   };
+
+  const handleGoogleSignUp = async () => {
+    await signIn.social({
+      provider: "google",
+      callbackURL: "/",
+      errorCallbackURL: "/auth/error",
+      fetchOptions: {
+        onRequest: () => setIsPending(true),
+        onResponse: () => setIsPending(false),
+        onError: (context) => {
+          setIsPending(false);
+          toast.error(
+            context.error.message || "Something went wrong with Google sign-up",
+          );
+        },
+      },
+    });
+  };
+
   return (
-    <form
-      onSubmit={form.handleSubmit(onsubmit)}
-      className={cn("flex flex-col gap-6", className)}
-      {...props}>
-      <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            Fill in the form below to create your account
-          </p>
+    <form className={styles.form} onSubmit={form.handleSubmit(onSubmit)} noValidate>
+      <header className={styles.formHeader}>
+        <div className={styles.portalLabel}>
+          <ShieldCheck size={13} />
+          <span>New operator // identity setup</span>
         </div>
+        <h1>Create access.</h1>
+        <p>
+          Set up your operator profile. We&apos;ll verify your email before
+          activating secure portal access.
+        </p>
+      </header>
+
+      <div className={styles.fields}>
         <Controller
           name="name"
           control={form.control}
           render={({ field, fieldState }) => (
-            <Field>
-              <FieldLabel htmlFor="name">Full Name</FieldLabel>
-              <Input
-                {...field}
-                id="name"
-                aria-invalid={fieldState.invalid}
-                placeholder="John Doe"
-                autoComplete="off"
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            <Field className={styles.field} data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="name">Full name</FieldLabel>
+              <div className={styles.inputWrap}>
+                <UserRound aria-hidden="true" size={17} />
+                <Input
+                  {...field}
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="Your full name"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.invalid ? "name-error" : undefined}
+                />
+              </div>
+              {fieldState.invalid && (
+                <FieldError id="name-error" errors={[fieldState.error]} />
+              )}
             </Field>
           )}
         />
@@ -89,87 +120,155 @@ export function SignupForm({
           name="email"
           control={form.control}
           render={({ field, fieldState }) => (
-            <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                {...field}
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-              <FieldDescription>
-                We&apos;ll use this to contact you. We will not share your email
-                with anyone else.
-              </FieldDescription>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input {...field} id="password" type="password" required />
-              <FieldDescription>
-                Must be at least 8 characters long.
-              </FieldDescription>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-        <Controller
-          name="confirmPassword"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field>
-              <FieldLabel htmlFor="confirm-password">
-                Confirm Password
-              </FieldLabel>
-              <Input
-                {...field}
-                id="confirm-password"
-                type="password"
-                required
-              />
-              <FieldDescription>Please confirm your password.</FieldDescription>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-
-        <Field>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? (
-              <div className="flex items-center justify-center gap-1">
-                <Spinner></Spinner> Setting up your Account...
+            <Field className={styles.field} data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="register-email">Work email</FieldLabel>
+              <div className={styles.inputWrap}>
+                <Mail aria-hidden="true" size={17} />
+                <Input
+                  {...field}
+                  id="register-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="name@company.com"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={
+                    fieldState.invalid ? "register-email-error" : undefined
+                  }
+                />
               </div>
-            ) : (
-              "Create Account"
+              {fieldState.invalid && (
+                <FieldError
+                  id="register-email-error"
+                  errors={[fieldState.error]}
+                />
+              )}
+            </Field>
+          )}
+        />
+
+        <div className={styles.passwordGrid}>
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field className={styles.field} data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="register-password">Password</FieldLabel>
+                <div className={styles.inputWrap}>
+                  <LockKeyhole aria-hidden="true" size={17} />
+                  <Input
+                    {...field}
+                    id="register-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="8+ characters"
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={
+                      fieldState.invalid ? "register-password-error" : undefined
+                    }
+                  />
+                  <button
+                    className={styles.passwordToggle}
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}>
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+                {fieldState.invalid && (
+                  <FieldError
+                    id="register-password-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
+              </Field>
             )}
-          </Button>
-        </Field>
-        <FieldSeparator>Or continue with</FieldSeparator>
-        <Field>
-          <Button variant="outline" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path
-                d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-                fill="currentColor"
-              />
-            </svg>
-            Sign up with GitHub
-          </Button>
-          <FieldDescription className="px-6 text-center">
-            Already have an account? <Link href="/auth/login">Sign in</Link>
-          </FieldDescription>
-        </Field>
-      </FieldGroup>
+          />
+
+          <Controller
+            name="confirmPassword"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field className={styles.field} data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="confirm-password">Confirm password</FieldLabel>
+                <div className={styles.inputWrap}>
+                  <LockKeyhole aria-hidden="true" size={17} />
+                  <Input
+                    {...field}
+                    id="confirm-password"
+                    type={showConfirmation ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Repeat password"
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={
+                      fieldState.invalid ? "confirm-password-error" : undefined
+                    }
+                  />
+                  <button
+                    className={styles.passwordToggle}
+                    type="button"
+                    onClick={() => setShowConfirmation((visible) => !visible)}
+                    aria-label={
+                      showConfirmation
+                        ? "Hide password confirmation"
+                        : "Show password confirmation"
+                    }
+                    aria-pressed={showConfirmation}>
+                    {showConfirmation ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+                {fieldState.invalid && (
+                  <FieldError
+                    id="confirm-password-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
+              </Field>
+            )}
+          />
+        </div>
+      </div>
+
+      <div className={styles.verificationNote}>
+        <ShieldCheck aria-hidden="true" size={15} />
+        <span>Email verification is required before first access.</span>
+      </div>
+
+      <Button
+        className={styles.submitButton}
+        type="submit"
+        disabled={isPending}
+        aria-live="polite">
+        {isPending ? (
+          <span>
+            <Spinner /> Creating account…
+          </span>
+        ) : (
+          <>
+            <span>Create operator account</span>
+            <ArrowRight size={18} />
+          </>
+        )}
+      </Button>
+
+      <div className={styles.divider} role="separator">
+        <span>or use single sign-on</span>
+      </div>
+
+      <Button
+        className={styles.googleButton}
+        onClick={handleGoogleSignUp}
+        variant="outline"
+        type="button"
+        disabled={isPending}>
+        <GoogleMark />
+        Continue with Google
+      </Button>
+
+      <p className={styles.registration}>
+        Already registered? <Link href="/auth/login">Sign in to the portal</Link>
+      </p>
     </form>
   );
 }

@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/check/requireAuth";
+import { sanitizeBlogContent } from "@/lib/editor/sanitizeBlogContent";
 import { prisma } from "@/lib/prisma/db";
 import { BlogPostInput, BlogPostSchema } from "@/lib/validators/dashboard/blog/BlogPostValidator";
 
@@ -28,7 +29,7 @@ export async function saveBlogPostAction(id: string | null, input: BlogPostInput
     return { ok: false, message: "Please correct the highlighted article details.", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> };
   }
 
-  const values = parsed.data;
+  const values = { ...parsed.data, content: sanitizeBlogContent(parsed.data.content) };
   const publishedAt = values.status === "PUBLISHED" ? new Date() : null;
   try {
     if (id) {

@@ -550,6 +550,51 @@
   scroll-margin-top: 88px;
 }
 
+.prose h4 {
+  padding-top: 10px;
+  color: var(--blog-text);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -.015em;
+}
+
+.prose blockquote {
+  padding: 20px 24px;
+  border-left: 3px solid var(--blog-accent);
+  color: #e2edf2;
+  background: rgba(240, 122, 43, .07);
+}
+
+.prose mark {
+  padding: .08em .22em;
+  border-radius: 2px;
+  color: var(--blog-text);
+  background: rgba(240, 122, 43, .28);
+}
+
+.prose pre {
+  overflow-x: auto;
+  padding: 20px 22px;
+  border: 1px solid var(--blog-line);
+  border-radius: 4px;
+  background: #041721;
+  box-shadow: inset 3px 0 0 var(--blog-accent);
+}
+
+.prose pre code {
+  padding: 0;
+  border: 0;
+  color: #dce9ef;
+  background: transparent;
+}
+
+.prose hr {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, var(--blog-accent) 0 38px, var(--blog-line) 38px 100%);
+}
+
 .prose a {
   color: #b8def7;
   text-decoration: underline;
@@ -573,6 +618,13 @@
 .prose li + li { margin-top: 11px; }
 
 .tableScroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--blog-line);
+  background: rgba(255, 255, 255, .018);
+}
+
+.prose :global(.tableWrapper) {
   max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--blog-line);

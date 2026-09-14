@@ -1,100 +1,88 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { MarketingShell } from "@/components/marketing/MarketingShell";
+import { ArrowDownRight } from "lucide-react";
 import { ContactForm } from "@/components/marketing/ContactForm";
-import { marketingAsset } from "@/lib/marketing/data";
+import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { getQuoteProductOptions } from "@/lib/marketing/quoteProductOptions";
+import { marketingAsset } from "@/lib/marketing/data";
+import { absoluteUrl, COMPANY_ADDRESS, COMPANY_EMAIL } from "@/lib/seo/site";
+import styles from "@/components/marketing/design-preview/public-pages.module.css";
 
-const contactInfo = [
-  { label: "FACTORY & OFFICE", value: "GIDC Phase IV, Vapi", sub: "Gujarat 396195, India" },
-  { label: "EMAIL", value: "info@explosionproofelectrical.com", sub: "Sales & engineering enquiries" },
-  { label: "PHONE", value: "+91 260 000 0000", sub: "Mon–Sat · 9:30 AM – 6:30 PM IST" },
-  { label: "CERTIFICATION", value: "CIMFR Tested · PESO Approved", sub: "IP-66 · Ex d IIA·IIB·IIC" },
-];
-
-const departments = [
-  { name: "SALES & QUOTES", desc: "Pricing, lead times and stock availability across the catalogue.", email: "sales@explosionproofelectrical.com" },
-  { name: "ENGINEERING", desc: "Zone, gas-group and load sizing — plus custom panel design.", email: "engineering@explosionproofelectrical.com" },
-  { name: "SUPPORT", desc: "Datasheets, certificates and after-sales maintenance guidance.", email: "support@explosionproofelectrical.com" },
-];
+export const metadata: Metadata = {
+  title: "Contact ExEC",
+  description: "Contact ExEC in Vapi, Gujarat for flameproof product selection, quotations, technical support and custom hazardous-area panel requirements.",
+  alternates: { canonical: "/contact" },
+  openGraph: {
+    title: "Contact ExEC",
+    description: "Share your hazardous-area requirement with the ExEC sales and engineering team.",
+    url: absoluteUrl("/contact"),
+    type: "website",
+  },
+};
 
 export default async function ContactPage() {
   const productOptions = await getQuoteProductOptions();
 
   return (
-    <MarketingShell active="contact">
-
-      {/* ── HERO ── */}
-      <section className="border-b border-white/12 bg-[#061d2b]">
-        <div className="px-5 pb-14 pt-14 sm:px-10 lg:px-[60px]">
-          <div className="mb-6 font-[family-name:var(--font-marketing-mono)] text-xs tracking-[0.2em] text-white/55">
-            <Link href="/" className="text-[#F17D1E]">HOME</Link>
-            &nbsp;/&nbsp;CONTACT
-          </div>
-          <div className="mb-4 font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.22em] text-[#F17D1E]">
-            / LET&apos;S TALK SAFETY
-          </div>
-          <h1 className="font-[family-name:var(--font-marketing-display)] text-[72px] uppercase leading-[0.88] tracking-[0.01em] sm:text-[88px]">
-            GET IN TOUCH
-          </h1>
-          <p className="mt-5 max-w-[640px] text-lg font-light leading-7 text-white/70">
-            Send us your zone, gas group and load — or just your question. Our engineers will recommend the certified product or build the flameproof panel you need.
-          </p>
-        </div>
-      </section>
-
-      {/* ── FORM + INFO ── */}
-      <section className="grid border-b border-white/12 lg:grid-cols-[1.1fr_0.9fr]">
-
-        {/* form */}
-        <div className="border-r border-white/12 p-8 lg:p-[72px_60px]">
-          <div className="mb-7 font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.22em] text-[#F17D1E]">/ SEND A REQUIREMENT</div>
-          <ContactForm productOptions={productOptions} />
-        </div>
-
-        {/* info */}
-        <div className="flex flex-col bg-[#061d2b]">
-          {contactInfo.map((c) => (
-            <div key={c.label} className="border-b border-white/12 px-10 py-8 lg:px-11">
-              <div className="mb-3 font-[family-name:var(--font-marketing-mono)] text-[11px] uppercase tracking-[0.16em] text-[#F17D1E]">{c.label}</div>
-              <div className="text-base leading-6">{c.value}</div>
-              <div className="mt-1.5 text-sm font-light text-white/55">{c.sub}</div>
-            </div>
-          ))}
-          <div className="relative flex min-h-[240px] flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_50%,#0c3145_0%,#04121b_80%)]">
-            <div className="absolute left-6 top-5 font-[family-name:var(--font-marketing-mono)] text-[10.5px] uppercase tracking-[0.14em] text-white/45">
-              LOCATION — GUJARAT, INDIA
-            </div>
-            <Image
-              src={marketingAsset("gujarat.png")}
-              alt="ExEC location in Vapi, Gujarat"
-              width={300}
-              height={300}
-              className="max-h-[300px] max-w-[78%] object-contain opacity-85 drop-shadow-[0_0_20px_rgba(228,100,20,0.2)] invert"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── DEPARTMENTS ── */}
-      <section className="border-b border-white/12">
-        <div className="px-5 pb-8 pt-14 sm:px-10 lg:px-[60px]">
-          <div className="mb-4 font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.22em] text-[#F17D1E]">/ REACH THE RIGHT TEAM</div>
-          <h2 className="font-[family-name:var(--font-marketing-display)] text-5xl uppercase leading-none sm:text-[54px]">DIRECT LINES</h2>
-        </div>
-        <div className="grid border-t border-white/12 sm:grid-cols-2 lg:grid-cols-3">
-          {departments.map((d) => (
-            <div key={d.name} className="border-b border-r border-white/12 p-8 lg:p-[44px_40px_50px]">
-              <div className="font-[family-name:var(--font-marketing-display)] text-[30px] uppercase tracking-[0.02em]">{d.name}</div>
-              <p className="mt-3 text-sm font-light leading-6 text-white/62">{d.desc}</p>
-              <div className="mt-5 font-[family-name:var(--font-marketing-mono)] text-[12px] tracking-[0.08em] text-[#F17D1E]">
-                <a href={`mailto:${d.email}`}>{d.email}</a>
+    <IndustrialFonts>
+      <IndustrialShell>
+        <div className={styles.page}>
+          <section className={styles.hero} aria-labelledby="contact-title">
+            <div className={styles.heroCopy}>
+              <div className={styles.breadcrumbs}><Link href="/">Home</Link> / Contact</div>
+              <div className={styles.heroTitle}>
+                <span className={styles.eyebrow}>Your next project / Start here</span>
+                <h1 id="contact-title">Bring the challenge. <span>We’ll bring the engineering.</span></h1>
+                <p>Send the zone, gas group, load, quantity or drawing you already have. If the brief is still taking shape, send the question—we will help you find the right starting point.</p>
+              </div>
+              <div className={styles.heroFoot}>
+                <span>SALES / PRODUCT SELECTION<br />CUSTOM PANEL REQUIREMENTS</span>
+                <a href="#enquiry" className={styles.arrowLink}>Send a requirement <ArrowDownRight size={16} /></a>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className={`${styles.heroVisual} ${styles.productVisual}`}>
+              <Image src={marketingAsset("gujarat.png")} alt="Map marking ExEC in Vapi, Gujarat" fill priority sizes="(max-width: 900px) 100vw, 38vw" />
+              <div className={styles.visualTag}><span>Vapi / Gujarat</span><span>20.3893° N</span></div>
+              <span className={styles.visualNumber}>IN</span>
+            </div>
+          </section>
 
-    </MarketingShell>
+          <section id="enquiry" aria-labelledby="enquiry-title">
+            <div className={styles.sectionBar}><span>01 / Send a requirement</span><span>Sales / Engineering / Support</span></div>
+            <div className={styles.contactGrid}>
+              <div className={styles.formPanel}>
+                <span className={styles.eyebrow}>Tell us what you are working on</span>
+                <h2 id="enquiry-title">The useful details. <span>All in one place.</span></h2>
+                <ContactForm productOptions={productOptions} />
+              </div>
+              <aside className={styles.contactAside} aria-label="Contact information">
+                <div className={styles.contactCard}>
+                  <span className={styles.factLabel}>Factory & office</span>
+                  <strong>{COMPANY_ADDRESS.streetAddress}</strong>
+                  <address>{COMPANY_ADDRESS.addressLocality}, {COMPANY_ADDRESS.addressRegion} {COMPANY_ADDRESS.postalCode}<br />India</address>
+                </div>
+                <div className={styles.contactCard}>
+                  <span className={styles.factLabel}>Email</span>
+                  <strong><a href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL}</a></strong>
+                  <p>Product enquiries, quotations, engineering questions and after-sales support.</p>
+                </div>
+                <div className={styles.contactCard}>
+                  <span className={styles.factLabel}>Helpful with your enquiry</span>
+                  <strong>Zone / Gas group / Load / Quantity</strong>
+                  <p>Attach or reference an existing drawing, datasheet or approved specification in your message when available.</p>
+                </div>
+                <div className={styles.contactCard}>
+                  <span className={styles.factLabel}>Product collection</span>
+                  <strong><Link href="/catalog">Browse the ExEC catalog →</Link></strong>
+                  <p>Review the current product range before sending your requirement.</p>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </IndustrialShell>
+    </IndustrialFonts>
   );
 }

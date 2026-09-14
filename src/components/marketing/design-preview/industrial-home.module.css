@@ -38,10 +38,12 @@
 .desktopNav a { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 30px; min-width: 130px; padding: 17px 16px; border-left: 1px solid var(--line); font-family: var(--font-industrial-mono), monospace; font-size: 9px; color: #4b6171; transition: color .2s, background .2s; }
 .desktopNav a > span, .desktopNav a > svg { align-self: flex-end; }
 .desktopNav a:hover { color: var(--blue); background: #072436; }
+.desktopNav a[aria-current="page"] { color: #fff; box-shadow: inset 0 -2px #b9d8ed; }
 .desktopNav a.contactNav { color: var(--blue); min-width: 155px; }
 .menuButton { display: none; width: 60px; background: transparent; color: var(--blue); border: 0; border-left: 1px solid var(--line); align-items: center; justify-content: center; }
 .mobileNav { position: absolute; top: 100%; right: -1px; left: -1px; display: flex; flex-direction: column; background: #072436; border: 1px solid var(--line); padding: 5px 20px 15px; }
 .mobileNav a { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.mobileNav a[aria-current="page"] { color: #fff; font-weight: 700; }
 .heroDrawing { position: relative; height: clamp(550px, 72vh, 790px); min-height: 550px; overflow: hidden; border-bottom: 1px solid var(--line); }
 .rulerTop { position: absolute; top: 12px; left: 34px; right: 34px; height: 7px; background: repeating-linear-gradient(90deg, #7892a345, #7892a345 1px, transparent 1px, transparent 8px); }
 .rulerLeft { position: absolute; top: 34px; bottom: 35px; left: 12px; width: 7px; background: repeating-linear-gradient(0deg, #7892a345, #7892a345 1px, transparent 1px, transparent 8px); }
@@ -411,8 +413,13 @@
 .storyGrid blockquote { margin: 30px 0; padding: 26px 0; border-block: 1px solid var(--line); font-size: 23px; line-height: 1.5; letter-spacing: -.035em; }
 .storyGrid cite { display: block; margin-top: 18px; font: 9px var(--font-industrial-mono), monospace; color: #b2cee1; letter-spacing: 0; }
 .blogSection { padding: 34px 36px 60px; border-bottom: 1px solid var(--line); background: #072436; }
-.blogGrid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.blogGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .blogCard { display: flex; min-width: 0; flex-direction: column; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
+.blogCardFeatured { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); }
+.blogCardFeatured .blogImage { aspect-ratio: 16 / 8; }
+.blogCardFeatured .blogCopy { padding: clamp(28px, 4vw, 58px); }
+.blogCardFeatured .blogCopy h3 { max-width: 720px; font-size: clamp(34px, 4vw, 58px); }
+.blogCardFeatured .blogCopy p { max-width: 650px; font-size: 13px; }
 .blogImage { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #041a29; }
 .blogImage img { object-fit: cover; filter: saturate(.75); transition: transform .5s ease, filter .5s ease; }
 .blogImage::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, #04121b66, transparent 55%); }
@@ -424,6 +431,8 @@
 .blogLink { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 17px; border-top: 1px solid var(--line); font: 8px var(--font-industrial-mono), monospace; letter-spacing: .08em; }
 .blogCard:hover .blogImage img { transform: scale(1.045); filter: saturate(1); }
 .blogCard:hover .blogLink { color: #b0d9f4; }
+.blogEmpty { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 34px 0; border-block: 1px solid var(--line); color: #c1d5e4; }
+.blogEmpty a { display: inline-flex; align-items: center; gap: 15px; color: #f0f2ed; font: 8px var(--font-industrial-mono), monospace; letter-spacing: .08em; }
 @media (max-width: 760px) {
   .storySection { padding: 28px 20px 35px; }
   .storyGrid { grid-template-columns: 1fr; gap: 30px; padding-top: 35px; }
@@ -431,7 +440,13 @@
   .storyGrid blockquote { font-size: 21px; }
   .blogSection { padding: 28px 20px 35px; }
   .blogGrid { grid-template-columns: 1fr; }
+  .blogCardFeatured { grid-column: auto; display: flex; }
+  .blogCardFeatured .blogImage { aspect-ratio: 16 / 10; }
+  .blogCardFeatured .blogCopy { padding: 24px; }
+  .blogCardFeatured .blogCopy h3 { font-size: 29px; }
+  .blogCardFeatured .blogCopy p { font-size: 11px; }
   .blogCopy h3 { font-size: 26px; }
+  .blogEmpty { align-items: flex-start; flex-direction: column; }
 }
 /* Light type and linework keep the dark product study readable. */
 .heroCaption > p, .drawingFooter > span > small, .annotationLeft small, .annotationRight small,

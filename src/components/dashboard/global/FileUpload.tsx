@@ -14,6 +14,13 @@ type MediaItem = {
   title?: string | undefined | null;
 };
 
+type UploadedFile = {
+  ufsUrl?: string | null;
+  url?: string | null;
+  name?: string | null;
+  fileName?: string | null;
+};
+
 type FileUploadProps = {
   endpoint: "productImage" | "productDrawing" | "galleryImages" | "blogCover";
   kind: ProductMediaKind; // e.g. "IMAGE" or "DRAWING"
@@ -25,6 +32,60 @@ type FileUploadProps = {
   hint?: string;
   className?: string;
 };
+
+const MAX_IMAGE_DIMENSION = 1600;
+const WEBP_QUALITY = 0.82;
+
+async function optimizeImageForUpload(file: File): Promise<File> {
+  // Leave non-raster files untouched: PDFs are technical documents, SVGs need
+  // their vectors preserved, and converting animated GIFs would flatten them.
+  if (
+    !file.type.startsWith("image/") ||
+    file.type === "image/svg+xml" ||
+    file.type === "image/gif"
+  ) {
+    return file;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const nextImage = new window.Image();
+      nextImage.onload = () => resolve(nextImage);
+      nextImage.onerror = reject;
+      nextImage.src = objectUrl;
+    });
+    const scale = Math.min(
+      1,
+      MAX_IMAGE_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight),
+    );
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+
+    context.drawImage(image, 0, 0, width, height);
+    const webp = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", WEBP_QUALITY),
+    );
+    if (!webp) return file;
+
+    const filename = file.name.replace(/\.[^.]+$/, "") || "product-image";
+    return new File([webp], `${filename}.webp`, {
+      type: "image/webp",
+      lastModified: file.lastModified,
+    });
+  } catch {
+    // Some browser-decoded formats are unsupported by canvas. Uploading the
+    // original is safer than preventing the user from completing their work.
+    return file;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 
 export function FileUpload({
   endpoint,
@@ -41,7 +102,15 @@ export function FileUpload({
     onChange(value.filter((_, i) => i !== idx));
   };
 
-  const isPdf = (url: string) => url.toLowerCase().endsWith(".pdf");
+  // UploadThing's `ufsUrl` is commonly an extensionless file URL.  The original
+  // filename is retained as the media title, so inspect both values before
+  // choosing a preview.  Otherwise uploaded PDF drawings are treated as images
+  // and render as an empty/broken thumbnail in the variant form.
+  const isPdf = (url: string, title?: string | null) => {
+    const filename = title?.split(/[?#]/, 1)[0] ?? "";
+    const path = url.split(/[?#]/, 1)[0];
+    return /\.pdf$/i.test(filename) || /\.pdf$/i.test(path);
+  };
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -58,12 +127,16 @@ export function FileUpload({
       <div className="rounded-2xl border bg-card p-3">
         <UploadDropzone
           endpoint={endpoint}
+          onBeforeUploadBegin={async (files) => {
+            setBusy(true);
+            return Promise.all(files.map(optimizeImageForUpload));
+          }}
           onUploadBegin={() => setBusy(true)}
           onClientUploadComplete={(res) => {
             // UploadThing response fields differ by version.
             // Common fields: url, ufsUrl
-            const files = (res ?? [])
-              .map((f: any) => {
+            const files = ((res ?? []) as UploadedFile[])
+              .map((f) => {
                 const url = f.ufsUrl ?? f.url ?? null;
                 const title = f.name ?? f.fileName ?? null;
                 if (!url) return null;
@@ -108,7 +181,7 @@ export function FileUpload({
       {value.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
           {value.map((m, idx) => {
-            if (isPdf(m.url)) {
+            if (isPdf(m.url, m.title)) {
               return (
                 <PdfPreviewCard
                   key={`${m.url}-${idx}`}

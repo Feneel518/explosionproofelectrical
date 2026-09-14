@@ -137,6 +137,28 @@ export const getCatalogProductDetail = cache(async (slug: string) => {
   };
 });
 
+export const getCatalogCategory = cache(async (slug: string) => {
+  const category = await prisma.category.findFirst({
+    where: { slug, status: "ACTIVE", deletedAt: null },
+    select: { name: true, slug: true },
+  });
+  if (!category) return null;
+  const products = await prisma.product.findMany({
+    where: { ...activeCatalogProductWhere(), category: { slug, status: "ACTIVE", deletedAt: null } },
+    orderBy: { createdAt: "asc" },
+    select: catalogProductSelect(),
+  });
+  return { category, products: products.map(toCatalogProductCard) };
+});
+
+export const getCatalogIndexEntries = cache(async () => {
+  const [categories, products] = await Promise.all([
+    prisma.category.findMany({ where: { status: "ACTIVE", deletedAt: null }, select: { slug: true, updatedAt: true } }),
+    prisma.product.findMany({ where: activeCatalogProductWhere(), select: { slug: true, updatedAt: true } }),
+  ]);
+  return { categories, products };
+});
+
 /** The PDF uses exactly the same publication rules and fields as the website. */
 export async function getCatalogPdfProducts(): Promise<CatalogProductDetail[]> {
   if (process.env.CATALOG_PDF_TRANSPORT === "neon-http") {

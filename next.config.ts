@@ -12,6 +12,16 @@ const nextConfig: NextConfig = {
         hostname: "z4zi8ouylj.ufs.sh",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+        pathname: "/**",
+      },
     ],
   },
 };

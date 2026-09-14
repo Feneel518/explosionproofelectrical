@@ -8,6 +8,12 @@ import { normalizeName } from "../utils";
 import { sendEmail } from "../actions/emails/send-emails.action";
 
 export const auth = betterAuth({
+  trustedOrigins: [
+    "https://www.explosionproofelectrical.com",
+    "https://explosionproofelectrical.com",
+    "https://explosionproofelectrical.vercel.app",
+    "http://localhost:3000",
+  ],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),

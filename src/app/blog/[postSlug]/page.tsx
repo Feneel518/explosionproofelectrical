@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogCard } from "@/components/marketing/BlogCard";
-import { MarketingShell } from "@/components/marketing/MarketingShell";
+import { ArrowLeft, Clock3 } from "lucide-react";
+import { ArticleTableOfContents, type ArticleSection } from "@/components/marketing/design-preview/ArticleTableOfContents";
+import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
+import { IndustrialBlogCard } from "@/components/marketing/design-preview/IndustrialBlogCard";
 import { getPublishedBlogPost, getPublishedBlogPosts } from "@/lib/marketing/blog";
 import { absoluteUrl, SITE_NAME } from "@/lib/seo/site";
+import styles from "@/components/marketing/design-preview/blog.module.css";
 
 interface ArticlePageProps { params: Promise<{ postSlug: string }>; }
-
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
@@ -16,9 +19,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const post = await getPublishedBlogPost(postSlug);
   if (!post) return {};
   return {
-    title: post.seoTitle || post.title,
-    description: post.seoDescription || post.excerpt,
-    keywords: post.keywords,
+    title: post.seoTitle || post.title, description: post.seoDescription || post.excerpt, keywords: post.keywords,
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: { type: "article", title: post.seoTitle || post.title, description: post.seoDescription || post.excerpt, url: `/blog/${post.slug}`, publishedTime: post.publishedAt.toISOString(), modifiedTime: post.updatedAt.toISOString(), authors: [post.authorName], images: [{ url: post.image, alt: post.imageAlt }] },
     twitter: { card: "summary_large_image", title: post.seoTitle || post.title, description: post.seoDescription || post.excerpt, images: [post.image] },
@@ -31,35 +32,64 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   if (!post) notFound();
   const posts = await getPublishedBlogPosts();
   const morePosts = posts.filter((item) => item.slug !== post.slug).slice(0, 3);
+  const contentBlocks = parseArticleContent(post.content);
+  const sections: ArticleSection[] = [
+    { id: "article-overview", title: "Article overview" },
+    ...contentBlocks.filter((block) => block.type === "heading").map((block) => ({ id: block.id!, title: block.text })),
+  ];
   const schema = { "@context": "https://schema.org", "@type": "Article", headline: post.title, description: post.excerpt, image: [post.image], datePublished: post.publishedAt.toISOString(), dateModified: post.updatedAt.toISOString(), author: { "@type": "Organization", name: post.authorName }, publisher: { "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/") }, mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`) };
 
-  return <MarketingShell active="blog">
+  return <IndustrialFonts><IndustrialShell><div className={styles.page}>
     <article>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
-      <section className="relative flex min-h-[420px] items-end overflow-hidden border-b border-white/12">
-        <Image src={post.image} alt={post.imageAlt} fill priority className="object-cover opacity-35" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#04121b] via-[#04121b]/75 to-[#04121b]/30" />
-        <div className="relative px-5 py-12 sm:px-10 lg:px-[60px] lg:py-[74px]">
-          <div className="mb-6 font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.16em] text-white/60"><Link href="/" className="text-[#F17D1E]">Home</Link> &nbsp;/&nbsp; <Link href="/blog">Blog</Link></div>
-          <div className="mb-5 font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.18em] text-[#F17D1E]">{post.cat} / {post.date} / {post.read}</div>
-          <h1 className="max-w-5xl font-[family-name:var(--font-marketing-display)] text-6xl uppercase leading-none sm:text-[84px]">{post.title}</h1>
+      <section className={styles.articleHero} aria-labelledby="article-title">
+        <div className={styles.articleHeroCopy}>
+          <div className={styles.breadcrumbs}><Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/blog">Field notes</Link></div>
+          <div className={styles.articleTitle}><div className={styles.meta}><span className={styles.categoryPill}>{post.cat}</span><span>{post.date}</span><span className={styles.metaRead}><Clock3 size={12} /> {post.read} read</span></div><h1 id="article-title">{post.title}</h1><p>{post.excerpt}</p></div>
+          <div className={styles.articleByline}><span>By {post.authorName}</span><span>ExEC / Engineering journal</span></div>
+        </div>
+        <figure className={styles.articleHeroImage}><Image src={post.image} alt={post.imageAlt} fill priority sizes="(max-width: 980px) 100vw, 42vw" /><figcaption><span>Field note / {post.cat}</span><span>ExEC / {post.date}</span></figcaption></figure>
+      </section>
+      <section className={styles.articleLayout}>
+        <aside className={styles.articleAside}>
+          <div className={styles.articleAsideInner}>
+            <ArticleTableOfContents sections={sections} />
+            <Link href="/blog" className={styles.backLink}><ArrowLeft size={15} /> All field notes</Link>
+          </div>
+        </aside>
+        <div className={styles.articleContent}>
+          <span id="article-overview" className={styles.anchorTarget} aria-hidden="true" />
+          <div className={styles.prose}><ArticleContent blocks={contentBlocks} /></div>
         </div>
       </section>
-      <section className="grid border-b border-white/12 lg:grid-cols-[0.74fr_1.26fr]">
-        <aside className="border-r border-white/12 p-8 lg:p-[60px]"><div className="font-[family-name:var(--font-marketing-mono)] text-xs uppercase tracking-[0.16em] text-[#F17D1E]">Article Brief</div><p className="mt-5 text-base font-light leading-7 text-white/70">{post.excerpt}</p><p className="mt-6 text-xs uppercase tracking-[0.12em] text-white/45">By {post.authorName}</p><Link href="/blog" className="mt-8 inline-block border-b border-[#E46414] pb-1 text-xs font-semibold uppercase tracking-[0.1em]">← Back to All Articles</Link></aside>
-        <div className="p-8 lg:p-[60px]"><div className="max-w-3xl space-y-7 text-lg font-light leading-8 text-white/75"><ArticleContent content={post.content} /></div></div>
-      </section>
     </article>
-    {morePosts.length > 0 && <section><div className="px-5 py-14 sm:px-10 lg:px-[60px]"><h2 className="font-[family-name:var(--font-marketing-display)] text-5xl uppercase leading-none sm:text-[54px]">More Articles</h2></div><div className="grid md:grid-cols-2 xl:grid-cols-3">{morePosts.map((item) => <BlogCard key={item.slug} post={item} />)}</div></section>}
-  </MarketingShell>;
+    {morePosts.length > 0 && <section><div className={styles.moreHeading}><span className={styles.eyebrow}>Continue reading</span><h2>More field notes.</h2></div><div className={styles.archiveGrid}>{morePosts.map((item, index) => <IndustrialBlogCard key={item.slug} post={item} index={index + 1} />)}</div></section>}
+  </div></IndustrialShell></IndustrialFonts>;
 }
 
-function ArticleContent({ content }: { content: string }) {
-  const blocks = content.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
-  return <>{blocks.map((block, index) => {
-    if (block.startsWith("## ")) return <h2 key={index} className="pt-5 font-[family-name:var(--font-marketing-display)] text-4xl uppercase leading-tight text-white">{block.slice(3)}</h2>;
+type ArticleBlock = { type: "heading" | "list" | "paragraph"; text: string; id?: string; lines?: string[] };
+
+function parseArticleContent(content: string): ArticleBlock[] {
+  const usedIds = new Map<string, number>();
+  return content.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean).map((block) => {
+    if (block.startsWith("## ")) {
+      const text = block.slice(3).trim();
+      const baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || "section";
+      const count = usedIds.get(baseId) ?? 0;
+      usedIds.set(baseId, count + 1);
+      return { type: "heading", text, id: count ? `${baseId}-${count + 1}` : baseId };
+    }
+
     const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
-    if (lines.every((line) => line.startsWith("- "))) return <ul key={index} className="list-disc space-y-2 pl-6 marker:text-[#F17D1E]">{lines.map((line) => <li key={line}>{line.slice(2)}</li>)}</ul>;
-    return <p key={index}>{block}</p>;
+    if (lines.every((line) => line.startsWith("- "))) return { type: "list", text: block, lines: lines.map((line) => line.slice(2)) };
+    return { type: "paragraph", text: block };
+  });
+}
+
+function ArticleContent({ blocks }: { blocks: ArticleBlock[] }) {
+  return <>{blocks.map((block, index) => {
+    if (block.type === "heading") return <h2 key={block.id} id={block.id}>{block.text}</h2>;
+    if (block.type === "list") return <ul key={index}>{block.lines?.map((line) => <li key={line}>{line}</li>)}</ul>;
+    return <p key={index}>{block.text}</p>;
   })}</>;
 }

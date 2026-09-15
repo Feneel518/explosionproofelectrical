@@ -10,6 +10,7 @@ export type KnowledgeArticle = {
   shortTitle: string;
   category: "Hazardous areas" | "Protection concepts" | "Equipment selection" | "Compliance";
   description: string;
+  takeaways: string[];
   answer: string;
   readMinutes: number;
   updatedAt: string;

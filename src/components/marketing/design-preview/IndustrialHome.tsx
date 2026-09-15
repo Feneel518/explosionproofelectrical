@@ -14,6 +14,7 @@ import collection from "./catalog.module.css";
 import { IndustrialHeader, IndustrialFooter } from "./IndustrialChrome";
 import { CatalogCard } from "./CatalogCard";
 import { ShareActions } from "./ShareActions";
+import { BlogHomeSection } from "./BlogHomeSection";
 import type { CatalogProductCard } from "@/lib/marketing/catalog";
 import type { PublicBlogPost } from "@/lib/marketing/blog";
 
@@ -126,11 +127,7 @@ export function IndustrialHome({ products, blogPosts }: { products: CatalogProdu
           <div className={styles.storyGrid} data-reveal><div><span className={styles.storyYear}>1996<span>THE START OF OUR STORY</span></span><h2>ROOTED IN VAPI.<br /><span>BUILT FOR INDIA.</span></h2></div><div><p>Since 1996, Explosion Proof Electrical Control has designed and manufactured flameproof electrical equipment in Vapi, Gujarat. Casting, machining, assembly and testing come together with one purpose: protecting people, assets and facilities.</p><p>From a single junction box to a complete control room, we design and fabricate flameproof control and instrumentation panels around your specification.</p><blockquote>&quot;To keep India&apos;s most demanding plants, their people, assets and facilities safe from the smallest spark.&quot;<cite>OUR MISSION</cite></blockquote><Link href="/story" className={styles.lineLink}>READ OUR FULL STORY <ArrowUpRight size={17} /></Link></div></div>
         </section>
 
-        <section id="blog" className={styles.blogSection} aria-labelledby="home-blog-title">
-          <div className={styles.sectionLabel}><span>05 / FIELD NOTES</span><span>ENGINEERING KNOWLEDGE. SHARED.</span></div>
-          <div className={styles.sectionHeading} data-reveal><h2 id="home-blog-title">FROM THE WORKSHOP.<br /><span>FOR THE FIELD.</span></h2><Link href="/blog" className={styles.lineLink}>READ ALL ARTICLES <ArrowUpRight size={19} /></Link></div>
-          {blogPosts.length > 0 ? <div className={styles.blogGrid}>{blogPosts.map((post, index) => <Link href={`/blog/${post.slug}`} key={post.slug} className={`${styles.blogCard} ${index === 0 ? styles.blogCardFeatured : ""}`} data-reveal><div className={styles.blogImage}><Image src={post.image} alt={post.imageAlt} fill sizes={index === 0 ? "(max-width: 760px) 100vw, 55vw" : "(max-width: 760px) 100vw, 50vw"} /><span>{index === 0 ? `Featured / ${post.cat}` : post.cat}</span></div><div className={styles.blogCopy}><div><span>[0{index + 1}]</span><span>{post.date} / {post.read}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><span className={styles.blogLink}>READ THE NOTE <ArrowUpRight size={15} /></span></div></Link>)}</div> : <div className={styles.blogEmpty}><p>New engineering field notes are being prepared.</p><Link href="/blog">VISIT THE BLOG <ArrowUpRight size={16} /></Link></div>}
-        </section>
+        <BlogHomeSection posts={blogPosts} />
 
         <section id="real-world" className={styles.industrySection} aria-labelledby="real-world-title"><div className={styles.factoryPhoto}><Image src={marketingAsset("factory.jpg")} alt="Industrial process plant operating at night" fill sizes="(max-width: 760px) 100vw, 55vw" /><span>06 / HAZARDOUS ENVIRONMENTS</span></div><div className={styles.industryCopy} data-reveal><span className={styles.smallLabel}>MADE FOR THE REAL WORLD</span><h2 id="real-world-title">WHERE THE DETAILS<br />MAKE ALL THE<br /><span>DIFFERENCE.</span></h2><p>Lighting, controls and instrumentation for demanding applications—specified around the actual zone, gas group and operating conditions.</p><div>{[["Oil & gas", "oil-and-gas"], ["Chemicals", "chemicals"], ["Pharmaceuticals", "pharmaceuticals"], ["Process industries", "process-industries"]].map(([industry, anchor], index) => <Link href={`/engineering#${anchor}`} key={industry}><span>[0{index + 1}]</span>{industry}<ArrowUpRight size={16} /></Link>)}</div></div></section>
 

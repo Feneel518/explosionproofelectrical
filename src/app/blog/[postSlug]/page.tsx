@@ -3,8 +3,9 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock3 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Clock3 } from "lucide-react";
 import { ArticleTableOfContents, type ArticleSection } from "@/components/marketing/design-preview/ArticleTableOfContents";
+import { ArticleActions, ReadingProgress } from "@/components/marketing/design-preview/ArticleActions";
 import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { IndustrialBlogCard } from "@/components/marketing/design-preview/IndustrialBlogCard";
@@ -33,7 +34,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const post = await getPublishedBlogPost(postSlug);
   if (!post) notFound();
   const posts = await getPublishedBlogPosts();
-  const morePosts = posts.filter((item) => item.slug !== post.slug).slice(0, 3);
+  const morePosts = posts.filter((item) => item.slug !== post.slug).sort((a, b) => Number(b.cat === post.cat) - Number(a.cat === post.cat) || b.publishedAt.getTime() - a.publishedAt.getTime()).slice(0, 3);
   const contentHtml = isHtmlContent(post.content);
   const contentBlocks = contentHtml ? [] : parseArticleContent(post.content);
   const preparedHtml = contentHtml ? prepareHtmlContent(sanitizeBlogContent(post.content)) : null;
@@ -52,12 +53,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return <IndustrialFonts><IndustrialShell><div className={styles.page}>
     <article>
+      <ReadingProgress />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       <section className={styles.articleHero} aria-labelledby="article-title">
         <div className={styles.articleHeroCopy}>
-          <div className={styles.breadcrumbs}><Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/blog">Field notes</Link></div>
+          <nav className={styles.breadcrumbs} aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/blog">Journal</Link><span>/</span><span>{post.cat}</span></nav>
           <div className={styles.articleTitle}><div className={styles.meta}><span className={styles.categoryPill}>{post.cat}</span><span>{post.date}</span><span className={styles.metaRead}><Clock3 size={12} /> {post.read} read</span></div><h1 id="article-title">{post.title}</h1><p>{post.excerpt}</p></div>
-          <div className={styles.articleByline}><span>By {post.authorName}</span><span>Hazardous-area equipment manufacturer / Vapi, Gujarat</span><span>Content reviewed {post.date}</span></div>
+          <div className={styles.articleByline}><span>By {post.authorName}</span><span>Hazardous-area equipment manufacturer / Vapi, Gujarat</span><span>Updated {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(post.updatedAt)}</span></div>
         </div>
         <figure className={styles.articleHeroImage}><Image src={post.image} alt={post.imageAlt} fill priority sizes="(max-width: 980px) 100vw, 42vw" /><figcaption><span>Field note / {post.cat}</span><span>ExEC / {post.date}</span></figcaption></figure>
       </section>
@@ -65,16 +67,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <aside className={styles.articleAside}>
           <div className={styles.articleAsideInner}>
             <ArticleTableOfContents sections={sections} />
-            <Link href="/blog" className={styles.backLink}><ArrowLeft size={15} /> All field notes</Link>
+            <Link href="/blog" className={styles.backLink}><ArrowLeft size={15} /> All articles</Link>
           </div>
         </aside>
-        <div className={styles.articleContent}>
+        <div id="article-body" className={styles.articleContent}>
           <span id="article-overview" className={styles.anchorTarget} aria-hidden="true" />
           {preparedHtml ? <div className={styles.prose} dangerouslySetInnerHTML={{ __html: preparedHtml.html }} /> : <div className={styles.prose}><ArticleContent blocks={contentBlocks} /></div>}
+          <div className={styles.articleEnd}><Link href="/blog" className={styles.backLink}><ArrowLeft size={15} /> Back to the journal</Link><ArticleActions /></div>
         </div>
       </section>
     </article>
-    {morePosts.length > 0 && <section><div className={styles.moreHeading}><span className={styles.eyebrow}>Continue reading</span><h2>More field notes.</h2></div><div className={styles.archiveGrid}>{morePosts.map((item, index) => <IndustrialBlogCard key={item.slug} post={item} index={index + 1} />)}</div></section>}
+    {morePosts.length > 0 && <section className={styles.moreSection} aria-labelledby="related-title"><div className={styles.moreHeading}><div><span className={styles.eyebrow}>Keep exploring</span><h2 id="related-title">A little more perspective.</h2></div><Link href="/blog" className={styles.outlineLink}>All articles <ArrowUpRight size={17} /></Link></div><div className={styles.archiveGrid}>{morePosts.map((item, index) => <IndustrialBlogCard key={item.slug} post={item} index={index + 1} />)}</div></section>}
   </div></IndustrialShell></IndustrialFonts>;
 }
 
@@ -85,7 +88,7 @@ type ArticleBlock =
   | { type: "paragraph"; text: string };
 
 function parseArticleContent(content: string): ArticleBlock[] {
-  const usedIds = new Map<string, number>();
+  const usedIds = new Map<string, number>([["article-overview", 1]]);
   const lines = content.replace(/\r\n/g, "\n").split("\n");
   const blocks: ArticleBlock[] = [];
 
@@ -183,9 +186,9 @@ function isHtmlContent(content: string) {
 }
 
 function prepareHtmlContent(content: string) {
-  const usedIds = new Map<string, number>();
+  const usedIds = new Map<string, number>([["article-overview", 1]]);
   const sections: ArticleSection[] = [];
-  const html = content.replace(/<h([2-4])([^>]*)>([\s\S]*?)<\/h\1>/gi, (_match, level: string, attributes: string, innerHtml: string) => {
+  const html = content.replace(/<table\b[\s\S]*?<\/table>/gi, table => `<div class="tableWrapper">${table}</div>`).replace(/<h([2-4])([^>]*)>([\s\S]*?)<\/h\1>/gi, (_match, level: string, attributes: string, innerHtml: string) => {
     const title = decodeBasicEntities(innerHtml.replace(/<[^>]+>/g, "")).trim();
     const baseId = title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || "section";
     const count = usedIds.get(baseId) ?? 0;

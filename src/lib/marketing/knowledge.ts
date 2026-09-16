@@ -1,3 +1,5 @@
+import { additionalKnowledgeArticles } from "./additional-knowledge";
+
 export type KnowledgeSection = {
   heading: string;
   paragraphs: string[];
@@ -155,6 +157,8 @@ export const knowledgeArticles: KnowledgeArticle[] = [
     ],
   },
 ];
+
+knowledgeArticles.push(...additionalKnowledgeArticles);
 
 export function getKnowledgeArticle(slug: string) {
   return knowledgeArticles.find((article) => article.slug === slug);

@@ -10,6 +10,9 @@
     "lint": "eslint",
     "catalog:pdf": "tsx scripts/export-catalog.ts",
     "seed:blogs": "tsx scripts/seed-blog-cluster.ts",
+    "seo:audit-products": "tsx scripts/audit-product-seo.ts",
+    "seo:validate": "tsx scripts/validate-seo.ts",
+    "seo:test-data": "tsx scripts/test-seo-data.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

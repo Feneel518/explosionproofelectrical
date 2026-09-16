@@ -36,7 +36,7 @@ export function IndustrialFooter() {
   return <footer className={styles.footer}><div className={styles.footerMain}>
     <Link href="/" className={styles.footerBrand} aria-label="ExEC home">ExEC<span>↗</span></Link>
     <div><p>{SITE_NAME}</p><span>{COMPANY_ADDRESS.streetAddress}<br />Vapi, Gujarat {COMPANY_ADDRESS.postalCode}, India</span><a href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL}</a></div>
-    <nav aria-label="Footer navigation"><Link href="/catalog">Catalog <ArrowUpRight size={14} /></Link><Link href="/engineering">Engineering <ArrowUpRight size={14} /></Link><Link href="/blog">Journal <ArrowUpRight size={14} /></Link><Link href="/story">Our story <ArrowUpRight size={14} /></Link><Link href="/contact">Contact <ArrowUpRight size={14} /></Link></nav>
+    <nav aria-label="Footer navigation"><Link href="/catalog">Catalog <ArrowUpRight size={14} /></Link><Link href="/knowledge-hub">Knowledge centre <ArrowUpRight size={14} /></Link><Link href="/industries">Industries <ArrowUpRight size={14} /></Link><Link href="/certifications">Certification documents <ArrowUpRight size={14} /></Link><Link href="/engineering">Engineering <ArrowUpRight size={14} /></Link><Link href="/blog">Journal <ArrowUpRight size={14} /></Link><Link href="/story">Our story <ArrowUpRight size={14} /></Link><Link href="/contact">Contact <ArrowUpRight size={14} /></Link></nav>
     </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} ExEC. ALL RIGHTS RESERVED.</span><span>ENGINEERED IN VAPI. BUILT TO PROTECT.</span><a href="#top">BACK TO TOP <ArrowUpRight size={14} /></a></div></footer>;
 }
 

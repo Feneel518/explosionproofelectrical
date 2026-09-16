@@ -1,0 +1,1410 @@
+[
+  {
+    "name": "FLP/WP Digital Clock",
+    "slug": "flpwp-digital-clock",
+    "category": "flpwp-digital-clock",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Insect Killer",
+    "slug": "flpwp-insect-killer",
+    "category": "flpwp-insect-killer",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Telephone Fitting",
+    "slug": "flpwp-telephone-fitting",
+    "category": "flpwp-telephone-fitting",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Torch",
+    "slug": "flpwp-torch",
+    "category": "flpwp-torch",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Rechargeable Torch",
+    "slug": "flpwp-rechargeable-torch",
+    "category": "flpwp-torch",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Driver",
+    "slug": "spare-driver",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Led",
+    "slug": "spare-led",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Push Assembly",
+    "slug": "spare-push-assembly",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Fan Blade",
+    "slug": "spare-fan-blade",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare FRP Canopy",
+    "slug": "spare-frp-canopy",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Brass Part",
+    "slug": "spare-brass-part",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Regulator",
+    "slug": "spare-regulator",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Led Kit",
+    "slug": "spare-led-kit",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "PVC Hood",
+    "slug": "pvc-hood",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Battery",
+    "slug": "spare-battery",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare MS Box",
+    "slug": "spare-ms-box",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Cable Box",
+    "slug": "spare-cable-box",
+    "category": "flameproof-spare-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Plug Top",
+    "slug": "flpwp-plug-top",
+    "category": "flameproof-spare-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Louvers",
+    "slug": "spare-louvers",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Led Adhesive",
+    "slug": "spare-led-adhesive",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Knob",
+    "slug": "spare-knob",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "LED 5050",
+    "slug": "led-5050",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Indicating Lamp",
+    "slug": "spare-indicating-lamp",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Metrics Cable Gland",
+    "slug": "flpwp-metrics-cable-gland",
+    "category": "flameproof-spare-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Circuit",
+    "slug": "spare-circuit",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Glass",
+    "slug": "spare-glass",
+    "category": "flameproof-spare-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Stopping Plug NPT",
+    "slug": "stopping-plug-npt",
+    "category": "flameproof-spare-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP ET Cable Gland",
+    "slug": "flpwp-et-cable-gland",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Stopping Plug",
+    "slug": "flpwp-stopping-plug",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP RTD Sensor",
+    "slug": "flpwp-rtd-sensor",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Tube Light Rod",
+    "slug": "tube-light-rod",
+    "category": "flameproof-accessories",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Reducer",
+    "slug": "flpwp-reducer",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP SS Cable Gland",
+    "slug": "flpwp-ss-cable-gland",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP IIC Cable Gland",
+    "slug": "flpwp-iic-cable-gland",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP NPT Cable Gland",
+    "slug": "flpwp-npt-cable-gland",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Non FLP -  Cable Gland SC",
+    "slug": "non-flp-cable-gland-sc",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Spare Switch",
+    "slug": "spare-switch",
+    "category": "flameproof-accessories",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Bulk Head Fitting (T/O)",
+    "slug": "flpwp-bulk-head-fitting-to",
+    "category": "flameproof-clean-room-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Clean Room Rotary Switch",
+    "slug": "flpwp-clean-room-rotary-switch",
+    "category": "flameproof-clean-room-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Clean Room Push Button",
+    "slug": "flpwp-clean-room-push-button",
+    "category": "flameproof-clean-room-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Clean Room Switch Socket Fitting",
+    "slug": "flpwp-clean-room-switch-socket-fitting",
+    "category": "flameproof-clean-room-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Pedestal Fan",
+    "slug": "flpwp-pedestal-fan",
+    "category": "flameproof-fans",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Wall Fan",
+    "slug": "flpwp-wall-fan",
+    "category": "flameproof-fans",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Exhaust Fan",
+    "slug": "flpwp-exhaust-fan",
+    "category": "flameproof-fans",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Tube Axial Flow Fan",
+    "slug": "flpwp-tube-axial-flow-fan",
+    "category": "flameproof-fans",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "NON FLP Exhaust Fan",
+    "slug": "non-flp-exhaust-fan",
+    "category": "flameproof-fans",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Earthing Relay",
+    "slug": "flpwp-earthing-relay",
+    "category": "flameproof-fire-alarm",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Manual Call Point",
+    "slug": "flpwp-manual-call-point",
+    "category": "flameproof-fire-alarm",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Hooter ACK",
+    "slug": "flpwp-hooter-ack",
+    "category": "flameproof-fire-alarm",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Human Body Static Discharge unit Clean Room Type",
+    "slug": "flpwp-human-body-static-discharge-unit-clean-room-type",
+    "category": "flameproof-fire-alarm",
+    "flpType": "Flameproof as per IEC:60079-1:2007",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "NON FLP RTD Sensor",
+    "slug": "non-flp-rtd-sensor",
+    "category": "flameproof-fire-alarm",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Smoke Detector",
+    "slug": "flpwp-smoke-detector",
+    "category": "flameproof-fire-alarm",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box - 100 Dia",
+    "slug": "flpwp-junction-box-100-dia",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP JUnction Box - 250 Dia",
+    "slug": "flpwp-junction-box-250-dia",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box 150Dia",
+    "slug": "flpwp-junction-box-150dia",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box 350Dia",
+    "slug": "flpwp-junction-box-350dia",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Panel Box 780 X 550",
+    "slug": "flpwp-panel-box-780-x-550",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP PANEL BOX 680 x 525",
+    "slug": "flpwp-panel-box-680-x-525",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box. 200 X 200",
+    "slug": "flpwp-junction-box-200-x-200",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box .ECP-63265",
+    "slug": "flpwp-junction-box-ecp-63265",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box 350Dia IIC",
+    "slug": "flpwp-junction-box-350dia-iic",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box 250Dia IIC",
+    "slug": "flpwp-junction-box-250dia-iic",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP PANEL BOX 780 x 525",
+    "slug": "flpwp-panel-box-780-x-525",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Junction Box 250 x 200",
+    "slug": "flpwp-junction-box-250-x-200",
+    "category": "flameproof-junction-boxes",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Well Glass Fitting",
+    "slug": "flpwp-well-glass-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Small Flood Light Fitting",
+    "slug": "flpwp-small-flood-light-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Flood Light Fitting",
+    "slug": "flpwp-flood-light-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Street Light",
+    "slug": "flpwp-street-light",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Bulk Head Fitting",
+    "slug": "flpwp-bulk-head-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Square Bulk Head Fitting",
+    "slug": "flpwp-square-bulk-head-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Tubelight Fitting",
+    "slug": "flpwp-tubelight-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Reactor Vessel Lamp",
+    "slug": "flpwp-reactor-vessel-lamp",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP 2 X 36 Bulkhead Fitting",
+    "slug": "flpwp-2-x-36-bulkhead-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Well Glass Standard Fitting",
+    "slug": "flpwp-well-glass-standard-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Hand Lamp Fitting",
+    "slug": "flpwp-hand-lamp-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Big Flood Light Fitting",
+    "slug": "flpwp-big-flood-light-fitting",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Emergency Exit Light",
+    "slug": "flpwp-emergency-exit-light",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Reactor Vessel Lamp (Holder Type)",
+    "slug": "flpwp-reactor-vessel-lamp-holder-type",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Non FLP Emergency Light",
+    "slug": "non-flp-emergency-light",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Well Glass Fitting Enclosure",
+    "slug": "flpwp-well-glass-fitting-enclosure",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Tube Light Fitting 2 x 18w",
+    "slug": "flpwp-tube-light-fitting-2-x-18w",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Light Fitting Rating 60W",
+    "slug": "flpwp-light-fitting-rating-60w",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Flood Light Fitting Enclosure",
+    "slug": "flpwp-flood-light-fitting-enclosure",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Hand Lamp Fitting -Multi Led Type",
+    "slug": "flpwp-hand-lamp-fitting-multi-led-type",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Big Street Light",
+    "slug": "flpwp-big-street-light",
+    "category": "flameproof-lighting-fittings",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP  Ground Earth Detector",
+    "slug": "flpwp-ground-earth-detector",
+    "category": "flameproof-measuring-instruments",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Human  Body Static Unit",
+    "slug": "flpwp-human-body-static-unit",
+    "category": "flameproof-measuring-instruments",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP 420 X 420 Panel Box",
+    "slug": "flpwp-420-x-420-panel-box",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP MCB Body",
+    "slug": "flpwp-mcb-body",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP 525 X 525 Panel",
+    "slug": "flpwp-525-x-525-panel",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP PANEL BOX 350 X 350",
+    "slug": "flpwp-panel-box-350-x-350",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Control Station",
+    "slug": "flpwp-control-station",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP PANEL BOX 300 x 300",
+    "slug": "flpwp-panel-box-300-x-300",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP PANEL BOX ECP-63265",
+    "slug": "flpwp-panel-box-ecp-63265",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Panel Box 630 x 630",
+    "slug": "flpwp-panel-box-630-x-630",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Local Control Station",
+    "slug": "flpwp-local-control-station",
+    "category": "flameproof-panels",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Start Stop Push Button",
+    "slug": "flpwp-start-stop-push-button",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Switch Socket Unit",
+    "slug": "flpwp-switch-socket-unit",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Rotary Switch Fitting",
+    "slug": "flpwp-rotary-switch-fitting",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Rotary Switch",
+    "slug": "flpwp-rotary-switch",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Temperature Indicator",
+    "slug": "flpwp-temperature-indicator",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Stop Forward Reverse",
+    "slug": "flpwp-stop-forward-reverse",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP DOL Starter",
+    "slug": "flpwp-dol-starter",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Double Indicating Lamp",
+    "slug": "flpwp-double-indicating-lamp",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Hooter",
+    "slug": "flpwp-hooter",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP R.P.M Meter",
+    "slug": "flpwp-rpm-meter",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Limit Switch",
+    "slug": "flpwp-limit-switch",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP 3 Chamber Enclosure",
+    "slug": "flpwp-3-chamber-enclosure",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Mini MCB Body",
+    "slug": "flpwp-mini-mcb-body",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Only Stop Push Button",
+    "slug": "flpwp-only-stop-push-button",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP STAR DELTA STARTER",
+    "slug": "flpwp-star-delta-starter",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Direct Entry Rotary Switch",
+    "slug": "flpwp-direct-entry-rotary-switch",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP MCB Socket",
+    "slug": "flpwp-mcb-socket",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Clean Room Area MCB Socket",
+    "slug": "flpwp-clean-room-area-mcb-socket",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Proximity Switch",
+    "slug": "flpwp-proximity-switch",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Temp Controller",
+    "slug": "flpwp-temp-controller",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Switch Socket Transformer",
+    "slug": "flpwp-switch-socket-transformer",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Touch Switch",
+    "slug": "flpwp-touch-switch",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Direct Entry Push Button",
+    "slug": "flpwp-direct-entry-push-button",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Only Start Push Button",
+    "slug": "flpwp-only-start-push-button",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP RPM Indicator",
+    "slug": "flpwp-rpm-indicator",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "FLP/WP Clean Room Area MCB Body",
+    "slug": "flpwp-clean-room-area-mcb-body",
+    "category": "flameproof-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "NON-FLP Street Light Fitting",
+    "slug": "non-flp-street-light-fitting",
+    "category": "non-flp-light",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Non FLP Light Fitting (B/O)",
+    "slug": "non-flp-light-fitting-bo",
+    "category": "non-flp-light",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "NON FLP  Flood Light Fitting",
+    "slug": "non-flp-flood-light-fitting",
+    "category": "non-flp-light",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Bottom Openable Bulk head Fitting Clean Room",
+    "slug": "bottom-openable-bulk-head-fitting-clean-room",
+    "category": "non-flp-light",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Non FLP Start Stop Push Button",
+    "slug": "non-flp-start-stop-push-button",
+    "category": "non-flp-switch-gears",
+    "flpType": "Flameproof as per IEC:60079-1:2014",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  },
+  {
+    "name": "Petcoke",
+    "slug": "petcoke",
+    "category": "petcoke",
+    "flpType": "",
+    "zones": [
+      "Zone-0",
+      "Zone-1",
+      "Zone-2"
+    ]
+  }
+]

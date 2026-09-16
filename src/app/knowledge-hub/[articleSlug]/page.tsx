@@ -7,6 +7,8 @@ import { IndustrialShell } from "@/components/marketing/design-preview/Industria
 import { getKnowledgeArticle, knowledgeArticles } from "@/lib/marketing/knowledge";
 import { absoluteUrl, SITE_NAME } from "@/lib/seo/site";
 import styles from "../knowledge.module.css";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getCategoryLanding } from "@/lib/seo/categories";
 
 type Props = { params: Promise<{ articleSlug: string }> };
 
@@ -30,6 +32,8 @@ export default async function KnowledgeArticlePage({ params }: Props) {
   if (!article) notFound();
   const related = knowledgeArticles.filter((item) => item.slug !== article.slug).slice(0, 3);
   const url = absoluteUrl(`/knowledge-hub/${article.slug}`);
+  const categorySlug = article.relatedProductCategory === "enclosures" ? "flameproof-junction-boxes" : article.relatedProductCategory === "cable-glands" ? "flameproof-cable-glands" : article.relatedProductCategory;
+  const category = categorySlug ? getCategoryLanding(categorySlug) : undefined;
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -45,7 +49,7 @@ export default async function KnowledgeArticlePage({ params }: Props) {
 
   return <IndustrialFonts><IndustrialShell>
     <article>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
+      <JsonLd data={schema} />
       <header className={styles.articleHero}>
         <nav className={styles.breadcrumbs} aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/knowledge-hub">Knowledge centre</Link><span>/</span><span aria-current="page">{article.shortTitle}</span></nav>
         <h1 className={styles.articleTitle}>{article.title}</h1>
@@ -58,6 +62,7 @@ export default async function KnowledgeArticlePage({ params }: Props) {
           {article.sections.map((section, index) => <section id={`section-${index + 1}`} key={section.heading}><span className={styles.sectionIndex}>{String(index + 1).padStart(2, "0")} / Technical note</span><h2>{section.heading}</h2>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}{section.bullets && <ul>{section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>}</section>)}
           <section className={styles.faq} id="frequently-asked-questions"><span className={styles.sectionIndex}>Questions / Direct answers</span><h2>Frequently asked questions</h2>{article.faq.map((item) => <div className={styles.faqItem} key={item.question}><h3>{item.question}</h3><p>{item.answer}</p></div>)}</section>
           <div className={styles.sources}><span className={styles.sourceLabel}>Primary references</span>{article.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>)}</div>
+          <section><h2>Apply this guide to your specification</h2><p>{category && <><Link href={`/catalog/category/${category.slug}`}>Explore {category.name.toLowerCase()}</Link>{". "}</>}<Link href="/catalog">Compare ExEC electrical product families</Link>{" and "}<Link href="/certifications">check model-specific certificate documents</Link>{". For an application review, "}<Link href="/contact">contact our engineering team</Link>.</p></section>
           <p className={styles.disclaimer}>Technical guidance only. Always use the product certificate, manufacturer instructions, current applicable standards and a competent hazardous-area professional for a specific installation.</p>
         </div>
       </div>

@@ -141,7 +141,7 @@ function MarketingFooter() {
       </div>
       <div className="flex flex-col gap-3 border-t border-white/12 px-5 py-6 font-[family-name:var(--font-marketing-mono)] text-[10px] uppercase tracking-[0.12em] text-white/45 sm:px-10 lg:flex-row lg:items-center lg:justify-between lg:px-14">
         <span>© {new Date().getFullYear()} Explosion Proof Electrical Control / All Rights Reserved</span>
-        <span>CIMFR & PESO Certified / IP-66 / Ex d IIA-IIB-IIC</span>
+        <Link href="/certifications">Model-specific certification and approval documents</Link>
       </div>
     </footer>
   );

@@ -29,7 +29,7 @@ const marking = [
   { code: "db", label: "Flameproof · level b", href: "what-is-ex-d-flameproof-protection" },
   { code: "IIC", label: "Gas subgroup", href: "iia-iib-iic-gas-groups" },
   { code: "T4", label: "Temperature class", href: "temperature-classes-t1-to-t6" },
-  { code: "Gb", label: "Equipment protection level", href: "zone-0-zone-1-zone-2-hazardous-areas" },
+  { code: "Gb", label: "Equipment protection level", href: "equipment-protection-levels-ga-gb-gc" },
 ];
 
 export default function KnowledgeHubPage() {

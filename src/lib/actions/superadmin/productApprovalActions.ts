@@ -18,7 +18,7 @@ import { z } from "zod";
 const settingsSchema = z.object({
   sendEmailNotifications: z.boolean(),
 });
-const ProductUpdateSchema = ProductSchema.extend({ id: z.uuid() });
+const ProductUpdateSchema = ProductSchema.safeExtend({ id: z.uuid() });
 const VariantUpdateSchema = ProductVariantSchema.extend({ id: z.uuid() });
 
 export async function updateProductApprovalSettingsAction(values: {

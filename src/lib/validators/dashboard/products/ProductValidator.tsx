@@ -1,5 +1,6 @@
 import { slugRegex } from "@/lib/helpers/regexHelpers/regexHelpers";
 import z from "zod";
+import { isNonHazardousProduct, isZoneZero, supportsZoneZero } from "@/lib/products/technical-data";
 
 export const ProductStatusSchema = z.enum(["ACTIVE", "INACTIVE"]);
 
@@ -24,7 +25,6 @@ export const ProductSchema = z.object({
 
   zones: z
     .array(z.string().trim().min(1))
-    .min(1, "Select at least one zone")
     .max(10)
     .refine(
       (arr) => new Set(arr.map((s) => s.toLowerCase())).size === arr.length,
@@ -39,6 +39,13 @@ export const ProductSchema = z.object({
   categoryId: z.string().uuid("Invalid categoryId"),
 
   status: ProductStatusSchema.optional(),
+}).superRefine((product, context) => {
+  if (isNonHazardousProduct(product) && (product.zones.length || product.gasGroup)) {
+    context.addIssue({ code: "custom", path: ["zones"], message: "Non-FLP products must have no hazardous-zone or gas-group declarations." });
+  }
+  if (product.zones.some(isZoneZero) && !supportsZoneZero(product)) {
+    context.addIssue({ code: "custom", path: ["zones"], message: "Zone 0 requires a certificate-supported Ga / Ex da marking in the protection type. Verify the certificate or select the supported zones." });
+  }
 });
 
 export type ProductSchemaRequest = z.infer<typeof ProductSchema>;

@@ -76,11 +76,11 @@ export default function ProductForm({
       id: initial?.id ?? undefined,
       name: initial?.name ?? "FLP/WP ",
       slug: initial?.slug ?? "",
-      zones: initial?.zones ?? ["Zone-0", "Zone-1", "Zone-2"], // ðŸ‘ˆ default checked,
+      zones: initial?.zones ?? [],
       status: initial?.status ?? "ACTIVE",
-      flpType: initial?.flpType ?? "Flameproof as per IEC:60079-1:2014",
-      protection: initial?.protection ?? "IP-66 as per IS/IEC:60079-1",
-      gasGroup: initial?.gasGroup ?? "IIA, IIB & IIC as per IS/IEC:60079-1",
+      flpType: initial?.flpType ?? "",
+      protection: initial?.protection ?? "",
+      gasGroup: initial?.gasGroup ?? "",
       material: initial?.material ?? "Cast Aluminum Alloy LM-6",
       finish: initial?.finish ?? "Powder Coated RAL-7032",
       hardware: initial?.hardware ?? "SS 304",
@@ -298,6 +298,7 @@ export default function ProductForm({
               render={() => (
                 <FormItem>
                   <FormLabel>Zones</FormLabel>
+                  <FormDescription>Select only certificate-supported zones. Leave blank for non-FLP products. Zone 0 requires a documented Ga / Ex da marking.</FormDescription>
                   <div className="flex gap-6">
                     {ZONES.map((zone) => (
                       <FormField

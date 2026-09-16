@@ -1,6 +1,8 @@
 import type { ProductCardProduct } from "@/components/marketing/ProductCard";
 import { prisma } from "@/lib/prisma/db";
 import { cache } from "react";
+import { gasGroupLabel, isNonHazardousProduct, publishedZones, safeTechnicalDescription, technicalDataIssues } from "@/lib/products/technical-data";
+import { getCategoryLanding, matchesLanding } from "@/lib/seo/categories";
 
 export type CatalogFilterOption = {
   label: string;
@@ -27,6 +29,7 @@ export type CatalogProductDetail = CatalogProductCard & {
   hardware?: string | null;
   hsnCode?: string | null;
   zones: string[];
+  technicalNotes: string[];
   variants: CatalogVariant[];
 };
 
@@ -47,7 +50,7 @@ const variantFields = {
   rpm: "RPM", kW: "kW", horsePower: "Horsepower",
 } as const;
 
-type CatalogProductRow = {
+export type CatalogProductRow = {
   name: string;
   slug: string;
   flpType: string | null;
@@ -138,6 +141,11 @@ export const getCatalogProductDetail = cache(async (slug: string) => {
 });
 
 export const getCatalogCategory = cache(async (slug: string) => {
+  const landing = getCategoryLanding(slug);
+  if (landing) {
+    const { products } = await getCatalogData();
+    return { category: { name: landing.name, slug: landing.slug }, products: products.filter(product => matchesLanding(product, landing)) };
+  }
   const category = await prisma.category.findFirst({
     where: { slug, status: "ACTIVE", deletedAt: null },
     select: { name: true, slug: true },
@@ -246,10 +254,10 @@ function toCatalogProductCard(
     cat: product.category.name,
     image,
     ip: formatProtectionLabel(product.protection) || "",
-    group: formatGasGroupLabel(product.gasGroup) || "",
+    group: isNonHazardousProduct(product) ? "" : formatGasGroupLabel(product.gasGroup) || "",
     type: variant?.typeNumber?.trim() || product.flpType?.trim() || "EXEC",
     filter: product.category.slug,
-    description: product.shortDesc?.trim() || `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
+    description: safeTechnicalDescription(product.shortDesc, product) || `Explore ${product.name} from the ExEC ${product.category.name.toLowerCase()} range, manufactured in Vapi, India. Compare configurations and request specifications.`,
     variantCount: product.variants.length,
     searchText: product.variants.map((item) => [item.variant, item.typeNumber, item.sku, item.rating].filter(Boolean).join(" ")).join(" "),
   };
@@ -263,17 +271,18 @@ export function toCatalogProductDetail(
     categoryId: product.categoryId,
     categorySlug: product.category.slug,
     description:
-      product.shortDesc?.trim() ||
-      `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range. Speak with our team about your application and specification.`,
-    longDescription: product.longDesc,
+      safeTechnicalDescription(product.shortDesc, product) ||
+      `Explore ${product.name} from the ExEC ${product.category.name.toLowerCase()} range, manufactured in Vapi, India. Compare configurations and request specifications.`,
+    longDescription: safeTechnicalDescription(product.longDesc, product),
     flpType: product.flpType,
-    protection: product.protection,
-    gasGroup: product.gasGroup,
+    protection: formatProtectionLabel(product.protection),
+    gasGroup: isNonHazardousProduct(product) ? undefined : gasGroupLabel(product.gasGroup) || undefined,
     material: product.material,
     finish: product.finish,
     hardware: product.hardware,
     hsnCode: product.hsnCode,
-    zones: product.zones ?? [],
+    zones: publishedZones(product),
+    technicalNotes: !isNonHazardousProduct(product) && technicalDataIssues(product).length ? ["Confirm the complete Ex marking, permitted zone / EPL, temperature class and certificate conditions with our engineering team before selection."] : [],
     variants: product.variants.map((variant) => ({
       id: variant.id, variant: variant.variant, typeNumber: variant.typeNumber,
       sku: variant.sku, images: variant.images, drawings: variant.drawings,
@@ -290,9 +299,5 @@ export function formatProtectionLabel(protection?: string | null) {
 }
 
 export function formatGasGroupLabel(gasGroup?: string | null) {
-  const gasGroups = Array.from(new Set(gasGroup?.match(/II[ABC]/gi) ?? []))
-    .map((group) => group.toUpperCase())
-    .join("/");
-
-  return gasGroups ? `Ex d ${gasGroups}` : undefined;
+  return gasGroupLabel(gasGroup) || undefined;
 }

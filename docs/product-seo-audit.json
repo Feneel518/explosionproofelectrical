@@ -1,0 +1,1251 @@
+{
+  "productsReviewed": 128,
+  "technicalIssues": [
+    {
+      "slug": "flpwp-digital-clock",
+      "name": "FLP/WP Digital Clock",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-digital-clock",
+      "name": "FLP/WP Digital Clock",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-insect-killer",
+      "name": "FLP/WP Insect Killer",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-insect-killer",
+      "name": "FLP/WP Insect Killer",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-telephone-fitting",
+      "name": "FLP/WP Telephone Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-telephone-fitting",
+      "name": "FLP/WP Telephone Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-torch",
+      "name": "FLP/WP Torch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-torch",
+      "name": "FLP/WP Torch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-rechargeable-torch",
+      "name": "FLP/WP Rechargeable Torch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-rechargeable-torch",
+      "name": "FLP/WP Rechargeable Torch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "spare-driver",
+      "name": "Spare Driver",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-led",
+      "name": "Spare Led",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-push-assembly",
+      "name": "Spare Push Assembly",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-fan-blade",
+      "name": "Spare Fan Blade",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-frp-canopy",
+      "name": "Spare FRP Canopy",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-brass-part",
+      "name": "Spare Brass Part",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-regulator",
+      "name": "Spare Regulator",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-led-kit",
+      "name": "Spare Led Kit",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "pvc-hood",
+      "name": "PVC Hood",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-battery",
+      "name": "Spare Battery",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-ms-box",
+      "name": "Spare MS Box",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-cable-box",
+      "name": "Spare Cable Box",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-cable-box",
+      "name": "Spare Cable Box",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-plug-top",
+      "name": "FLP/WP Plug Top",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-plug-top",
+      "name": "FLP/WP Plug Top",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "spare-louvers",
+      "name": "Spare Louvers",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-led-adhesive",
+      "name": "Spare Led Adhesive",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-knob",
+      "name": "Spare Knob",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "led-5050",
+      "name": "LED 5050",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-indicating-lamp",
+      "name": "Spare Indicating Lamp",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-metrics-cable-gland",
+      "name": "FLP/WP Metrics Cable Gland",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-metrics-cable-gland",
+      "name": "FLP/WP Metrics Cable Gland",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "spare-circuit",
+      "name": "Spare Circuit",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-glass",
+      "name": "Spare Glass",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "stopping-plug-npt",
+      "name": "Stopping Plug NPT",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "stopping-plug-npt",
+      "name": "Stopping Plug NPT",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-et-cable-gland",
+      "name": "FLP/WP ET Cable Gland",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-et-cable-gland",
+      "name": "FLP/WP ET Cable Gland",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-stopping-plug",
+      "name": "FLP/WP Stopping Plug",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-stopping-plug",
+      "name": "FLP/WP Stopping Plug",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-rtd-sensor",
+      "name": "FLP/WP RTD Sensor",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-rtd-sensor",
+      "name": "FLP/WP RTD Sensor",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "tube-light-rod",
+      "name": "Tube Light Rod",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-reducer",
+      "name": "FLP/WP Reducer",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-reducer",
+      "name": "FLP/WP Reducer",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-ss-cable-gland",
+      "name": "FLP/WP SS Cable Gland",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-ss-cable-gland",
+      "name": "FLP/WP SS Cable Gland",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-iic-cable-gland",
+      "name": "FLP/WP IIC Cable Gland",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-iic-cable-gland",
+      "name": "FLP/WP IIC Cable Gland",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-npt-cable-gland",
+      "name": "FLP/WP NPT Cable Gland",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-npt-cable-gland",
+      "name": "FLP/WP NPT Cable Gland",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "non-flp-cable-gland-sc",
+      "name": "Non FLP -  Cable Gland SC",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-cable-gland-sc",
+      "name": "Non FLP -  Cable Gland SC",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "non-flp-cable-gland-sc",
+      "name": "Non FLP -  Cable Gland SC",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "spare-switch",
+      "name": "Spare Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "spare-switch",
+      "name": "Spare Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-bulk-head-fitting-to",
+      "name": "FLP/WP Bulk Head Fitting (T/O)",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-bulk-head-fitting-to",
+      "name": "FLP/WP Bulk Head Fitting (T/O)",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-clean-room-rotary-switch",
+      "name": "FLP/WP Clean Room Rotary Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-clean-room-rotary-switch",
+      "name": "FLP/WP Clean Room Rotary Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-clean-room-push-button",
+      "name": "FLP/WP Clean Room Push Button",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-clean-room-push-button",
+      "name": "FLP/WP Clean Room Push Button",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-clean-room-switch-socket-fitting",
+      "name": "FLP/WP Clean Room Switch Socket Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-clean-room-switch-socket-fitting",
+      "name": "FLP/WP Clean Room Switch Socket Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-pedestal-fan",
+      "name": "FLP/WP Pedestal Fan",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-pedestal-fan",
+      "name": "FLP/WP Pedestal Fan",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-wall-fan",
+      "name": "FLP/WP Wall Fan",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-wall-fan",
+      "name": "FLP/WP Wall Fan",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-exhaust-fan",
+      "name": "FLP/WP Exhaust Fan",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-exhaust-fan",
+      "name": "FLP/WP Exhaust Fan",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-tube-axial-flow-fan",
+      "name": "FLP/WP Tube Axial Flow Fan",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-tube-axial-flow-fan",
+      "name": "FLP/WP Tube Axial Flow Fan",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "non-flp-exhaust-fan",
+      "name": "NON FLP Exhaust Fan",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-exhaust-fan",
+      "name": "NON FLP Exhaust Fan",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-earthing-relay",
+      "name": "FLP/WP Earthing Relay",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-earthing-relay",
+      "name": "FLP/WP Earthing Relay",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-manual-call-point",
+      "name": "FLP/WP Manual Call Point",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-manual-call-point",
+      "name": "FLP/WP Manual Call Point",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-hooter-ack",
+      "name": "FLP/WP Hooter ACK",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-hooter-ack",
+      "name": "FLP/WP Hooter ACK",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-human-body-static-discharge-unit-clean-room-type",
+      "name": "FLP/WP Human Body Static Discharge unit Clean Room Type",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-human-body-static-discharge-unit-clean-room-type",
+      "name": "FLP/WP Human Body Static Discharge unit Clean Room Type",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "non-flp-rtd-sensor",
+      "name": "NON FLP RTD Sensor",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-rtd-sensor",
+      "name": "NON FLP RTD Sensor",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-smoke-detector",
+      "name": "FLP/WP Smoke Detector",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-smoke-detector",
+      "name": "FLP/WP Smoke Detector",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-100-dia",
+      "name": "FLP/WP Junction Box - 100 Dia",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-100-dia",
+      "name": "FLP/WP Junction Box - 100 Dia",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-250-dia",
+      "name": "FLP/WP JUnction Box - 250 Dia",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-250-dia",
+      "name": "FLP/WP JUnction Box - 250 Dia",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-150dia",
+      "name": "FLP/WP Junction Box 150Dia",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-150dia",
+      "name": "FLP/WP Junction Box 150Dia",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-350dia",
+      "name": "FLP/WP Junction Box 350Dia",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-350dia",
+      "name": "FLP/WP Junction Box 350Dia",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-780-x-550",
+      "name": "FLP/WP Panel Box 780 X 550",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-780-x-550",
+      "name": "FLP/WP Panel Box 780 X 550",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-680-x-525",
+      "name": "FLP/WP PANEL BOX 680 x 525",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-680-x-525",
+      "name": "FLP/WP PANEL BOX 680 x 525",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-200-x-200",
+      "name": "FLP/WP Junction Box. 200 X 200",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-200-x-200",
+      "name": "FLP/WP Junction Box. 200 X 200",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-ecp-63265",
+      "name": "FLP/WP Junction Box .ECP-63265",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-ecp-63265",
+      "name": "FLP/WP Junction Box .ECP-63265",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-350dia-iic",
+      "name": "FLP/WP Junction Box 350Dia IIC",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-350dia-iic",
+      "name": "FLP/WP Junction Box 350Dia IIC",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-250dia-iic",
+      "name": "FLP/WP Junction Box 250Dia IIC",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-250dia-iic",
+      "name": "FLP/WP Junction Box 250Dia IIC",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-780-x-525",
+      "name": "FLP/WP PANEL BOX 780 x 525",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-780-x-525",
+      "name": "FLP/WP PANEL BOX 780 x 525",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-junction-box-250-x-200",
+      "name": "FLP/WP Junction Box 250 x 200",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-junction-box-250-x-200",
+      "name": "FLP/WP Junction Box 250 x 200",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-well-glass-fitting",
+      "name": "FLP/WP Well Glass Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-well-glass-fitting",
+      "name": "FLP/WP Well Glass Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-small-flood-light-fitting",
+      "name": "FLP/WP Small Flood Light Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-small-flood-light-fitting",
+      "name": "FLP/WP Small Flood Light Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-flood-light-fitting",
+      "name": "FLP/WP Flood Light Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-flood-light-fitting",
+      "name": "FLP/WP Flood Light Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-street-light",
+      "name": "FLP/WP Street Light",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-street-light",
+      "name": "FLP/WP Street Light",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-bulk-head-fitting",
+      "name": "FLP/WP Bulk Head Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-bulk-head-fitting",
+      "name": "FLP/WP Bulk Head Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-square-bulk-head-fitting",
+      "name": "FLP/WP Square Bulk Head Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-square-bulk-head-fitting",
+      "name": "FLP/WP Square Bulk Head Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-tubelight-fitting",
+      "name": "FLP/WP Tubelight Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-tubelight-fitting",
+      "name": "FLP/WP Tubelight Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-reactor-vessel-lamp",
+      "name": "FLP/WP Reactor Vessel Lamp",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-reactor-vessel-lamp",
+      "name": "FLP/WP Reactor Vessel Lamp",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-2-x-36-bulkhead-fitting",
+      "name": "FLP/WP 2 X 36 Bulkhead Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-2-x-36-bulkhead-fitting",
+      "name": "FLP/WP 2 X 36 Bulkhead Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-well-glass-standard-fitting",
+      "name": "FLP/WP Well Glass Standard Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-well-glass-standard-fitting",
+      "name": "FLP/WP Well Glass Standard Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-hand-lamp-fitting",
+      "name": "FLP/WP Hand Lamp Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-hand-lamp-fitting",
+      "name": "FLP/WP Hand Lamp Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-big-flood-light-fitting",
+      "name": "FLP/WP Big Flood Light Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-big-flood-light-fitting",
+      "name": "FLP/WP Big Flood Light Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-emergency-exit-light",
+      "name": "FLP/WP Emergency Exit Light",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-emergency-exit-light",
+      "name": "FLP/WP Emergency Exit Light",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-reactor-vessel-lamp-holder-type",
+      "name": "FLP/WP Reactor Vessel Lamp (Holder Type)",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-reactor-vessel-lamp-holder-type",
+      "name": "FLP/WP Reactor Vessel Lamp (Holder Type)",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "non-flp-emergency-light",
+      "name": "Non FLP Emergency Light",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-emergency-light",
+      "name": "Non FLP Emergency Light",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-well-glass-fitting-enclosure",
+      "name": "FLP/WP Well Glass Fitting Enclosure",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-well-glass-fitting-enclosure",
+      "name": "FLP/WP Well Glass Fitting Enclosure",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-tube-light-fitting-2-x-18w",
+      "name": "FLP/WP Tube Light Fitting 2 x 18w",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-tube-light-fitting-2-x-18w",
+      "name": "FLP/WP Tube Light Fitting 2 x 18w",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-light-fitting-rating-60w",
+      "name": "FLP/WP Light Fitting Rating 60W",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-light-fitting-rating-60w",
+      "name": "FLP/WP Light Fitting Rating 60W",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-flood-light-fitting-enclosure",
+      "name": "FLP/WP Flood Light Fitting Enclosure",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-flood-light-fitting-enclosure",
+      "name": "FLP/WP Flood Light Fitting Enclosure",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-hand-lamp-fitting-multi-led-type",
+      "name": "FLP/WP Hand Lamp Fitting -Multi Led Type",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-hand-lamp-fitting-multi-led-type",
+      "name": "FLP/WP Hand Lamp Fitting -Multi Led Type",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-big-street-light",
+      "name": "FLP/WP Big Street Light",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-big-street-light",
+      "name": "FLP/WP Big Street Light",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-ground-earth-detector",
+      "name": "FLP/WP  Ground Earth Detector",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-ground-earth-detector",
+      "name": "FLP/WP  Ground Earth Detector",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-human-body-static-unit",
+      "name": "FLP/WP Human  Body Static Unit",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-human-body-static-unit",
+      "name": "FLP/WP Human  Body Static Unit",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-420-x-420-panel-box",
+      "name": "FLP/WP 420 X 420 Panel Box",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-420-x-420-panel-box",
+      "name": "FLP/WP 420 X 420 Panel Box",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-mcb-body",
+      "name": "FLP/WP MCB Body",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-mcb-body",
+      "name": "FLP/WP MCB Body",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-525-x-525-panel",
+      "name": "FLP/WP 525 X 525 Panel",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-525-x-525-panel",
+      "name": "FLP/WP 525 X 525 Panel",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-350-x-350",
+      "name": "FLP/WP PANEL BOX 350 X 350",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-350-x-350",
+      "name": "FLP/WP PANEL BOX 350 X 350",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-control-station",
+      "name": "FLP/WP Control Station",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-control-station",
+      "name": "FLP/WP Control Station",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-300-x-300",
+      "name": "FLP/WP PANEL BOX 300 x 300",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-300-x-300",
+      "name": "FLP/WP PANEL BOX 300 x 300",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-ecp-63265",
+      "name": "FLP/WP PANEL BOX ECP-63265",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-ecp-63265",
+      "name": "FLP/WP PANEL BOX ECP-63265",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-panel-box-630-x-630",
+      "name": "FLP/WP Panel Box 630 x 630",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-panel-box-630-x-630",
+      "name": "FLP/WP Panel Box 630 x 630",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-local-control-station",
+      "name": "FLP/WP Local Control Station",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-local-control-station",
+      "name": "FLP/WP Local Control Station",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-start-stop-push-button",
+      "name": "FLP/WP Start Stop Push Button",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-start-stop-push-button",
+      "name": "FLP/WP Start Stop Push Button",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-switch-socket-unit",
+      "name": "FLP/WP Switch Socket Unit",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-switch-socket-unit",
+      "name": "FLP/WP Switch Socket Unit",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-rotary-switch-fitting",
+      "name": "FLP/WP Rotary Switch Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-rotary-switch-fitting",
+      "name": "FLP/WP Rotary Switch Fitting",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-rotary-switch",
+      "name": "FLP/WP Rotary Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-rotary-switch",
+      "name": "FLP/WP Rotary Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-temperature-indicator",
+      "name": "FLP/WP Temperature Indicator",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-temperature-indicator",
+      "name": "FLP/WP Temperature Indicator",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-stop-forward-reverse",
+      "name": "FLP/WP Stop Forward Reverse",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-stop-forward-reverse",
+      "name": "FLP/WP Stop Forward Reverse",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-dol-starter",
+      "name": "FLP/WP DOL Starter",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-dol-starter",
+      "name": "FLP/WP DOL Starter",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-double-indicating-lamp",
+      "name": "FLP/WP Double Indicating Lamp",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-double-indicating-lamp",
+      "name": "FLP/WP Double Indicating Lamp",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-hooter",
+      "name": "FLP/WP Hooter",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-hooter",
+      "name": "FLP/WP Hooter",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-rpm-meter",
+      "name": "FLP/WP R.P.M Meter",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-rpm-meter",
+      "name": "FLP/WP R.P.M Meter",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-limit-switch",
+      "name": "FLP/WP Limit Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-limit-switch",
+      "name": "FLP/WP Limit Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-3-chamber-enclosure",
+      "name": "FLP/WP 3 Chamber Enclosure",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-3-chamber-enclosure",
+      "name": "FLP/WP 3 Chamber Enclosure",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-mini-mcb-body",
+      "name": "FLP/WP Mini MCB Body",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-mini-mcb-body",
+      "name": "FLP/WP Mini MCB Body",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-only-stop-push-button",
+      "name": "FLP/WP Only Stop Push Button",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-only-stop-push-button",
+      "name": "FLP/WP Only Stop Push Button",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-star-delta-starter",
+      "name": "FLP/WP STAR DELTA STARTER",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-star-delta-starter",
+      "name": "FLP/WP STAR DELTA STARTER",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-direct-entry-rotary-switch",
+      "name": "FLP/WP Direct Entry Rotary Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-direct-entry-rotary-switch",
+      "name": "FLP/WP Direct Entry Rotary Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-mcb-socket",
+      "name": "FLP/WP MCB Socket",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-mcb-socket",
+      "name": "FLP/WP MCB Socket",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-clean-room-area-mcb-socket",
+      "name": "FLP/WP Clean Room Area MCB Socket",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-clean-room-area-mcb-socket",
+      "name": "FLP/WP Clean Room Area MCB Socket",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-proximity-switch",
+      "name": "FLP/WP Proximity Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-proximity-switch",
+      "name": "FLP/WP Proximity Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-temp-controller",
+      "name": "FLP/WP Temp Controller",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-temp-controller",
+      "name": "FLP/WP Temp Controller",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-switch-socket-transformer",
+      "name": "FLP/WP Switch Socket Transformer",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-switch-socket-transformer",
+      "name": "FLP/WP Switch Socket Transformer",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-touch-switch",
+      "name": "FLP/WP Touch Switch",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-touch-switch",
+      "name": "FLP/WP Touch Switch",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-direct-entry-push-button",
+      "name": "FLP/WP Direct Entry Push Button",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-direct-entry-push-button",
+      "name": "FLP/WP Direct Entry Push Button",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-only-start-push-button",
+      "name": "FLP/WP Only Start Push Button",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-only-start-push-button",
+      "name": "FLP/WP Only Start Push Button",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-rpm-indicator",
+      "name": "FLP/WP RPM Indicator",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-rpm-indicator",
+      "name": "FLP/WP RPM Indicator",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "flpwp-clean-room-area-mcb-body",
+      "name": "FLP/WP Clean Room Area MCB Body",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "flpwp-clean-room-area-mcb-body",
+      "name": "FLP/WP Clean Room Area MCB Body",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "non-flp-street-light-fitting",
+      "name": "NON-FLP Street Light Fitting",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-street-light-fitting",
+      "name": "NON-FLP Street Light Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "non-flp-light-fitting-bo",
+      "name": "Non FLP Light Fitting (B/O)",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-light-fitting-bo",
+      "name": "Non FLP Light Fitting (B/O)",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "non-flp-flood-light-fitting",
+      "name": "NON FLP  Flood Light Fitting",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-flood-light-fitting",
+      "name": "NON FLP  Flood Light Fitting",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "bottom-openable-bulk-head-fitting-clean-room",
+      "name": "Bottom Openable Bulk head Fitting Clean Room",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "bottom-openable-bulk-head-fitting-clean-room",
+      "name": "Bottom Openable Bulk head Fitting Clean Room",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "non-flp-start-stop-push-button",
+      "name": "Non FLP Start Stop Push Button",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "non-flp-start-stop-push-button",
+      "name": "Non FLP Start Stop Push Button",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    },
+    {
+      "slug": "non-flp-start-stop-push-button",
+      "name": "Non FLP Start Stop Push Button",
+      "issue": "IEC 60079-1 concerns flameproof protection. Verify the IP rating separately against the ingress-protection documentation."
+    },
+    {
+      "slug": "petcoke",
+      "name": "Petcoke",
+      "issue": "A non-FLP or non-electrical product must not inherit hazardous-zone or gas-group declarations."
+    },
+    {
+      "slug": "petcoke",
+      "name": "Petcoke",
+      "issue": "Zone 0 requires a documented Ga / Ex da marking; confirm the product certificate before publishing this declaration."
+    }
+  ],
+  "unmappedLegacyTargets": [],
+  "categoryCoverage": [
+    {
+      "slug": "flameproof-junction-boxes",
+      "products": 12
+    },
+    {
+      "slug": "flameproof-lighting-fittings",
+      "products": 21
+    },
+    {
+      "slug": "flameproof-panels",
+      "products": 9
+    },
+    {
+      "slug": "flameproof-switch-gears",
+      "products": 26
+    },
+    {
+      "slug": "flameproof-cable-glands",
+      "products": 5
+    },
+    {
+      "slug": "flameproof-clean-room-lighting-fittings",
+      "products": 1
+    },
+    {
+      "slug": "flameproof-clean-room-switch-gears",
+      "products": 3
+    },
+    {
+      "slug": "flameproof-fire-alarm",
+      "products": 6
+    },
+    {
+      "slug": "flameproof-fans",
+      "products": 5
+    },
+    {
+      "slug": "flameproof-instrumentation",
+      "products": 4
+    },
+    {
+      "slug": "flameproof-floodlights",
+      "products": 4
+    },
+    {
+      "slug": "flameproof-wellglass-lights",
+      "products": 3
+    }
+  ]
+}

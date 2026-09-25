@@ -39,6 +39,7 @@ type PendingOrder = {
   id: string;
   orderNo: number;
   orderFy: string;
+  poNumber: string | null;
   orderDate: string | null;
   deliveryDate: string | null;
   status: string;
@@ -136,6 +137,7 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
       const orderNumber = formatFinancialDocumentNumber(row.orderFy, row.orderNo).toLowerCase();
       const text = [
         orderNumber,
+        row.poNumber?.toLowerCase() || "",
         row.clientName.toLowerCase(),
         row.items.map((item) => item.productLabel.toLowerCase()).join(" "),
         row.items.map((item) => item.title.toLowerCase()).join(" "),
@@ -211,6 +213,7 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
       row.items.map((item) => ({
         id: `${row.id}-${item.id}`,
         orderLabel: formatFinancialDocumentNumber(row.orderFy, row.orderNo),
+        poNumber: row.poNumber,
         clientName: row.clientName,
         productLabel: item.productLabel,
         status: row.status,
@@ -287,7 +290,7 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search order no / client / product"
+            placeholder="Search order no / PO no / client / product"
           />
 
           <Select value={clientFilter} onValueChange={setClientFilter}>
@@ -403,8 +406,13 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
                 filteredOrders.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell className="align-top">
-                      <div className="font-medium">
+                      <Link
+                        href={`/dashboard/sales/orders/${row.id}`}
+                        className="font-medium text-primary hover:underline">
                         {formatFinancialDocumentNumber(row.orderFy, row.orderNo)}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">
+                        PO: {row.poNumber || "-"}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Order: {formatDate(row.orderDate)}
@@ -516,6 +524,7 @@ export default function PendingOrdersBoard({ generatedAt, orders }: Props) {
                         <td className="border border-black p-1">{pageStart + rowIndex + 1}</td>
                         <td className="border border-black p-1">
                           {row.orderLabel}
+                          <div className="text-[10px]">PO: {row.poNumber || "-"}</div>
                           <div className="text-[10px]">{row.status}</div>
                         </td>
                         <td className="border border-black p-1">{row.clientName}</td>

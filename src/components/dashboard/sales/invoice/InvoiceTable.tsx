@@ -28,6 +28,7 @@ import { InvoiceListItem } from "@/lib/types/Invoicetable";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { getPaymentReminderState } from "@/lib/helpers/globalHelpers/invoicePaymentReminder";
 import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
+import DocumentItemsPreview from "@/components/dashboard/sales/DocumentItemsPreview";
 
 interface InvoiceTableProps {
   items: ClientSafe<InvoiceListItem>[];
@@ -126,8 +127,6 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
     if (next !== page) setState({ page: next });
   };
 
-  console.log(items);
-
   return (
     <div className="space-y-4">
       <InvoiceToolbar qp={qp} />
@@ -219,7 +218,14 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <DocumentItemsPreview
+                    mobile
+                    kind="invoice"
+                    id={inv.id}
+                    number={formatFinancialDocumentNumber(inv.invoiceFy, inv.invoiceNo)}
+                    href={`/dashboard/sales/invoices/${inv.id}`}
+                  />
                   <InvoiceAction
                     id={inv.id}
                     status={inv.status as InvoiceStatus}
@@ -274,14 +280,12 @@ const InvoiceTable: FC<InvoiceTableProps> = ({
                 return (
                   <TableRow key={inv.id}>
                     <TableCell>
-                      <Link
-                        className="font-medium hover:underline"
-                        href={`/dashboard/sales/invoices/${inv.id}`}>
-                        {formatFinancialDocumentNumber(
-                          inv.invoiceFy,
-                          inv.invoiceNo,
-                        )}
-                      </Link>
+                      <DocumentItemsPreview
+                        kind="invoice"
+                        id={inv.id}
+                        number={formatFinancialDocumentNumber(inv.invoiceFy, inv.invoiceNo)}
+                        href={`/dashboard/sales/invoices/${inv.id}`}
+                      />
                       <div className="text-xs text-muted-foreground">
                         {formatDate(inv.invoiceDate || inv.createdAt)}
                       </div>

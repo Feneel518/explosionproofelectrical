@@ -73,7 +73,7 @@ const data = {
       icon: Bot,
       items: [
         {
-          title: "Gmail Inbox Alerts",
+          title: "Gmail Sales Inbox",
           url: "/dashboard/inbox",
         },
         {

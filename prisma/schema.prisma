@@ -255,7 +255,10 @@ model GmailConnection {
   connectedAt           DateTime @default(now())
   lastSyncedAt          DateTime?
   syncLeaseUntil        DateTime?
+  lastSyncAttemptAt     DateTime?
+  lastSyncError         String?
   notifications         GmailNotification[]
+  salesLinks            GmailThreadLink[]
 
   @@map("gmail_connections")
 }
@@ -271,11 +274,41 @@ model GmailNotification {
   receivedAt DateTime
   createdAt  DateTime @default(now())
   readAt     DateTime?
+  snippet    String?
+  bodyText   String? @db.Text
+  hasAttachments Boolean @default(false)
+  contentIndexedAt DateTime?
+  starred    Boolean @default(false)
+  status     GmailLeadStatus @default(NEW)
+  internalNote String? @db.Text
 
   @@unique([userId, messageId])
   @@index([userId, receivedAt])
   @@index([userId, readAt])
   @@map("gmail_notifications")
+}
+
+enum GmailLeadStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+}
+
+model GmailThreadLink {
+  id           String @id @default(uuid())
+  userId       String
+  connection   GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  threadId     String
+  quotationId  String?
+  quotation    Quotation? @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  salesOrderId String?
+  salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, threadId, quotationId])
+  @@unique([userId, threadId, salesOrderId])
+  @@index([userId, threadId])
+  @@map("gmail_thread_links")
 }
 
 model Account {
@@ -818,6 +851,7 @@ model FiscalCounter {
 }
 
 model Quotation {
+  gmailThreadLinks GmailThreadLink[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1223,6 +1257,7 @@ enum SalesOrderCompletionType {
 }
 
 model SalesOrder {
+  gmailThreadLinks GmailThreadLink[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,4 +1,5 @@
 import QuotationDetailView from "@/components/dashboard/sales/quotation/QuotationDetailView";
+import { GmailLinkedMessages } from "@/components/dashboard/gmail/GmailLinkedMessages";
 import { getQuotationByIdAction } from "@/lib/actions/dashboard/sales/quotation/getQuotationByIdAction";
 
 interface PageProps {
@@ -16,6 +17,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <div className="p-6">
       <QuotationDetailView quotation={res.quotation} />
+      <GmailLinkedMessages kind="QUOTATION" recordId={id} />
     </div>
   );
 }

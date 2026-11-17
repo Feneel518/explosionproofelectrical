@@ -18,13 +18,14 @@ export async function getGmailInboxAction() {
     }
   }
   const [connection, notifications, unreadCount] = await Promise.all([
-    prisma.gmailConnection.findUnique({ where: { userId: user.id }, select: { email: true, searchQuery: true, lastSyncedAt: true } }),
-    prisma.gmailNotification.findMany({ where: { userId: user.id }, orderBy: [{ receivedAt: "desc" }, { id: "desc" }], take: 100 }),
+    prisma.gmailConnection.findUnique({ where: { userId: user.id }, select: { email: true, searchQuery: true, lastSyncedAt: true, lastSyncError: true, lastSyncAttemptAt: true } }),
+    prisma.gmailNotification.findMany({ where: { userId: user.id }, orderBy: [{ receivedAt: "desc" }, { id: "desc" }], take: 100, select: { id: true, subject: true, sender: true, threadId: true, receivedAt: true, createdAt: true, readAt: true } }),
     prisma.gmailNotification.count({ where: { userId: user.id, readAt: null } }),
   ]);
   return {
-    configured, syncError, unreadCount, defaultQuery: DEFAULT_GMAIL_QUERY,
-    connection: connection ? { ...connection, lastSyncedAt: connection.lastSyncedAt?.toISOString() ?? null } : null,
+    configured, syncError: syncError || connection?.lastSyncError || null, unreadCount, defaultQuery: DEFAULT_GMAIL_QUERY,
+    backgroundEnabled: !!process.env.CRON_SECRET,
+    connection: connection ? { ...connection, lastSyncedAt: connection.lastSyncedAt?.toISOString() ?? null, lastSyncAttemptAt: connection.lastSyncAttemptAt?.toISOString() ?? null } : null,
     notifications: notifications.map((item) => ({
       id: item.id, subject: item.subject, sender: item.sender, threadId: item.threadId,
       receivedAt: item.receivedAt.toISOString(), createdAt: item.createdAt.toISOString(), read: !!item.readAt,

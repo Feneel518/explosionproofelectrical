@@ -1,10 +1,7 @@
 import { gmailGet } from "./google";
+import { parseGmailMessage, type GmailMessage } from "./mime";
 
 type MessageList = { messages?: { id: string }[]; nextPageToken?: string };
-type GmailMessage = {
-  id: string; threadId: string; internalDate: string;
-  payload?: { headers?: { name: string; value: string }[] };
-};
 
 export async function getMatchingGmailMessages(accessToken: string, query: string) {
   const ids = new Set<string>();
@@ -24,18 +21,16 @@ export async function getMatchingGmailMessages(accessToken: string, query: strin
   // Bound concurrency to avoid flooding Gmail for an initial import.
   for (let index = 0; index < allIds.length; index += 10) {
     messages.push(...await Promise.all(allIds.slice(index, index + 10).map((id) => {
-      const params = new URLSearchParams({ format: "metadata" });
-      params.append("metadataHeaders", "Subject");
-      params.append("metadataHeaders", "From");
+      const params = new URLSearchParams({ format: "full" });
       return gmailGet<GmailMessage>(accessToken, `messages/${encodeURIComponent(id)}?${params}`);
     })));
   }
   return messages.map((message) => {
-    const header = (name: string) => message.payload?.headers?.find((item) => item.name.toLowerCase() === name)?.value;
+    const parsed = parseGmailMessage(message);
     return {
       messageId: message.id, threadId: message.threadId,
-      subject: (header("subject") || "(No subject)").slice(0, 1000),
-      sender: (header("from") || "Unknown sender").slice(0, 1000),
+      subject: parsed.subject, sender: parsed.sender, snippet: parsed.snippet,
+      bodyText: parsed.bodyText, hasAttachments: parsed.hasAttachments, contentIndexedAt: new Date(),
       receivedAt: new Date(Number(message.internalDate)),
     };
   });

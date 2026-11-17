@@ -22,3 +22,11 @@ Each send attempt has a unique request key stored in `quotation_email_deliveries
 For a live send check, use a quotation and recipient you intend to email, preview the attachment, submit the email, and confirm that Gmail Sent and the recipient show the same PDF. Automated checks mock Gmail and send no real email.
 
 References: [Google web-server OAuth](https://developers.google.com/identity/protocols/oauth2/web-server), [Gmail message search](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list), [Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes), [sending MIME messages](https://developers.google.com/workspace/gmail/api/guides/sending), [messages.send](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/send).
+
+## Replying to the original conversation
+
+The Send Quotation dialog lists conversations already linked to the quotation, plus recent imported messages from the quotation/customer email address in the signed-in user's mailbox. One linked conversation (or one matching conversation) is selected automatically; when several match, choose the intended conversation. Link older/unlisted customer messages from Gmail Sales Inbox if needed. “Send a new email” remains available explicitly.
+
+Reply mode loads the original Gmail message's current metadata and keeps its subject and Reply-To (falling back to From). Both are read-only while replying. The server checks the notification belongs to the signed-in user and is linked to the quotation or matches its customer address; it fetches Gmail headers itself rather than trusting client-provided thread IDs or reply headers. Gmail receives threadId, In-Reply-To and References with the PDF MIME attachment. This sends to the original reply address, not Reply All.
+
+The default editable message thanks the customer, references the quotation, and includes Explosion Proof Electrical Control, Ashok Patel & Ajit Patel, the Vapi address, both telephone numbers and the website. The HTML version formats the signature and makes the known telephone/website links clickable. All edited message text is escaped. A sandboxed message preview is available before sending.

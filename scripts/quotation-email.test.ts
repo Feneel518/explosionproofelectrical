@@ -8,9 +8,55 @@ import { deliverQuotation } from "../src/lib/quotations/delivery";
 import { quotationPdfFilename, renderQuotationPdf } from "../src/lib/quotations/pdf";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
+import { quotationReplyFromMessage, getQuotationReply } from "../src/lib/gmail/quotationReply";
+import { defaultQuotationMessage, quotationMessageHtml } from "../src/lib/quotations/emailMessage";
 
 const originalFetch = globalThis.fetch;
 after(() => { globalThis.fetch = originalFetch; });
+
+test("replies preserve Gmail thread, subject, Reply-To and RFC reply references", async () => {
+  const original = { id: "original-message", threadId: "customer-thread", internalDate: "1794900000000", payload: { headers: [
+    { name: "Message-ID", value: "<original@example.com>" }, { name: "From", value: "Buyer <buyer@example.com>" },
+    { name: "Reply-To", value: "Purchasing <purchasing@example.com>" }, { name: "Subject", value: "RFQ - Junction Box" },
+    { name: "References", value: "<first@example.com>" },
+  ] } };
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.equal(url.searchParams.get("format"), "metadata");
+    assert.ok(url.searchParams.getAll("metadataHeaders").includes("Message-ID"));
+    return Response.json(original);
+  };
+  const reply = await getQuotationReply("token", original.id, original.threadId);
+  assert.equal(reply.recipient, "purchasing@example.com");
+  assert.equal(reply.subject, "RFQ - Junction Box");
+  assert.deepEqual(reply.references, ["<first@example.com>", "<original@example.com>"]);
+  const pdf = await PDFDocument.create(); pdf.addPage();
+  const raw = await buildQuotationMime({ sender: "sales@example.com", recipient: reply.recipient, subject: reply.subject,
+    message: defaultQuotationMessage("FY2026-27-439"), filename: "Quotation.pdf", pdf: Buffer.from(await pdf.save()), reply });
+  const mime = Buffer.from(raw, "base64url").toString("utf8");
+  assert.match(mime, /In-Reply-To: <original@example.com>/);
+  assert.match(mime, /References: <first@example.com> <original@example.com>/);
+  assert.match(mime, /Subject: RFQ - Junction Box/);
+  globalThis.fetch = async (_input, init) => {
+    assert.deepEqual(JSON.parse(String(init?.body)), { raw, threadId: "customer-thread" });
+    return Response.json({ id: "sent-reply" });
+  };
+  assert.equal(await sendQuotationWithGmail("token", raw, reply.threadId), "sent-reply");
+  assert.throws(() => quotationReplyFromMessage(original, "another-thread"), /changed/);
+  assert.throws(() => quotationReplyFromMessage({ ...original, payload: { headers: [{ name: "Message-ID", value: "<unsafe@example.com>\r\nBcc: attacker@example.com" }] } }, original.threadId), /identifier/);
+  const fallback = quotationReplyFromMessage({ ...original, payload: { headers: original.payload.headers.filter((h) => h.name !== "Reply-To") } }, original.threadId);
+  assert.equal(fallback.recipient, "buyer@example.com");
+});
+
+test("quotation message includes the requested signature, safe HTML and editable text", () => {
+  const message = defaultQuotationMessage("FY2026-27-439");
+  for (const part of ["Greetings,", "quotation FY2026-27-439", "Ashok Patel & Ajit Patel", "+91 9824418868", "+91 9099064667", "Vapi - 396195"]) assert.ok(message.includes(part));
+  const html = quotationMessageHtml(message);
+  assert.match(html, /Ashok Patel &amp; Ajit Patel/);
+  assert.match(html, /href="https:\/\/www.explosionproofelectrical.com\/"/);
+  assert.match(html, /href="tel:\+919824418868"/);
+  assert.ok(!quotationMessageHtml("<script>alert(1)</script>").includes("<script>"));
+});
 
 test("PDF generation authenticates to the customer-copy route, waits for content and rejects stale copies", { timeout: 180_000 }, async () => {
   const quotation = { id: "f43cba40-b5de-4fd1-a3c5-6c3b576a633c", quoteNo: 7, quoteFy: "FY2026-27",

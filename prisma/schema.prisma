@@ -181,6 +181,7 @@ enum TransportationPayment {
 //enums
 
 model User {
+  gmailConnection GmailConnection?
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -243,6 +244,38 @@ model User {
   workerPayoutsUpdatedBy        WorkerPayout[]        @relation("WorkerPayoutUpdatedBy")
 
   @@map("users")
+}
+
+model GmailConnection {
+  userId                String @id
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email                 String
+  encryptedRefreshToken String
+  searchQuery           String
+  connectedAt           DateTime @default(now())
+  lastSyncedAt          DateTime?
+  syncLeaseUntil        DateTime?
+  notifications         GmailNotification[]
+
+  @@map("gmail_connections")
+}
+
+model GmailNotification {
+  id         String @id @default(uuid())
+  userId     String
+  connection GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  messageId  String
+  threadId   String
+  subject    String
+  sender     String
+  receivedAt DateTime
+  createdAt  DateTime @default(now())
+  readAt     DateTime?
+
+  @@unique([userId, messageId])
+  @@index([userId, receivedAt])
+  @@index([userId, readAt])
+  @@map("gmail_notifications")
 }
 
 model Account {

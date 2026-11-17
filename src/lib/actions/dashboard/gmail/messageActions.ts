@@ -3,8 +3,7 @@
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { gmailAccess } from "@/lib/gmail/access";
-import { gmailGet } from "@/lib/gmail/google";
-import { emailDocument, parseGmailMessage, type GmailMessage } from "@/lib/gmail/mime";
+import { getGmailConversationContent } from "@/lib/gmail/conversation";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
@@ -64,18 +63,17 @@ export async function getGmailConversationAction(id: string, beforeMessageId?: s
   const notification = await prisma.gmailNotification.findFirst({ where: { id: z.string().uuid().parse(id), userId: user.id } });
   if (!notification) throw new Error("Email not found.");
   const access = await gmailAccess(user.id);
-  const thread = await gmailGet<{ messages?: GmailMessage[] }>(access.accessToken, `threads/${encodeURIComponent(notification.threadId)}?format=full`);
+  if (beforeMessageId) z.string().max(200).parse(beforeMessageId);
+  const content = await getGmailConversationContent(access.accessToken, notification, beforeMessageId);
   if (!await prisma.gmailConnection.count({ where: { userId: user.id, connectedAt: access.connectedAt } })) throw new Error("Mailbox changed. Reload the inbox.");
-  const all = thread.messages ?? [];
-  const before = beforeMessageId ? all.findIndex(message => message.id === z.string().max(200).parse(beforeMessageId)) : all.length;
-  if (before < 0) throw new Error("Earlier message not found. Reload the conversation.");
-  const messages = all.slice(Math.max(0, before - 20), before).map(parseGmailMessage);
+  const messages = content.messages;
   const original = messages.find(message => message.messageId === notification.messageId);
-  await prisma.gmailNotification.updateMany({ where: { id, userId: user.id }, data: { readAt: notification.readAt || new Date(), ...(original ? {
+  await prisma.gmailNotification.updateMany({ where: { id, userId: user.id }, data: { readAt: notification.readAt || new Date(), ...(original && !content.warning ? {
     bodyText: original.bodyText, snippet: original.snippet, hasAttachments: original.hasAttachments, contentIndexedAt: new Date(),
   } : {}) } });
   return { id, email: access.email, threadId: notification.threadId, subject: notification.subject, starred: notification.starred,
-    status: notification.status, internalNote: notification.internalNote || "", messages: messages.map(message => ({ ...message, bodyDocument: message.bodyHtml ? emailDocument(message.bodyHtml) : "" })), omitted: Math.max(0, before - 20) };
+    status: notification.status, internalNote: notification.internalNote || "", ...content };
+
 }
 export type GmailConversation = Awaited<ReturnType<typeof getGmailConversationAction>>;
 

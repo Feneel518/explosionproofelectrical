@@ -22,12 +22,22 @@ export function gmailIsConfigured() {
 
 export class GmailApiError extends Error {
   constructor(public status: number, public code: string) {
-    super(status === 401 || code === "invalid_grant"
+    super(isGmailRateLimitCode(status, code)
+      ? "Gmail is temporarily busy. Please wait about a minute and try again."
+      : status === 401 || code === "invalid_grant"
       ? "Gmail access expired. Reconnect your mailbox."
       : status === 403 ? "Gmail access was denied. Enable the Gmail API and reconnect with read access."
       : status === 429 ? "Gmail is busy. Please try again shortly."
       : "Gmail could not be reached. Please try again.");
   }
+}
+
+function isGmailRateLimitCode(status: number, code: string) {
+  return status === 429 || ["rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded"].includes(code);
+}
+
+export function isGmailRateLimit(error: unknown): error is GmailApiError {
+  return error instanceof GmailApiError && isGmailRateLimitCode(error.status, error.code);
 }
 
 export async function exchangeGmailToken(params: Record<string, string>): Promise<{ access_token: string; refresh_token?: string; scope?: string }> {
@@ -47,7 +57,13 @@ export async function gmailGet<T>(accessToken: string, path: string): Promise<T>
     cache: "no-store", signal: AbortSignal.timeout(15_000),
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (!response.ok) throw new GmailApiError(response.status, "api_error");
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const reason = body?.error?.errors?.[0]?.reason;
+    // Keep only known reason codes; upstream messages may contain private details.
+    const code = ["rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded", "dailyLimitExceeded", "authError", "insufficientPermissions", "domainPolicy"].includes(reason) ? reason : "api_error";
+    throw new GmailApiError(response.status, code);
+  }
   return response.json();
 }
 

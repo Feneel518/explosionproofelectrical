@@ -3,7 +3,7 @@ import { parseGmailMessage, type GmailMessage } from "./mime";
 
 type MessageList = { messages?: { id: string }[]; nextPageToken?: string };
 
-export async function getMatchingGmailMessages(accessToken: string, query: string) {
+export async function getMatchingGmailMessages(accessToken: string, query: string, options: { unknownIds?: (ids: string[]) => Promise<string[]>; limit?: number } = {}) {
   const ids = new Set<string>();
   let pageToken: string | undefined;
   for (let page = 0; page < 10; page++) {
@@ -17,7 +17,8 @@ export async function getMatchingGmailMessages(accessToken: string, query: strin
   if (pageToken) throw new Error("too_many_messages");
 
   const messages: GmailMessage[] = [];
-  const allIds = [...ids];
+  const unknown = options.unknownIds ? await options.unknownIds([...ids]) : [...ids];
+  const allIds = unknown.slice(0, options.limit ?? unknown.length);
   // Bound concurrency to avoid flooding Gmail for an initial import.
   for (let index = 0; index < allIds.length; index += 10) {
     messages.push(...await Promise.all(allIds.slice(index, index + 10).map((id) => {
@@ -25,7 +26,7 @@ export async function getMatchingGmailMessages(accessToken: string, query: strin
       return gmailGet<GmailMessage>(accessToken, `messages/${encodeURIComponent(id)}?${params}`);
     })));
   }
-  return messages.map((message) => {
+  const parsedMessages = messages.map((message) => {
     const parsed = parseGmailMessage(message);
     return {
       messageId: message.id, threadId: message.threadId,
@@ -34,4 +35,5 @@ export async function getMatchingGmailMessages(accessToken: string, query: strin
       receivedAt: new Date(Number(message.internalDate)),
     };
   });
+  return { messages: parsedMessages, complete: unknown.length === allIds.length };
 }

@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { test, after } from "node:test";
 import { createGmailOAuthState, decryptGmailSecret, encryptGmailSecret, validateGmailOAuthState } from "../src/lib/gmail/crypto";
-import { buildGmailSearch, exchangeGmailToken, GmailApiError } from "../src/lib/gmail/google";
+import { buildGmailSearch, exchangeGmailToken, gmailGet, GmailApiError } from "../src/lib/gmail/google";
 import { getMatchingGmailMessages } from "../src/lib/gmail/messages";
 import { emailDocument, parseGmailMessage, senderIdentity } from "../src/lib/gmail/mime";
+import { getGmailConversationContent } from "../src/lib/gmail/conversation";
+import type { GmailNotification } from "@prisma/client";
 
 const originalFetch = globalThis.fetch;
 process.env.GMAIL_TOKEN_ENCRYPTION_KEY = randomBytes(32).toString("base64");
@@ -51,7 +53,8 @@ test("sync follows pagination, deduplicates IDs, and indexes full text for searc
     assert.equal(url.searchParams.get("format"), "full");
     return Response.json({ id: url.pathname.split("/").pop(), threadId: "thread1", internalDate: "1794900000000", payload: { mimeType: "text/plain", body: { data: Buffer.from("Please quote ten flameproof switches.").toString("base64url") }, headers: [{ name: "sUbJeCt", value: "Purchase order" }, { name: "From", value: "Customer <buyer@example.com>" }] } });
   };
-  const messages = await getMatchingGmailMessages("test-access", "in:inbox");
+  const { messages, complete } = await getMatchingGmailMessages("test-access", "in:inbox");
+  assert.equal(complete, true);
   assert.equal(messages.length, 2);
   assert.equal(messages[0].subject, "Purchase order");
   assert.equal(messages[0].sender, "Customer <buyer@example.com>");
@@ -97,4 +100,38 @@ test("failed pages fail the sync instead of returning a partial successful impor
 test("revoked refresh tokens produce a safe reconnect message", async () => {
   globalThis.fetch = async () => Response.json({ error: "invalid_grant", error_description: "sensitive upstream response" }, { status: 400 });
   await assert.rejects(exchangeGmailToken({ grant_type: "refresh_token", refresh_token: "test-refresh" }), (error: unknown) => error instanceof GmailApiError && /Reconnect/.test(error.message) && !error.message.includes("sensitive"));
+});
+
+test("Google 403 rate limits are distinguished from missing Gmail permission", async () => {
+  globalThis.fetch = async () => Response.json({ error: { errors: [{ reason: "rateLimitExceeded" }], message: "Private quota details" } }, { status: 403, headers: { "Retry-After": "60" } });
+  await assert.rejects(gmailGet("access", "threads/thread?format=full"), (error: unknown) => error instanceof GmailApiError && error.code === "rateLimitExceeded" && /minute|busy|limit/i.test(error.message) && !/reconnect|enable/i.test(error.message) && !error.message.includes("Private"));
+});
+
+test("a quota-limited reader opens saved content without claiming Gmail access expired", async () => {
+  globalThis.fetch = async () => Response.json({ error: { errors: [{ reason: "rateLimitExceeded" }] } }, { status: 403 });
+  const notification: GmailNotification = { id: "notice", userId: "owner", messageId: "message", threadId: "thread", subject: "Order", sender: "Buyer", receivedAt: new Date(), createdAt: new Date(), readAt: null, snippet: "Saved request", bodyText: "Please supply ten switches", hasAttachments: true, contentIndexedAt: new Date(), starred: false, status: "NEW", internalNote: null };
+  const content = await getGmailConversationContent("access", notification);
+  assert.equal(content.messages[0].bodyText, notification.bodyText);
+  assert.match(content.warning!, /saved message/);
+  assert.ok(!/expired|reconnect/i.test(content.warning!));
+  globalThis.fetch = async () => Response.json({ error: { errors: [{ reason: "insufficientPermissions" }] } }, { status: 403 });
+  await assert.rejects(getGmailConversationContent("access", notification), (error: unknown) => error instanceof GmailApiError && error.code === "insufficientPermissions");
+});
+
+test("sync skips already imported bodies and limits batches without completing an unfinished search", async () => {
+  const bodyRequests: string[] = [];
+  globalThis.fetch = async input => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/messages")) return Response.json({ messages: ["known", "one", "two", "three"].map(id => ({ id })) });
+    const id = url.pathname.split("/").pop()!;
+    bodyRequests.push(id);
+    return Response.json({ id, threadId: id, internalDate: "1794900000000", payload: { mimeType: "text/plain", body: { data: Buffer.from("Order").toString("base64url") } } });
+  };
+  const batch = await getMatchingGmailMessages("access", "in:inbox", { unknownIds: async ids => ids.filter(id => id !== "known"), limit: 2 });
+  assert.equal(batch.complete, false);
+  assert.deepEqual(bodyRequests, ["one", "two"]);
+  bodyRequests.length = 0;
+  const finished = await getMatchingGmailMessages("access", "in:inbox", { unknownIds: async () => [], limit: 2 });
+  assert.equal(finished.complete, true);
+  assert.equal(bodyRequests.length, 0);
 });

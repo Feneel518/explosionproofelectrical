@@ -9,7 +9,7 @@ export async function syncGmail(userId: string) {
   const connection = await prisma.gmailConnection.findUnique({ where: { userId } });
   if (!connection) return;
   const now = new Date();
-  if (connection.lastSyncedAt && now.getTime() - connection.lastSyncedAt.getTime() < 55_000) return;
+  if (connection.lastSyncAttemptAt && now.getTime() - connection.lastSyncAttemptAt.getTime() < 55_000) return;
   const syncLeaseUntil = new Date(now.getTime() + 5 * 60_000);
   const lease = await prisma.gmailConnection.updateMany({
     where: { userId, connectedAt: connection.connectedAt, OR: [{ syncLeaseUntil: null }, { syncLeaseUntil: { lt: now } }] },
@@ -18,9 +18,16 @@ export async function syncGmail(userId: string) {
   if (!lease.count) return;
   try {
     const tokens = await exchangeGmailToken({ grant_type: "refresh_token", refresh_token: decryptGmailSecret(connection.encryptedRefreshToken) });
-    const messages = await getMatchingGmailMessages(tokens.access_token, buildGmailSearch(connection.searchQuery, connection.lastSyncedAt, now));
+    const { messages, complete } = await getMatchingGmailMessages(tokens.access_token, buildGmailSearch(connection.searchQuery, connection.lastSyncedAt, now), {
+      limit: 30,
+      unknownIds: async ids => {
+        const imported = await prisma.gmailNotification.findMany({ where: { userId, messageId: { in: ids } }, select: { messageId: true } });
+        const known = new Set(imported.map(row => row.messageId));
+        return ids.filter(id => !known.has(id));
+      },
+    });
     // Gradually index alerts imported by the original metadata-only integration.
-    const unindexed = await prisma.gmailNotification.findMany({ where: { userId, contentIndexedAt: null }, take: 25, select: { id: true, messageId: true } });
+    const unindexed = await prisma.gmailNotification.findMany({ where: { userId, contentIndexedAt: null }, take: 10, select: { id: true, messageId: true } });
     const indexed = await Promise.all(unindexed.map(async row => {
       try {
         const message = parseGmailMessage(await gmailGet<GmailMessage>(tokens.access_token, `messages/${encodeURIComponent(row.messageId)}?format=full`));
@@ -35,7 +42,8 @@ export async function syncGmail(userId: string) {
       // A disconnect, reconnect or filter change during a fetch invalidates this sync.
       const current = await tx.gmailConnection.updateMany({
         where: { userId, connectedAt: connection.connectedAt, searchQuery: connection.searchQuery, syncLeaseUntil },
-        data: { lastSyncedAt: now, lastSyncError: null, syncLeaseUntil: null },
+        // Keep the search checkpoint until all new matches have been imported.
+        data: { ...(complete ? { lastSyncedAt: now } : {}), lastSyncError: null, syncLeaseUntil: null },
       });
       if (!current.count) return;
       if (messages.length) await tx.gmailNotification.createMany({

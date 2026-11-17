@@ -2,7 +2,7 @@ import { GmailNotification, Prisma } from "@prisma/client";
 import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
 import { senderIdentity } from "./mime";
 
-export async function createGmailSalesDraft(tx: Prisma.TransactionClient, userId: string, message: GmailNotification, kind: "QUOTATION" | "ORDER") {
+export async function createGmailSalesDraft(tx: Prisma.TransactionClient, userId: string, message: GmailNotification, kind: "QUOTATION" | "ORDER", options: { createNew?: boolean } = {}) {
   if (message.userId !== userId) throw new Error("Email not found.");
   const sender = senderIdentity(message.sender);
   const fy = getFinancialYearLabel(new Date());
@@ -11,7 +11,7 @@ export async function createGmailSalesDraft(tx: Prisma.TransactionClient, userId
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}), hashtext(${message.threadId + kind}))`;
   const existing = await tx.gmailThreadLink.findFirst({ where: { userId: userId, threadId: message.threadId, ...(kind === "QUOTATION" ? { quotation: { deletedAt: null, status: "DRAFT" } } : { salesOrder: { deletedAt: null, status: "DRAFT" } }) }, select: { quotationId: true, salesOrderId: true } });
   const existingId = kind === "QUOTATION" ? existing?.quotationId : existing?.salesOrderId;
-  if (existingId) return { id: existingId, href: `/dashboard/sales/${kind === "QUOTATION" ? "quotations" : "orders"}/${existingId}/edit`, reused: true };
+  if (existingId && !options.createNew) return { id: existingId, href: `/dashboard/sales/${kind === "QUOTATION" ? "quotations" : "orders"}/${existingId}/edit`, reused: true };
   const customer = sender.email ? await tx.customer.findFirst({ where: { deletedAt: null, companyEmail: { equals: sender.email, mode: "insensitive" } } }) : null;
   const common = {
     customerId: customer?.id || null, clientName: customer?.companyName || sender.name,

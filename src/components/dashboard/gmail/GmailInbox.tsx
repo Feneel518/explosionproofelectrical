@@ -44,7 +44,7 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
       finally { if (active) setLoading(false); }
     }, 250);
     return () => { window.clearTimeout(timer); active = false; };
-  }, [filters, revision, data?.connection?.lastSyncedAt]);
+  }, [filters, revision, data?.connection?.lastSyncedAt, data?.connection?.lastSyncAttemptAt]);
 
   const totalPages = Math.max(1, Math.ceil((page?.total || 0) / (page?.pageSize || 30)));
   const currentPage = filters.page || 1;

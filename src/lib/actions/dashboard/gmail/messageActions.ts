@@ -3,7 +3,7 @@
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
 import { gmailAccess } from "@/lib/gmail/access";
-import { getGmailConversationContent } from "@/lib/gmail/conversation";
+import { getGmailConversationContent, type GmailConversationContent } from "@/lib/gmail/conversation";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
@@ -58,20 +58,30 @@ export async function listGmailMessagesAction(input: InboxFilters = {}) {
 }
 export type InboxPageData = Awaited<ReturnType<typeof listGmailMessagesAction>>;
 
-export async function getGmailConversationAction(id: string, beforeMessageId?: string) {
+export async function getGmailConversationAction(id: string, beforeMessageId?: string, forceRefresh = false) {
   const { user } = await requireAuth();
   const notification = await prisma.gmailNotification.findFirst({ where: { id: z.string().uuid().parse(id), userId: user.id } });
   if (!notification) throw new Error("Email not found.");
-  const access = await gmailAccess(user.id);
+  z.boolean().parse(forceRefresh);
+  const connection = await prisma.gmailConnection.findUniqueOrThrow({ where: { userId: user.id }, select: { email: true, connectedAt: true } });
+  const cache = await prisma.gmailConversationCache.findUnique({ where: { userId_threadId: { userId: user.id, threadId: notification.threadId } } });
+  const saved = cache && cache.fetchedAt >= connection.connectedAt ? cache.content as unknown as GmailConversationContent : undefined;
   if (beforeMessageId) z.string().max(200).parse(beforeMessageId);
-  const content = await getGmailConversationContent(access.accessToken, notification, beforeMessageId);
-  if (!await prisma.gmailConnection.count({ where: { userId: user.id, connectedAt: access.connectedAt } })) throw new Error("Mailbox changed. Reload the inbox.");
+  const fresh = saved && !beforeMessageId && !forceRefresh && Date.now() - cache!.fetchedAt.getTime() < 120_000;
+  const content = fresh ? saved : await getGmailConversationContent((await gmailAccess(user.id)).accessToken, notification, beforeMessageId, saved);
+  if (!await prisma.gmailConnection.count({ where: { userId: user.id, connectedAt: connection.connectedAt } })) throw new Error("Mailbox changed. Reload the inbox.");
+  if (!fresh && !beforeMessageId && !content.warning && JSON.stringify(content).length < 2_000_000) {
+    await prisma.$transaction(async tx => {
+      if (!await tx.gmailConnection.count({ where: { userId: user.id, connectedAt: connection.connectedAt } })) return;
+      await tx.gmailConversationCache.upsert({ where: { userId_threadId: { userId: user.id, threadId: notification.threadId } }, create: { userId: user.id, threadId: notification.threadId, content: content as Prisma.InputJsonValue }, update: { content: content as Prisma.InputJsonValue, fetchedAt: new Date() } });
+    });
+  }
   const messages = content.messages;
   const original = messages.find(message => message.messageId === notification.messageId);
   await prisma.gmailNotification.updateMany({ where: { id, userId: user.id }, data: { readAt: notification.readAt || new Date(), ...(original && !content.warning ? {
     bodyText: original.bodyText, snippet: original.snippet, hasAttachments: original.hasAttachments, contentIndexedAt: new Date(),
   } : {}) } });
-  return { id, email: access.email, threadId: notification.threadId, subject: notification.subject, starred: notification.starred,
+  return { id, email: connection.email, threadId: notification.threadId, subject: notification.subject, starred: notification.starred,
     status: notification.status, internalNote: notification.internalNote || "", ...content };
 
 }

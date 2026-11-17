@@ -4,12 +4,13 @@ import { emailDocument, parseGmailMessage, type GmailMessage, type ParsedGmailMe
 
 export type GmailConversationContent = { warning: string | null; omitted: number; messages: (ParsedGmailMessage & { bodyDocument: string })[] };
 
-export async function getGmailConversationContent(accessToken: string, notification: GmailNotification, beforeMessageId?: string): Promise<GmailConversationContent> {
+export async function getGmailConversationContent(accessToken: string, notification: GmailNotification, beforeMessageId?: string, saved?: GmailConversationContent): Promise<GmailConversationContent> {
   let thread: { messages?: GmailMessage[] };
   try {
     thread = await gmailGet<{ messages?: GmailMessage[] }>(accessToken, `threads/${encodeURIComponent(notification.threadId)}?format=full`);
   } catch (error) {
     if (!isGmailRateLimit(error) || !notification.contentIndexedAt) throw error;
+    if (saved) return { ...saved, warning: "Gmail reached its temporary request limit. Showing the saved conversation. Reload in about a minute to check for newer replies." };
     return {
       omitted: 0,
       warning: "Gmail reached its temporary request limit. Showing the saved message. Reload in about a minute for the full conversation and files, or open Gmail.",

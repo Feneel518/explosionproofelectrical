@@ -259,6 +259,8 @@ model GmailConnection {
   lastSyncError         String?
   notifications         GmailNotification[]
   salesLinks            GmailThreadLink[]
+  conversationCaches    GmailConversationCache[]
+  pdfImports            GmailPdfImport[]
 
   @@map("gmail_connections")
 }
@@ -281,6 +283,7 @@ model GmailNotification {
   starred    Boolean @default(false)
   status     GmailLeadStatus @default(NEW)
   internalNote String? @db.Text
+  pdfImports GmailPdfImport[]
 
   @@unique([userId, messageId])
   @@index([userId, receivedAt])
@@ -292,6 +295,40 @@ enum GmailLeadStatus {
   NEW
   IN_PROGRESS
   DONE
+}
+
+model GmailConversationCache {
+  id String @id @default(uuid())
+  userId String
+  connection GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  threadId String
+  content Json
+  fetchedAt DateTime @default(now())
+  @@unique([userId, threadId])
+  @@map("gmail_conversation_caches")
+}
+
+model GmailPdfImport {
+  id String @id @default(uuid())
+  userId String
+  connection GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  notificationId String
+  notification GmailNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  messageId String
+  threadId String
+  partId String
+  filename String
+  status String @default("PROCESSING")
+  leaseUntil DateTime?
+  result Json?
+  error String?
+  orderId String?
+  order SalesOrder? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, messageId, partId])
+  @@index([userId, createdAt])
+  @@map("gmail_pdf_imports")
 }
 
 model GmailThreadLink {
@@ -1258,6 +1295,7 @@ enum SalesOrderCompletionType {
 
 model SalesOrder {
   gmailThreadLinks GmailThreadLink[]
+  gmailPdfImports GmailPdfImport[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

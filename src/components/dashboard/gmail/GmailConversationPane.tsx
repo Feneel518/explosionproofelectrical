@@ -10,9 +10,10 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { getGmailConversationAction, updateGmailMessageAction, type GmailConversation } from "@/lib/actions/dashboard/gmail/messageActions";
 import { cn } from "@/lib/utils";
 import { GmailSalesLinksPanel } from "./GmailSalesLinksPanel";
+import { GmailPdfOrderImport } from "./GmailPdfOrderImport";
 import { attachmentUrl, fileSize, InboxSelect, mailDate } from "./GmailInboxControls";
 
-function ConversationMessage({ message, id, initiallyOpen }: { message: GmailConversation["messages"][number]; id: string; initiallyOpen: boolean }) {
+function ConversationMessage({ message, id, initiallyOpen, onChanged }: { message: GmailConversation["messages"][number]; id: string; initiallyOpen: boolean; onChanged: () => void }) {
   const [formatted, setFormatted] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   return <details open={initiallyOpen} className="border-b last:border-b-0">
@@ -21,7 +22,7 @@ function ConversationMessage({ message, id, initiallyOpen }: { message: GmailCon
       <div className="flex flex-col gap-1 text-xs text-muted-foreground"><p className="break-all">To: {message.to || "—"}</p>{message.cc && <p className="break-all">Cc: {message.cc}</p>}</div>
       {message.bodyDocument && <div><Button size="sm" variant="ghost" onClick={() => setFormatted(value => !value)}>{formatted ? "Show plain text" : "Show formatted message"}</Button></div>}
       {formatted ? <iframe title={`Formatted email: ${message.subject}`} sandbox="allow-popups allow-popups-to-escape-sandbox" referrerPolicy="no-referrer" srcDoc={message.bodyDocument} className="h-[440px] w-full rounded-md border bg-white" /> : <div className="whitespace-pre-wrap break-words text-sm leading-7 [overflow-wrap:anywhere]">{message.bodyText || "This message has no readable text. Check its files or open the original in Gmail."}</div>}
-      {message.attachments.length > 0 && <section aria-label="Email files" className="flex flex-col gap-2"><h3 className="text-sm font-medium">Files ({message.attachments.length})</h3><ul className="divide-y rounded-lg border">{message.attachments.map(file => <li key={file.partId} className="flex flex-wrap items-center gap-2 p-3"><File className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="break-all text-sm font-medium">{file.filename}</p><p className="text-xs text-muted-foreground">{fileSize(file.size)}</p></div><div className="flex gap-1">{file.previewable && <Button size="sm" variant="ghost" onClick={() => setPreview(attachmentUrl(id, message.messageId, file.partId, true))}>View</Button>}<Button asChild size="sm" variant="outline"><a href={attachmentUrl(id, message.messageId, file.partId)} target="_blank" rel="noopener noreferrer"><Download data-icon="inline-start" />Download</a></Button></div></li>)}</ul></section>}
+      {message.attachments.length > 0 && <section aria-label="Email files" className="flex flex-col gap-2"><h3 className="text-sm font-medium">Files ({message.attachments.length})</h3><ul className="divide-y rounded-lg border">{message.attachments.map(file => <li key={file.partId} className="flex flex-wrap items-center gap-2 p-3"><File className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="break-all text-sm font-medium">{file.filename}</p><p className="text-xs text-muted-foreground">{fileSize(file.size)}</p></div><div className="flex flex-wrap gap-1">{(file.mimeType === "application/pdf" || file.filename.toLowerCase().endsWith(".pdf")) && <GmailPdfOrderImport id={id} messageId={message.messageId} partId={file.partId} filename={file.filename} onCreated={onChanged} />}{file.previewable && <Button size="sm" variant="ghost" onClick={() => setPreview(attachmentUrl(id, message.messageId, file.partId, true))}>View</Button>}<Button asChild size="sm" variant="outline"><a href={attachmentUrl(id, message.messageId, file.partId)} target="_blank" rel="noopener noreferrer"><Download data-icon="inline-start" />Download</a></Button></div></li>)}</ul></section>}
       {preview && <section aria-label="File preview" className="flex flex-col gap-2"><div className="flex items-center justify-between"><h3 className="text-sm font-medium">File preview</h3><Button variant="ghost" size="icon-sm" aria-label="Close file preview" onClick={() => setPreview(null)}><X /></Button></div><iframe title="Email attachment preview" src={preview} referrerPolicy="no-referrer" className="h-[560px] w-full rounded-md border bg-white" /><p className="text-xs text-muted-foreground">If your browser cannot display this file, use Download.</p></section>}
     </div>
   </details>;
@@ -35,7 +36,7 @@ export function GmailConversationPane({ id, onBack, onChanged }: { id: string; o
   const [pending, startTransition] = useTransition();
   useEffect(() => {
     let active = true;
-    getGmailConversationAction(id).then(result => { if (active) { setData(result); setNote(result.internalNote); setError(null); onChanged(); } }).catch(() => { if (active) setError("Could not open this conversation. Fetch mail and try again, or reconnect Gmail if its access has expired."); });
+    getGmailConversationAction(id, undefined, revision > 0).then(result => { if (active) { setData(result); setNote(result.internalNote); setError(null); onChanged(); } }).catch(() => { if (active) setError("Could not open this conversation. Fetch mail and try again, or reconnect Gmail if its access has expired."); });
     return () => { active = false; };
   }, [id, revision, onChanged]);
 
@@ -52,9 +53,9 @@ export function GmailConversationPane({ id, onBack, onChanged }: { id: string; o
     {data.warning && <p role="status" className="border-b bg-muted/30 px-4 py-3 text-sm leading-6 sm:px-6">{data.warning}</p>}
     <details className="border-b px-4 py-3 sm:px-6"><summary className="cursor-pointer text-sm font-medium">Internal note{data.internalNote ? " · saved" : ""}</summary><div className="mt-3 flex flex-col gap-2"><Field><FieldLabel className="sr-only" htmlFor={`email-note-${id}`}>Internal note</FieldLabel><Textarea id={`email-note-${id}`} value={note} onChange={event => setNote(event.target.value)} maxLength={10_000} rows={3} placeholder="Add customer context, a call summary, or the next action…" /><FieldDescription>Private to your dashboard account. This note is never sent to the customer.</FieldDescription></Field><div><Button size="sm" variant="outline" disabled={pending || note === data.internalNote} onClick={() => update({ internalNote: note })}>Save note</Button></div></div></details>
     {data.omitted > 0 && <div className="px-4 py-3 sm:px-6"><Button size="sm" variant="outline" disabled={pending} onClick={() => startTransition(async () => {
-      try { const earlier = await getGmailConversationAction(id, data.messages[0]?.messageId); setData(previous => previous ? { ...previous, messages: [...new Map([...earlier.messages, ...previous.messages].map(message => [message.messageId, message])).values()], omitted: earlier.omitted } : previous); }
+      try { const earlier = await getGmailConversationAction(id, data.messages[0]?.messageId); setData(previous => previous ? { ...previous, messages: [...new Map([...earlier.messages, ...previous.messages].map(message => [message.messageId, message])).values()], omitted: earlier.warning ? previous.omitted : earlier.omitted, warning: earlier.warning || previous.warning } : previous); }
       catch { toast.error("Earlier messages could not be loaded. Try again."); }
     })}>Load earlier messages ({data.omitted})</Button></div>}
-    {data.messages.map((message, index) => <ConversationMessage key={message.messageId} message={message} id={id} initiallyOpen={index === data.messages.length - 1} />)}
+    {data.messages.map((message, index) => <ConversationMessage key={message.messageId} message={message} id={id} initiallyOpen={index === data.messages.length - 1} onChanged={onChanged} />)}
   </article>;
 }

@@ -2,6 +2,7 @@ import { GmailInbox } from "@/components/dashboard/gmail/GmailInbox";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gmail Sales Inbox" };
+export const maxDuration = 180;
 
 export default async function InboxPage({ searchParams }: { searchParams: Promise<{ gmail?: string; message?: string }> }) {
   const { gmail, message } = await searchParams;

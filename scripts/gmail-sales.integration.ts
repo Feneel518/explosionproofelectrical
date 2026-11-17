@@ -5,6 +5,7 @@ import { createGmailSalesDraft } from "../src/lib/gmail/salesDraft";
 import { applyGmailPdfOrderDraft } from "../src/lib/gmail/orderPdfDraft";
 import { SalesOrderSchema } from "../src/lib/validators/dashboard/sales/orders/OrderValidator";
 import type { ReviewedOrderPdf } from "../src/lib/gmail/orderPdfSchema";
+import { linkSalesConversation, inheritQuotationConversations } from "../src/lib/gmail/salesConversation";
 
 // Run against an already migrated database. Every test record and counter change
 // is rolled back; no real quotation or order remains after this check.
@@ -58,6 +59,32 @@ async function main() {
     const nextOrder = await applyGmailPdfOrderDraft(tx, owner.userId, nextPdf.id, { ...review, poNumber: "TEST-SECOND-PO" });
     assert.notEqual(nextOrder.id, filled.id, "An existing draft's items must not be overwritten.");
     assert.deepEqual((await tx.salesOrder.findUniqueOrThrow({ where: { id: filled.id } })).draftData, filledOrder.draftData);
+    // An order received on a quotation's thread keeps both records connected, in either direction.
+    const replyMessage = await tx.gmailNotification.create({ data: {
+      userId: owner.userId, messageId: `tracking-${randomUUID()}`, threadId: `tracking-${randomUUID()}`,
+      subject: "RFQ: tracked quotation", sender: '"Test Buyer" <gmail-integration@example.invalid>', receivedAt: new Date(),
+    } });
+    const sourceQuote = await createGmailSalesDraft(tx, owner.userId, replyMessage, "QUOTATION");
+    const followupAt = new Date(Date.now() + 86400000);
+    await tx.quotation.update({ where: { id: sourceQuote.id }, data: { status: "SENT", nextFollowupAt: followupAt } });
+    const sourceOrder = await createGmailSalesDraft(tx, owner.userId, replyMessage, "ORDER");
+    const linkedOrder = await tx.salesOrder.findUniqueOrThrow({ where: { id: sourceOrder.id } });
+    assert.equal(linkedOrder.quotationId, sourceQuote.id);
+    assert.equal(linkedOrder.sourceType, "QUOTATION");
+    assert.equal((linkedOrder.draftData as { header: { quotationId: string } }).header.quotationId, sourceQuote.id);
+    assert.equal((await tx.quotation.findUniqueOrThrow({ where: { id: sourceQuote.id } })).nextFollowupAt?.getTime(), followupAt.getTime(), "A draft must not clear follow-up reminders.");
+    const nextThread = `tracking-${randomUUID()}`;
+    await linkSalesConversation(tx, owner.userId, nextThread, "ORDER", sourceOrder.id);
+    await linkSalesConversation(tx, owner.userId, nextThread, "ORDER", sourceOrder.id);
+    assert.equal(await tx.gmailThreadLink.count({ where: { userId: owner.userId, threadId: nextThread } }), 2, "Order links also expose the source quotation, without duplicates.");
+    const thirdThread = `tracking-${randomUUID()}`;
+    await linkSalesConversation(tx, owner.userId, thirdThread, "QUOTATION", sourceQuote.id);
+    assert.equal(await tx.gmailThreadLink.count({ where: { userId: owner.userId, threadId: thirdThread, salesOrderId: sourceOrder.id } }), 1, "Quotation links also expose the related order.");
+    await inheritQuotationConversations(tx, owner.userId, sourceQuote.id, sourceOrder.id);
+    assert.equal(await tx.gmailThreadLink.count({ where: { userId: owner.userId, salesOrderId: sourceOrder.id } }), 3);
+    assert.equal(await tx.gmailThreadLink.count({ where: { userId: "another-user", threadId: nextThread } }), 0);
+    const customerReply = await tx.gmailNotification.create({ data: { userId: owner.userId, threadId: nextThread, messageId: `reply-${randomUUID()}`, subject: "RFQ: customer confirmed order", sender: "gmail-integration@example.invalid", receivedAt: new Date() } });
+    assert.equal(await tx.gmailThreadLink.count({ where: { userId: owner.userId, threadId: customerReply.threadId } }), 2, "Future replies inherit the same quotation/order history by thread.");
     throw rollback;
   }, { timeout: 60_000 }), error => error === rollback);
   console.log("PASS: sales drafts, PDF item autofill, exact catalog links, private access, duplicate prevention and preservation of existing items (all rolled back).");

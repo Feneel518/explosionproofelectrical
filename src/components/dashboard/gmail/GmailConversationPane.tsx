@@ -33,6 +33,7 @@ export function GmailConversationPane({ id, onBack, onChanged }: { id: string; o
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [revision, setRevision] = useState(0);
+  const [salesRevision, setSalesRevision] = useState(0);
   const [pending, startTransition] = useTransition();
   useEffect(() => {
     let active = true;
@@ -49,13 +50,13 @@ export function GmailConversationPane({ id, onBack, onChanged }: { id: string; o
   const gmailUrl = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(data.email)}#all/${encodeURIComponent(data.threadId)}`;
   return <article className="flex min-w-0 flex-col">
     <header className="flex flex-col gap-3 p-4 sm:p-6"><div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="ghost" className="lg:hidden" onClick={onBack}><ArrowLeft data-icon="inline-start" />Inbox</Button><div className="ml-auto flex flex-wrap items-center gap-2"><Button variant="ghost" size="icon-sm" disabled={pending} aria-label={data.starred ? "Unstar email" : "Star email"} aria-pressed={data.starred} onClick={() => update({ starred: !data.starred })}><Star className={cn(data.starred && "fill-current")} /></Button><Button variant="ghost" size="icon-sm" aria-label="Reload conversation" disabled={pending} onClick={() => setRevision(value => value + 1)}><RefreshCw /></Button><div className="w-32"><InboxSelect label="Email work status" value={data.status} onChange={value => update({ status: value as GmailConversation["status"] })} options={[["NEW", "New"], ["IN_PROGRESS", "Working"], ["DONE", "Done"]]} /></div><Button size="sm" variant="ghost" disabled={pending} onClick={() => update({ read: false })}><Mail data-icon="inline-start" />Mark unread</Button><Button asChild size="sm" variant="outline"><a href={gmailUrl} target="_blank" rel="noopener noreferrer">Gmail<ExternalLink data-icon="inline-end" /></a></Button></div></div><h2 className="break-words text-xl font-semibold leading-8 [overflow-wrap:anywhere]">{data.subject}</h2></header>
-    <GmailSalesLinksPanel id={id} onChanged={onChanged} />
+    <GmailSalesLinksPanel key={`${id}-${salesRevision}`} id={id} onChanged={onChanged} />
     {data.warning && <p role="status" className="border-b bg-muted/30 px-4 py-3 text-sm leading-6 sm:px-6">{data.warning}</p>}
     <details className="border-b px-4 py-3 sm:px-6"><summary className="cursor-pointer text-sm font-medium">Internal note{data.internalNote ? " · saved" : ""}</summary><div className="mt-3 flex flex-col gap-2"><Field><FieldLabel className="sr-only" htmlFor={`email-note-${id}`}>Internal note</FieldLabel><Textarea id={`email-note-${id}`} value={note} onChange={event => setNote(event.target.value)} maxLength={10_000} rows={3} placeholder="Add customer context, a call summary, or the next action…" /><FieldDescription>Private to your dashboard account. This note is never sent to the customer.</FieldDescription></Field><div><Button size="sm" variant="outline" disabled={pending || note === data.internalNote} onClick={() => update({ internalNote: note })}>Save note</Button></div></div></details>
     {data.omitted > 0 && <div className="px-4 py-3 sm:px-6"><Button size="sm" variant="outline" disabled={pending} onClick={() => startTransition(async () => {
       try { const earlier = await getGmailConversationAction(id, data.messages[0]?.messageId); setData(previous => previous ? { ...previous, messages: [...new Map([...earlier.messages, ...previous.messages].map(message => [message.messageId, message])).values()], omitted: earlier.warning ? previous.omitted : earlier.omitted, warning: earlier.warning || previous.warning } : previous); }
       catch { toast.error("Earlier messages could not be loaded. Try again."); }
     })}>Load earlier messages ({data.omitted})</Button></div>}
-    {data.messages.map((message, index) => <ConversationMessage key={message.messageId} message={message} id={id} initiallyOpen={index === data.messages.length - 1} onChanged={onChanged} />)}
+    {data.messages.map((message, index) => <ConversationMessage key={message.messageId} message={message} id={id} initiallyOpen={index === data.messages.length - 1} onChanged={() => { setSalesRevision(value => value + 1); onChanged(); }} />)}
   </article>;
 }

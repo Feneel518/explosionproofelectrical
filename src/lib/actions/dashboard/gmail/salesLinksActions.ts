@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma/db";
 import { createGmailSalesDraft } from "@/lib/gmail/salesDraft";
 import { senderIdentity } from "@/lib/gmail/mime";
 import { z } from "zod";
+import { linkSalesConversation } from "@/lib/gmail/salesConversation";
+import { createDraftSalesOrderAction } from "@/lib/actions/dashboard/sales/order/createDraftSalesOrderAction";
 
 const recordType = z.enum(["QUOTATION", "ORDER"]);
 type RecordType = z.infer<typeof recordType>;
@@ -19,14 +21,14 @@ export async function getGmailSalesLinksAction(id: string) {
   const { user } = await requireAuth();
   const message = await ownedNotification(user.id, id);
   const links = await prisma.gmailThreadLink.findMany({ where: { userId: user.id, threadId: message.threadId }, include: {
-    quotation: { select: { id: true, quoteFy: true, quoteNo: true, clientName: true, status: true, deletedAt: true } },
-    salesOrder: { select: { id: true, orderFy: true, orderNo: true, clientName: true, status: true, deletedAt: true } },
+    quotation: { select: { id: true, quoteFy: true, quoteNo: true, clientName: true, status: true, deletedAt: true, nextFollowupAt: true, convertedToOrderAt: true } },
+    salesOrder: { select: { id: true, orderFy: true, orderNo: true, clientName: true, status: true, deletedAt: true, poNumber: true, totalPendingQty: true, totalDispatchedQty: true } },
   }, orderBy: { createdAt: "asc" } });
   const sender = senderIdentity(message.sender);
   const customer = sender.email ? await prisma.customer.findFirst({ where: { deletedAt: null, companyEmail: { equals: sender.email, mode: "insensitive" } }, select: { id: true, companyName: true, city: true } }) : null;
   return { customer, links: links.flatMap(link => {
-    if (link.quotation && !link.quotation.deletedAt) return [{ id: link.id, kind: "QUOTATION" as RecordType, title: `Quotation ${link.quotation.quoteFy}/${link.quotation.quoteNo}`, subtitle: link.quotation.clientName || "Draft quotation", status: link.quotation.status as string, href: `/dashboard/sales/quotations/${link.quotation.id}${link.quotation.status === "DRAFT" ? "/edit" : ""}` }];
-    if (link.salesOrder && !link.salesOrder.deletedAt) return [{ id: link.id, kind: "ORDER" as RecordType, title: `Order ${link.salesOrder.orderFy}/${link.salesOrder.orderNo}`, subtitle: link.salesOrder.clientName || "Draft sales order", status: link.salesOrder.status as string, href: `/dashboard/sales/orders/${link.salesOrder.id}${link.salesOrder.status === "DRAFT" ? "/edit" : ""}` }];
+    if (link.quotation && !link.quotation.deletedAt) return [{ id: link.id, recordId: link.quotation.id, nextFollowupAt: link.quotation.nextFollowupAt?.toISOString() || null, canCreateOrder: !link.quotation.convertedToOrderAt && ["SENT", "FOLLOWUP"].includes(link.quotation.status), tracking: "", kind: "QUOTATION" as RecordType, title: `Quotation ${link.quotation.quoteFy}/${link.quotation.quoteNo}`, subtitle: link.quotation.clientName || "Draft quotation", status: link.quotation.status as string, href: `/dashboard/sales/quotations/${link.quotation.id}${link.quotation.status === "DRAFT" ? "/edit" : ""}` }];
+    if (link.salesOrder && !link.salesOrder.deletedAt) return [{ id: link.id, recordId: link.salesOrder.id, nextFollowupAt: null, canCreateOrder: false, tracking: `${link.salesOrder.poNumber ? `PO ${link.salesOrder.poNumber} · ` : ""}${link.salesOrder.totalDispatchedQty} dispatched · ${link.salesOrder.totalPendingQty} pending`, kind: "ORDER" as RecordType, title: `Order ${link.salesOrder.orderFy}/${link.salesOrder.orderNo}`, subtitle: link.salesOrder.clientName || "Draft sales order", status: link.salesOrder.status as string, href: `/dashboard/sales/orders/${link.salesOrder.id}${link.salesOrder.status === "DRAFT" ? "/edit" : ""}` }];
     return [];
   }) };
 }
@@ -58,7 +60,7 @@ export async function linkGmailSalesRecordAction(id: string, kind: RecordType, r
   recordType.parse(kind); z.string().uuid().parse(recordId);
   const record = kind === "QUOTATION" ? await prisma.quotation.findFirst({ where: { id: recordId, deletedAt: null }, select: { id: true } }) : await prisma.salesOrder.findFirst({ where: { id: recordId, deletedAt: null }, select: { id: true } });
   if (!record) throw new Error("Sales record not found.");
-  await prisma.gmailThreadLink.createMany({ data: [{ userId: user.id, threadId: message.threadId, ...(kind === "QUOTATION" ? { quotationId: recordId } : { salesOrderId: recordId }) }], skipDuplicates: true });
+  await prisma.$transaction((tx) => linkSalesConversation(tx, user.id, message.threadId, kind, recordId));
 }
 
 export async function unlinkGmailSalesRecordAction(linkId: string) {
@@ -70,6 +72,15 @@ export async function createSalesDraftFromGmailAction(id: string, kind: RecordTy
   const { user } = await requireAuth();
   const message = await ownedNotification(user.id, id);
   recordType.parse(kind);
+  if (kind === "ORDER") {
+    const quotations = await prisma.gmailThreadLink.findMany({ where: { userId: user.id, threadId: message.threadId, quotation: { deletedAt: null, convertedToOrderAt: null, status: { in: ["SENT", "FOLLOWUP"] } } }, select: { quotationId: true } });
+    if (quotations.length === 1 && quotations[0].quotationId) {
+      const result = await createDraftSalesOrderAction(quotations[0].quotationId);
+      if (!result.ok) throw new Error(result.message);
+      return { id: result.id, href: `/dashboard/sales/orders/${result.id}/edit`, reused: false };
+    }
+  }
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       return await prisma.$transaction(async tx => {

@@ -13,14 +13,19 @@ export async function createGmailSalesDraft(tx: Prisma.TransactionClient, userId
   const existingId = kind === "QUOTATION" ? existing?.quotationId : existing?.salesOrderId;
   if (existingId && !options.createNew) return { id: existingId, href: `/dashboard/sales/${kind === "QUOTATION" ? "quotations" : "orders"}/${existingId}/edit`, reused: true };
   const customer = sender.email ? await tx.customer.findFirst({ where: { deletedAt: null, companyEmail: { equals: sender.email, mode: "insensitive" } } }) : null;
+  const linkedQuotations = kind === "ORDER" ? await tx.gmailThreadLink.findMany({
+    where: { userId, threadId: message.threadId, quotation: { deletedAt: null, convertedToOrderAt: null, status: { in: ["SENT", "FOLLOWUP"] } } },
+    select: { quotation: { select: { id: true, customerId: true, clientName: true, gst: true, packingCharges: true, paymentTerms: true, transportationPayment: true, deliveryDate: true } } },
+  }) : [];
+  const sourceQuotation = linkedQuotations.length === 1 ? linkedQuotations[0].quotation : null;
   const common = {
-    customerId: customer?.id || null, clientName: customer?.companyName || sender.name,
+    customerId: sourceQuotation?.customerId || customer?.id || null, clientName: sourceQuotation?.clientName || customer?.companyName || sender.name,
     receivedFromName: sender.name, receivedFromEmail: sender.email || null, receivedFromPhone: customer?.companyPhone || null,
-    gst: customer?.defaultQuotationGst || "CGST_SGST_18" as const,
-    packingCharges: customer?.defaultQuotationPackingCharges || "INCLUDED" as const,
-    paymentTerms: customer?.defaultQuotationPaymentTerms || "ADVANCE" as const,
-    transportationPayment: customer?.defaultQuotationTransportationPayment || "TO_PAY" as const,
-    deliveryDate: customer?.defaultQuotationDeliveryDate || "4 weeks",
+    gst: sourceQuotation?.gst || customer?.defaultQuotationGst || "CGST_SGST_18" as const,
+    packingCharges: sourceQuotation?.packingCharges || customer?.defaultQuotationPackingCharges || "INCLUDED" as const,
+    paymentTerms: sourceQuotation?.paymentTerms || customer?.defaultQuotationPaymentTerms || "ADVANCE" as const,
+    transportationPayment: sourceQuotation?.transportationPayment || customer?.defaultQuotationTransportationPayment || "TO_PAY" as const,
+    deliveryDate: sourceQuotation?.deliveryDate || customer?.defaultQuotationDeliveryDate || "4 weeks",
   };
   let recordId: string;
   if (kind === "QUOTATION") {
@@ -33,12 +38,12 @@ export async function createGmailSalesDraft(tx: Prisma.TransactionClient, userId
     recordId = draft.id;
   } else {
     const last = await tx.salesOrder.findFirst({ where: { orderFy: fy }, orderBy: { orderNo: "desc" }, select: { orderNo: true } });
-    const orderHeader = { ...common, sourceType: "DIRECT", quotationId: null, poNumber: null, poDate: null, orderDate: new Date().toISOString(),
+    const orderHeader = { ...common, sourceType: sourceQuotation ? "QUOTATION" : "DIRECT", quotationId: sourceQuotation?.id || null, poNumber: null, poDate: null, orderDate: new Date().toISOString(),
       clientNameSnapshot: common.clientName, citySnapshot: customer?.city || null, stateSnapshot: customer?.state || null, gstinSnapshot: customer?.gstin || null,
-      additionalNotes: context, isConvertedFromQuotation: false, isClosed: false, isFullyDispatched: false, isFullyInvoiced: false, isOverdueForDispatch: false,
+      additionalNotes: context, isConvertedFromQuotation: !!sourceQuotation, isClosed: false, isFullyDispatched: false, isFullyInvoiced: false, isOverdueForDispatch: false,
       subtotal: 0, discountTotal: 0, taxableTotal: 0, gstTotal: 0, grandTotal: 0, totalItemsCount: 0, totalOrderedQty: 0, totalDispatchedQty: 0, totalInvoicedQty: 0, totalPendingQty: 0 };
     const draft = await tx.salesOrder.create({ data: {
-      ...common, orderFy: fy, orderNo: (last?.orderNo || 0) + 1, status: "DRAFT", sourceType: "DIRECT", additionalNotes: context,
+      ...common, orderFy: fy, orderNo: (last?.orderNo || 0) + 1, status: "DRAFT", sourceType: sourceQuotation ? "QUOTATION" : "DIRECT", quotationId: sourceQuotation?.id || null, isConvertedFromQuotation: !!sourceQuotation, additionalNotes: context,
       clientNameSnapshot: common.clientName, citySnapshot: customer?.city, stateSnapshot: customer?.state, gstinSnapshot: customer?.gstin,
       orderDate: new Date(), createdById: userId, updatedById: userId, draftData: { header: orderHeader, items: [] }, draftVersion: 0,
     }, select: { id: true } });

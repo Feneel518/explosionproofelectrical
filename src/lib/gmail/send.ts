@@ -41,7 +41,7 @@ export async function buildQuotationMime(input: PdfEmail) {
 }
 
 /** Never retry a send automatically: a lost response can still mean Google accepted the mail. */
-export async function sendQuotationWithGmail(accessToken: string, raw: string, threadId?: string) {
+export async function sendQuotationWithGmailReceipt(accessToken: string, raw: string, threadId?: string) {
   let response: Response;
   try {
     response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
@@ -54,6 +54,10 @@ export async function sendQuotationWithGmail(accessToken: string, raw: string, t
   if (!response.ok) throw new GmailApiError(response.status, "send_error");
   try {
     const data: unknown = await response.json();
-    return z.object({ id: z.string().min(1) }).parse(data).id;
+    return z.object({ id: z.string().min(1), threadId: z.string().min(1).optional() }).parse(data);
   } catch { throw new GmailSendUncertainError(); }
+}
+
+export async function sendQuotationWithGmail(accessToken: string, raw: string, threadId?: string) {
+  return (await sendQuotationWithGmailReceipt(accessToken, raw, threadId)).id;
 }

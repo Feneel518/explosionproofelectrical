@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test, after } from "node:test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { PDFDocument } from "pdf-lib";
-import { buildQuotationMime, quotationEmailSchema, GmailSendUncertainError, sendQuotationWithGmail } from "../src/lib/gmail/send";
+import { buildQuotationMime, quotationEmailSchema, GmailSendUncertainError, sendQuotationWithGmail, sendQuotationWithGmailReceipt } from "../src/lib/gmail/send";
 import { GmailApiError, GMAIL_READ_SCOPE, GMAIL_SCOPE, GMAIL_SEND_SCOPE, gmailCanSend } from "../src/lib/gmail/google";
 import { deliverQuotation } from "../src/lib/quotations/delivery";
 import { quotationPdfFilename, renderQuotationPdf } from "../src/lib/quotations/pdf";
@@ -42,6 +42,8 @@ test("replies preserve Gmail thread, subject, Reply-To and RFC reply references"
     return Response.json({ id: "sent-reply" });
   };
   assert.equal(await sendQuotationWithGmail("token", raw, reply.threadId), "sent-reply");
+  globalThis.fetch = async () => Response.json({ id: "sent-new", threadId: "new-conversation" });
+  assert.deepEqual(await sendQuotationWithGmailReceipt("token", raw), { id: "sent-new", threadId: "new-conversation" });
   assert.throws(() => quotationReplyFromMessage(original, "another-thread"), /changed/);
   assert.throws(() => quotationReplyFromMessage({ ...original, payload: { headers: [{ name: "Message-ID", value: "<unsafe@example.com>\r\nBcc: attacker@example.com" }] } }, original.threadId), /identifier/);
   const fallback = quotationReplyFromMessage({ ...original, payload: { headers: original.payload.headers.filter((h) => h.name !== "Reply-To") } }, original.threadId);

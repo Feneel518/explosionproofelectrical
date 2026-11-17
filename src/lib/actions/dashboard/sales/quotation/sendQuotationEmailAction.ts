@@ -6,7 +6,8 @@ import { decryptGmailSecret } from "@/lib/gmail/crypto";
 import { exchangeGmailToken, gmailCanSend, GmailApiError } from "@/lib/gmail/google";
 import { getQuotationReply, type QuotationReply } from "@/lib/gmail/quotationReply";
 import { getQuotationReplyOptionsAction } from "./getQuotationReplyOptionsAction";
-import { buildQuotationMime, quotationEmailSchema, sendQuotationWithGmail } from "@/lib/gmail/send";
+import { buildQuotationMime, quotationEmailSchema, sendQuotationWithGmailReceipt } from "@/lib/gmail/send";
+import { linkSalesConversation } from "@/lib/gmail/salesConversation";
 import { deliverQuotation, QuotationPreparationError, type DeliveryResult } from "@/lib/quotations/delivery";
 import { quotationPdfFilename, renderQuotationPdf } from "@/lib/quotations/pdf";
 import { quotationPdfSession } from "@/lib/quotations/pdfSession";
@@ -41,6 +42,7 @@ export async function sendQuotationEmailAction(input: unknown): Promise<Delivery
         return { ok: false, message: error instanceof GmailApiError ? error.message : "Could not prepare the original conversation. Select it again or send a new email." };
       }
     }
+    let sentThreadId = reply?.threadId;
     return await deliverQuotation({
       claim: async () => {
         const created = await prisma.quotationEmailDelivery.createMany({ data: [{
@@ -73,11 +75,18 @@ export async function sendQuotationEmailAction(input: unknown): Promise<Delivery
           || currentQuotation.updatedAt.toISOString() !== data.expectedUpdatedAt) throw new QuotationPreparationError("This quotation has changed. Refresh and review the PDF before sending.");
         return { raw, accessToken: tokens.access_token };
       },
-      send: ({ raw, accessToken }) => sendQuotationWithGmail(accessToken, raw, reply?.threadId),
+      send: async ({ raw, accessToken }) => {
+        const receipt = await sendQuotationWithGmailReceipt(accessToken, raw, reply?.threadId);
+        sentThreadId = receipt.threadId || reply?.threadId;
+        return receipt.id;
+      },
       record: async (status, messageId) => {
-        await prisma.quotationEmailDelivery.update({ where: { id: data.requestId }, data: {
-          status, gmailMessageId: messageId, sentAt: status === "SENT" ? new Date() : null,
-        } });
+        await prisma.$transaction(async (tx) => {
+          await tx.quotationEmailDelivery.update({ where: { id: data.requestId }, data: {
+            status, gmailMessageId: messageId, sentAt: status === "SENT" ? new Date() : null,
+          } });
+          if (status === "SENT" && sentThreadId) await linkSalesConversation(tx, user.id, sentThreadId, "QUOTATION", quotation.id);
+        });
       },
     });
   } catch {

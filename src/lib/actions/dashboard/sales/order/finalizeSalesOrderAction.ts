@@ -1,4 +1,5 @@
 "use server";
+import { inheritQuotationConversations } from "@/lib/gmail/salesConversation";
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
@@ -280,6 +281,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
       }
 
       if (quotationId) {
+        await inheritQuotationConversations(tx, session.user.id, quotationId, id);
         await tx.quotation.update({
           where: { id: quotationId },
           data: {

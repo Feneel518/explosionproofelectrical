@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
     const code = request.nextUrl.searchParams.get("code");
     if (request.nextUrl.searchParams.has("error") || !code) throw new Error("Authorization declined");
     const tokens = await exchangeGmailToken({ grant_type: "authorization_code", code, redirect_uri: config.redirectUri, code_verifier: verifier });
-    if (!tokens.refresh_token || !tokens.scope?.split(" ").includes(GMAIL_SCOPE)) throw new Error("Gmail read access was not granted");
+    if (!tokens.refresh_token || !GMAIL_SCOPE.split(" ").every((scope) => tokens.scope?.split(" ").includes(scope))) throw new Error("Gmail read and send access was not granted");
     const profile = await gmailGet<{ emailAddress: string }>(tokens.access_token, "profile");
     await prisma.$transaction(async (tx) => {
       const existing = await tx.gmailConnection.findUnique({ where: { userId: user.id } });
       if (existing?.email.toLowerCase() === profile.emailAddress.toLowerCase()) {
         await tx.gmailConnection.update({ where: { userId: user.id }, data: {
-          encryptedRefreshToken: encryptGmailSecret(tokens.refresh_token!), connectedAt: new Date(), syncLeaseUntil: null,
+          encryptedRefreshToken: encryptGmailSecret(tokens.refresh_token!), grantedScopes: tokens.scope!, connectedAt: new Date(), syncLeaseUntil: null,
         } });
         return;
       }
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       await tx.gmailConnection.deleteMany({ where: { userId: user.id } });
       await tx.gmailConnection.create({ data: {
         userId: user.id, email: profile.emailAddress,
-        encryptedRefreshToken: encryptGmailSecret(tokens.refresh_token!), searchQuery: DEFAULT_GMAIL_QUERY,
+        encryptedRefreshToken: encryptGmailSecret(tokens.refresh_token!), grantedScopes: tokens.scope!, searchQuery: DEFAULT_GMAIL_QUERY,
       } });
     });
     destination.searchParams.set("gmail", "connected");

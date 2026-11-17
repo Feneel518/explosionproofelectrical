@@ -10,8 +10,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/design-preview/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }] }];
   },
-  serverExternalPackages: ["@node-rs/argon2", "pdfkit"],
+  serverExternalPackages: ["@node-rs/argon2", "pdfkit", "playwright-core", "@sparticuz/chromium"],
   outputFileTracingIncludes: {
+    "/api/quotations/*/pdf": ["./node_modules/@sparticuz/chromium/bin/**/*"],
+    "/dashboard/sales/quotations/*": ["./node_modules/@sparticuz/chromium/bin/**/*"],
     "/api/catalog/pdf": ["./public/catalog/**/*", "./public/asset/**/*", "./public/marketing/**/*"],
   },
   images: {

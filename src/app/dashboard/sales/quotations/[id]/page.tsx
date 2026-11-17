@@ -2,6 +2,8 @@ import QuotationDetailView from "@/components/dashboard/sales/quotation/Quotatio
 import { GmailLinkedMessages } from "@/components/dashboard/gmail/GmailLinkedMessages";
 import { getQuotationByIdAction } from "@/lib/actions/dashboard/sales/quotation/getQuotationByIdAction";
 
+export const maxDuration = 120;
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

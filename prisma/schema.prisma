@@ -182,6 +182,7 @@ enum TransportationPayment {
 
 model User {
   gmailConnection GmailConnection?
+  quotationEmails QuotationEmailDelivery[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -251,6 +252,7 @@ model GmailConnection {
   user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
   email                 String
   encryptedRefreshToken String
+  grantedScopes         String @default("https://www.googleapis.com/auth/gmail.readonly")
   searchQuery           String
   connectedAt           DateTime @default(now())
   lastSyncedAt          DateTime?
@@ -948,6 +950,7 @@ model Quotation {
   // Relations
   items            QuotationItem[]
   followups        QuotationFollowup[]
+  emailDeliveries  QuotationEmailDelivery[]
   deliveryChallans DeliveryChallan[]
   salesOrders      SalesOrder[]
 
@@ -960,6 +963,24 @@ model Quotation {
   @@index([deletedAt])
   @@index([nextFollowupAt])
   @@map("quotations")
+}
+
+model QuotationEmailDelivery {
+  id               String @id // Client-generated idempotency key, scoped to the authenticated user below.
+  quotationId      String
+  quotation        Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender           String
+  recipient        String
+  subject          String
+  status           String @default("PENDING") // PENDING, SENT, FAILED, UNKNOWN
+  gmailMessageId   String?
+  createdAt        DateTime @default(now())
+  sentAt           DateTime?
+
+  @@index([quotationId, userId, createdAt])
+  @@map("quotation_email_deliveries")
 }
 
 model QuotationItem {

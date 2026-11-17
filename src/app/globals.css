@@ -462,6 +462,37 @@
 }
 
 @media print {
+  @page quotation {
+    size: A4;
+    margin: 0;
+  }
+
+  body:has([data-quotation-customer-copy]) {
+    page: quotation;
+  }
+
+  body:has([data-quotation-customer-copy]) > section,
+  body:has([data-quotation-customer-copy]) next-route-announcer,
+  body:has([data-quotation-customer-copy]) nextjs-portal {
+    display: none !important;
+  }
+
+  [data-quotation-customer-copy] [data-a4-page] {
+    page: quotation;
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
+    flex-shrink: 0;
+    margin: 0;
+    box-shadow: none;
+    break-inside: avoid;
+    break-after: page;
+  }
+
+  [data-quotation-customer-copy] [data-a4-page]:last-child {
+    break-after: auto;
+  }
+
   @page {
     size: A4;
     margin: 10mm;

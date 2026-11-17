@@ -48,7 +48,7 @@ const QuotationItemTable: FC<QuotationItemTableProps> = ({
                 : "";
 
             return (
-              <TableRow key={items.id} className="">
+              <TableRow key={items.id} data-quotation-item={items.id} className="">
                 <TableCell className="font-medium">
                   {pageItemsStartIndex + index + 1}
                 </TableCell>

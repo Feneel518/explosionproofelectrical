@@ -1,4 +1,10 @@
-export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
+export const GMAIL_READ_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
+export const GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+export const GMAIL_SCOPE = `${GMAIL_READ_SCOPE} ${GMAIL_SEND_SCOPE}`;
+
+export function gmailCanSend(scope: string) {
+  return scope.split(/\s+/).includes(GMAIL_SEND_SCOPE);
+}
 export const DEFAULT_GMAIL_QUERY = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';
 export const GMAIL_STATE_COOKIE = "gmail-oauth-state";
 
@@ -26,7 +32,7 @@ export class GmailApiError extends Error {
       ? "Gmail is temporarily busy. Please wait about a minute and try again."
       : status === 401 || code === "invalid_grant"
       ? "Gmail access expired. Reconnect your mailbox."
-      : status === 403 ? "Gmail access was denied. Enable the Gmail API and reconnect with read access."
+      : status === 403 ? "Gmail access was denied. Enable the Gmail API and reconnect with the requested permissions."
       : status === 429 ? "Gmail is busy. Please try again shortly."
       : "Gmail could not be reached. Please try again.");
   }

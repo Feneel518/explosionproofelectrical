@@ -88,11 +88,13 @@ const QuotationCustomerCopy: FC<QuotationCustomerCopyProps> = ({
         Print / Save PDF
       </Button>
       <div
+        data-quotation-customer-copy={quotation.id}
+        data-quotation-version={new Date(quotation.updatedAt).toISOString()}
         className="flex flex-col gap-4 print:gap-0 relative items-center "
         ref={containerRef}>
         {pages.map((group, index, list) => {
           const currentPage = index + 1;
-          const totalPages = pages.length;
+          const totalPages = pages.length + 2;
 
           const pageItemStartIndex = perPage
             .slice(0, index)
@@ -136,8 +138,8 @@ const QuotationCustomerCopy: FC<QuotationCustomerCopyProps> = ({
             payment={quotation.paymentTerms}
             footer={
               <DocumentFooter
-                pageIndex={quotation.items.length + 1}
-                totalLength={quotation.items.length + 2}></DocumentFooter>
+                pageIndex={pages.length + 1}
+                totalLength={pages.length + 2}></DocumentFooter>
             }></QuotationTermsShort>
         </div>
         <div
@@ -164,8 +166,8 @@ const QuotationCustomerCopy: FC<QuotationCustomerCopyProps> = ({
               })}
             </div>
             <DocumentFooter
-              pageIndex={quotation.items.length + 2}
-              totalLength={quotation.items.length + 2}></DocumentFooter>
+              pageIndex={pages.length + 2}
+              totalLength={pages.length + 2}></DocumentFooter>
           </div>
         </div>
       </div>

@@ -25,7 +25,7 @@ References: [Google web-server OAuth](https://developers.google.com/identity/pro
 
 ## Replying to the original conversation
 
-The Send Quotation dialog lists conversations already linked to the quotation, plus recent imported messages from the quotation/customer email address in the signed-in user's mailbox. One linked conversation (or one matching conversation) is selected automatically; when several match, choose the intended conversation. Link older/unlisted customer messages from Gmail Sales Inbox if needed. ìSend a new emailî remains available explicitly.
+The Send Quotation dialog lists conversations already linked to the quotation, plus recent imported messages from the quotation/customer email address in the signed-in user's mailbox. One linked conversation (or one matching conversation) is selected automatically; when several match, choose the intended conversation. Link older/unlisted customer messages from Gmail Sales Inbox if needed. ‚ÄúSend a new email‚Äù remains available explicitly.
 
 Reply mode loads the original Gmail message's current metadata and keeps its subject and Reply-To (falling back to From). Both are read-only while replying. The server checks the notification belongs to the signed-in user and is linked to the quotation or matches its customer address; it fetches Gmail headers itself rather than trusting client-provided thread IDs or reply headers. Gmail receives threadId, In-Reply-To and References with the PDF MIME attachment. This sends to the original reply address, not Reply All.
 

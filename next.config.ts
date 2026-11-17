@@ -12,8 +12,8 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@node-rs/argon2", "pdfkit", "playwright-core", "@sparticuz/chromium"],
   outputFileTracingIncludes: {
-    "/api/quotations/*/pdf": ["./node_modules/@sparticuz/chromium/bin/**/*"],
-    "/dashboard/sales/quotations/*": ["./node_modules/@sparticuz/chromium/bin/**/*"],
+    "/api/quotations/*/pdf": ["./node_modules/@sparticuz/chromium/**/*", "./node_modules/playwright-core/**/*"],
+    "/dashboard/sales/quotations/*": ["./node_modules/@sparticuz/chromium/**/*", "./node_modules/playwright-core/**/*"],
     "/api/catalog/pdf": ["./public/catalog/**/*", "./public/asset/**/*", "./public/marketing/**/*"],
   },
   images: {

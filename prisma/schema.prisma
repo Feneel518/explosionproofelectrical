@@ -110,6 +110,7 @@ model BlogPost {
 
 enum QuotationStatus {
   DRAFT
+  READY
   SENT
   FOLLOWUP
   WON

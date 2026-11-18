@@ -1,4 +1,5 @@
 "use server";
+import { quotationStatusAfterOrderUnlink } from "@/lib/quotations/recordDelivery";
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
@@ -91,9 +92,7 @@ export const saveSalesOrderDraftSnapshotAction = async ({
 
   const updated = await prisma.$transaction(async (tx) => {
     if (shouldRevertLinkedQuotation && order.quotation) {
-      const revertQuotationStatus = order.quotation.nextFollowupAt
-        ? "FOLLOWUP"
-        : "SENT";
+      const revertQuotationStatus = await quotationStatusAfterOrderUnlink(tx, order.quotation.id, order.quotation.nextFollowupAt);
 
       await tx.quotation.update({
         where: { id: order.quotation.id },

@@ -63,7 +63,7 @@ function monthLabel(date: Date) {
 }
 
 const LOST_STATUSES: QuotationStatus[] = ["LOST", "EXPIRED", "CANCELLED"];
-const PENDING_STATUSES: QuotationStatus[] = ["SENT", "FOLLOWUP"];
+const PENDING_STATUSES: QuotationStatus[] = ["READY", "SENT", "FOLLOWUP"];
 const FINALIZED_STATUSES: QuotationStatus[] = [
   "SENT",
   "FOLLOWUP",
@@ -225,7 +225,7 @@ export async function getQuotationDashboardAnalytics(): Promise<QuotationDashboa
     (q) => q.status === "DRAFT",
   ).length;
   const sentQuotations = allQuotations.filter(
-    (q) => q.status !== "DRAFT",
+    (q) => q.status !== "DRAFT" && q.status !== "READY",
   ).length;
   const acceptedQuotations = allQuotations.filter(
     (q) => q.status === "WON" || q.convertedToOrderAt !== null,

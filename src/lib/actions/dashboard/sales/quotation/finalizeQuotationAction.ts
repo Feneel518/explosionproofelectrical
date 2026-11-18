@@ -78,7 +78,7 @@ export const finalizeQuotationAction = async (id: string) => {
 
     // Prepare quotation update data OUTSIDE transaction
     const quotationUpdateData = {
-      status: "SENT" as const,
+      status: "READY" as const,
       quoteNo: q.quoteNo,
       quoteFy: q.quoteFy,
 

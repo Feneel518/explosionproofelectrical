@@ -40,3 +40,11 @@ New quotation emails and replies save their Gmail conversation link after a conf
 When one active finalized quotation is already linked, Create order draft from the inbox uses that quotation; reviewed PDF imports also carry that quotation relationship into the order. Multiple linked quotations are not guessed: choose Review & create order on the intended quotation card.
 
 Verification: `node --import tsx --test scripts/gmail-integration.test.ts scripts/quotation-email.test.ts scripts/gmail-pdf-import.test.ts`; `node --import tsx -r dotenv/config scripts/gmail-sales.integration.ts` verifies bidirectional links, inherited conversations, future replies and follow-up retention inside a transaction which is always rolled back.
+
+## Ready versus Sent status
+
+Finalizing/saving the customer copy now sets READY. The quotation remains viewable, printable and eligible for email or order review. Only a confirmed Gmail receipt changes the unchanged READY version to SENT, in the same transaction as its delivery receipt. Failed/unknown sends keep READY. Newer edits, deleted records and later sales statuses are not overwritten by a delayed receipt or resend. The detail page refreshes after a successful send.
+
+READY is included in the quotation status filter and pending sales pipeline but excluded from Sent totals. Reopening or unlinking an order preserves a Ready/Draft quotation and does not invent a Sent status without a confirmed delivery record. Existing historical statuses are not relabelled by the additive enum migration.
+
+Migration: 20261118090000_quotation_ready_status. The rolled-back sales integration test checks rejected, unknown and successful deliveries, receipt validation, newer edits and resending Won quotations.

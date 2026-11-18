@@ -12,6 +12,8 @@ import { deliverQuotation, QuotationPreparationError, type DeliveryResult } from
 import { quotationPdfFilename, renderQuotationPdf } from "@/lib/quotations/pdf";
 import { quotationPdfSession } from "@/lib/quotations/pdfSession";
 import { getQuotationByIdAction } from "./getQuotationByIdAction";
+import { recordQuotationDelivery } from "@/lib/quotations/recordDelivery";
+import { revalidatePath } from "next/cache";
 
 export async function sendQuotationEmailAction(input: unknown): Promise<DeliveryResult> {
   const { user } = await requireAuth();
@@ -43,7 +45,7 @@ export async function sendQuotationEmailAction(input: unknown): Promise<Delivery
       }
     }
     let sentThreadId = reply?.threadId;
-    return await deliverQuotation({
+    const deliveryResult = await deliverQuotation({
       claim: async () => {
         const created = await prisma.quotationEmailDelivery.createMany({ data: [{
           id: data.requestId, quotationId: quotation.id, userId: user.id,
@@ -82,13 +84,18 @@ export async function sendQuotationEmailAction(input: unknown): Promise<Delivery
       },
       record: async (status, messageId) => {
         await prisma.$transaction(async (tx) => {
-          await tx.quotationEmailDelivery.update({ where: { id: data.requestId }, data: {
-            status, gmailMessageId: messageId, sentAt: status === "SENT" ? new Date() : null,
-          } });
+          await recordQuotationDelivery(tx, { requestId: data.requestId, quotationId: quotation.id, userId: user.id,
+            expectedUpdatedAt: quotation.updatedAt, status, messageId });
           if (status === "SENT" && sentThreadId) await linkSalesConversation(tx, user.id, sentThreadId, "QUOTATION", quotation.id);
         });
       },
     });
+    if (deliveryResult.ok) {
+      revalidatePath("/dashboard/sales/quotations");
+      revalidatePath(`/dashboard/sales/quotations/${quotation.id}`);
+      revalidatePath("/dashboard/sales/quotations/analytics");
+    }
+    return deliveryResult;
   } catch {
     return { ok: false, uncertain: true, message: "The email result could not be checked. Check Gmail Sent before starting another send." };
   }

@@ -18,7 +18,7 @@ export const getPendingQuotationsForCustomerAction = async (
     };
   }
 
-  const allowedStatuses: QuotationStatus[] = ["SENT", "FOLLOWUP"];
+  const allowedStatuses: QuotationStatus[] = ["READY", "SENT", "FOLLOWUP"];
 
   const quotations = await prisma.quotation.findMany({
     where: {

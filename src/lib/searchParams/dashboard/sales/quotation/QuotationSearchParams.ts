@@ -13,6 +13,7 @@ import {
 export const QUOTATION_STATUSES = [
   "ALL",
   "DRAFT",
+  "READY",
   "SENT",
   "FOLLOWUP",
   "WON",

@@ -1,4 +1,5 @@
 "use server";
+import { quotationStatusAfterOrderUnlink } from "@/lib/quotations/recordDelivery";
 import { inheritQuotationConversations } from "@/lib/gmail/salesConversation";
 
 import { requireAuth } from "@/lib/check/requireAuth";
@@ -266,9 +267,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
       });
 
       if (quotationToUnlink) {
-        const revertQuotationStatus = quotationToUnlink.nextFollowupAt
-          ? "FOLLOWUP"
-          : "SENT";
+        const revertQuotationStatus = await quotationStatusAfterOrderUnlink(tx, quotationToUnlink.id, quotationToUnlink.nextFollowupAt);
 
         await tx.quotation.update({
           where: { id: quotationToUnlink.id },

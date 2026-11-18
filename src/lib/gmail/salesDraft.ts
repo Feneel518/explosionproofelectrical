@@ -14,7 +14,7 @@ export async function createGmailSalesDraft(tx: Prisma.TransactionClient, userId
   if (existingId && !options.createNew) return { id: existingId, href: `/dashboard/sales/${kind === "QUOTATION" ? "quotations" : "orders"}/${existingId}/edit`, reused: true };
   const customer = sender.email ? await tx.customer.findFirst({ where: { deletedAt: null, companyEmail: { equals: sender.email, mode: "insensitive" } } }) : null;
   const linkedQuotations = kind === "ORDER" ? await tx.gmailThreadLink.findMany({
-    where: { userId, threadId: message.threadId, quotation: { deletedAt: null, convertedToOrderAt: null, status: { in: ["SENT", "FOLLOWUP"] } } },
+    where: { userId, threadId: message.threadId, quotation: { deletedAt: null, convertedToOrderAt: null, status: { in: ["READY", "SENT", "FOLLOWUP"] } } },
     select: { quotation: { select: { id: true, customerId: true, clientName: true, gst: true, packingCharges: true, paymentTerms: true, transportationPayment: true, deliveryDate: true } } },
   }) : [];
   const sourceQuotation = linkedQuotations.length === 1 ? linkedQuotations[0].quotation : null;

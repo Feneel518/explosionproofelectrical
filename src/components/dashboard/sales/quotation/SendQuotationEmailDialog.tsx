@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { ExternalLink, Loader2, Mail, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export default function SendQuotationEmailDialog({ quotationId, quotationNumber, updatedAt, defaultEmail, disabled }: Props) {
+  const router = useRouter();
   const { data, loading } = useGmailNotifications();
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -112,6 +114,7 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
             if (!result.ok) { setError(result.message); return; }
             toast.success(result.message);
             setOpen(false);
+            router.refresh();
           } catch {
             setError("The send result could not be confirmed. Check Gmail Sent before sending this quotation again.");
           } finally { busy.current = false; }

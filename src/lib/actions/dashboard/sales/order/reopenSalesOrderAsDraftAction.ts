@@ -1,4 +1,5 @@
 "use server";
+import { quotationStatusAfterOrderUnlink } from "@/lib/quotations/recordDelivery";
 
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
@@ -198,9 +199,7 @@ export async function reopenSalesOrderAsDraftAction(id: string) {
 
     // Reset linked quotation if this order came from quotation
     if (order.quotationId && order.quotation) {
-      const revertQuotationStatus = order.quotation.nextFollowupAt
-        ? "FOLLOWUP"
-        : "SENT";
+      const revertQuotationStatus = await quotationStatusAfterOrderUnlink(tx, order.quotation.id, order.quotation.nextFollowupAt);
 
       await tx.quotation.update({
         where: { id: order.quotationId },

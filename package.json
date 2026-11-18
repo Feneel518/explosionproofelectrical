@@ -12,7 +12,7 @@
     "seed:blogs": "tsx scripts/seed-blog-cluster.ts",
     "postinstall": "prisma generate",
     "typecheck": "prisma generate && tsc --noEmit",
-    "test:integrity": "node --test --test-isolation=none scripts/system-integrity.test.cjs scripts/test-product-approvals.cjs",
+    "test:integrity": "node --test --test-isolation=none scripts/system-integrity.test.cjs scripts/test-product-approvals.cjs scripts/gmail-filters.test.cjs",
     "test:gmail": "node --import tsx --test scripts/gmail-integration.test.ts scripts/quotation-email.test.ts",
     "test": "pnpm test:integrity && pnpm test:gmail",
     "test:database": "node scripts/prepare-system-integrity-schema.cjs && node -r dotenv/config scripts/system-integrity.integration.cjs"

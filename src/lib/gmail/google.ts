@@ -58,6 +58,9 @@ export async function gmailGet<T>(accessToken: string, path: string): Promise<T>
 }
 
 export function buildGmailSearch(query: string, lastSyncedAt: Date | null, now = new Date()) {
+  // A user-supplied historical range must not be intersected with an invisible 30-day range.
+  const unquoted = query.replace(/"(?:\\.|[^"\\])*"/g, "");
+  if (!lastSyncedAt && /(?:^|[\s({])(?:after|before|newer|older|newer_than|older_than):\S+/i.test(unquoted)) return `(${query})`;
   // Overlap by two minutes to handle Gmail indexing delays; the unique key deduplicates results.
   const since = lastSyncedAt ? lastSyncedAt.getTime() - 120_000 : now.getTime() - 30 * 86_400_000;
   return `(${query}) after:${Math.floor(since / 1000)}`;

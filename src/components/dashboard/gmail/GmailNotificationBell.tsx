@@ -25,7 +25,7 @@ export function GmailNotificationBell() {
           : error ? <p role="status" className="text-sm text-destructive">{error}</p>
           : !data?.connection ? <p className="text-sm text-muted-foreground">Connect Gmail to see incoming orders and inquiries here.</p>
           : count === 0 ? <p className="text-sm text-muted-foreground">You’re all caught up.</p>
-          : data.notifications.filter((item) => !item.read).slice(0, 3).map((item) => <Link key={item.id} href="/dashboard/inbox" className="flex min-w-0 flex-col gap-1 text-sm hover:underline">
+          : data.unreadPreview.map((item) => <Link key={item.id} href="/dashboard/inbox" className="flex min-w-0 flex-col gap-1 text-sm hover:underline">
             <span className="truncate font-medium">{item.subject}</span>
             <span className="truncate text-muted-foreground">{item.sender}</span>
           </Link>)}

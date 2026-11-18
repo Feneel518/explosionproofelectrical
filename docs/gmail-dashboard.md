@@ -21,9 +21,10 @@ The Codex Gmail connector does not grant this independently hosted website OAuth
 ## Behavior
 
 - The default Gmail query matches inbox emails with order, purchase order, inquiry, enquiry, RFQ, quotation or quote request in the subject. Edit the query on the inbox page to match the business's actual subjects or labels. For example, `in:inbox label:Sales` or `in:inbox {subject:order subject:enquiry}`. This is keyword/search filtering, not automatic intent classification.
-- The first sync checks the last 30 days. Later syncs use the last successful checkpoint with a two-minute overlap and deduplicate by Gmail message ID. Pagination is followed up to 1,000 matches; exceeding this shows an error and preserves the checkpoint. Narrow the filter to continue.
+- The first sync checks the last 30 days unless the saved Gmail query includes a date operator (`after:`, `before:`, `newer:`, `older:`, `newer_than:` or `older_than:`). Explicit dates are honored without adding an invisible 30-day restriction. Later automatic syncs use the last successful checkpoint with a two-minute overlap and deduplicate by Gmail message ID. Pagination is followed up to 1,000 matches; exceeding this shows an error and preserves the checkpoint. Narrow the filter to continue.
 - The dashboard checks once a minute while open and visible and when focus returns. The next visit catches up since the last sync. This implementation does not run a background scheduler, push browser notifications while closed, or send notifications by email.
-- The initial sync populates the bell and inbox. New matches found during subsequent checks also show a toast. The inbox displays the latest 100 matching emails and the total unread alert count.
+- **Refresh** explicitly rechecks the saved query's full initial window, even immediately after an automatic sync. This also recovers older messages that started matching after their original arrival, for example after a label change. Manual rescans are limited to three per minute per user; automatic polling retains its normal throttle. Saving a changed Gmail query resets the checkpoint and rechecks its window. Existing imported alerts remain in history.
+- The initial sync populates the bell and inbox. New matches found during subsequent checks also show a toast. The inbox now provides previous/next navigation through all imported alerts, 100 per page, and case-insensitive subject/sender search across all saved pages. The bell loads its three newest unread previews independently, so an older unread alert is still visible when the newest 100 messages have already been read.
 - Only Subject and From headers and message timestamps/IDs are stored. Bodies and attachments are not fetched. Google's read-only scope is required because Gmail does not allow search queries with the narrower metadata scope. Gmail content is rendered as plain text.
 - Local read state does not change Gmail labels or read status. Open the original message using **Open in Gmail**.
 - Disconnect immediately deletes the local encrypted refresh token and alerts. It does not revoke the Google grant, because this may share a client with site sign-in. The account owner can also remove the site's access in Google Account → Security → Third-party connections.
@@ -33,6 +34,19 @@ The Codex Gmail connector does not grant this independently hosted website OAuth
 ## Validation
 
 Run `node --import tsx --test scripts/gmail-integration.test.ts scripts/quotation-email.test.ts` and `pnpm exec tsc --noEmit`. The automated tests cover token encryption/tamper rejection, user-bound OAuth state and expiry, search windows, paginated deduplication, metadata-only fetches, partial-sync failures, revoked token handling, email validation, PDF attachment integrity, send permissions, duplicate requests, ambiguous send results, and authenticated customer-copy rendering (including stale-copy rejection and blocked mutations). The browser integration test writes its PDF to ignored `tmp/pdfs/`. The actual customer-copy template was also visually checked with one-item and six-item sample quotations.
+
+`pnpm test:integrity` also runs the missing-mail regressions in `scripts/gmail-filters.test.cjs`: alerts beyond item 100, old unread bell previews, historical Gmail date ranges, quoted date-like text, forced rescan behavior and private subject/sender history search.
+
+The 18 November filter fix passed all 60 automated tests, TypeScript, focused lint and a production build. PostgreSQL checks and browser verification used 129 synthetic alerts in a disposable schema: page two exposed the older 29, case-insensitive search found the oldest enquiry, and the bell previewed it as unread. No real email was sent or modified. Gmail access was deliberately disabled in that preview; live OAuth and matching for a particular missing email were not part of the synthetic browser check.
+
+### If an expected email is missing
+
+1. Use **Find a saved alert** to search its subject or sender. Check **Next page** for older imports.
+2. Review the Gmail query: the default only includes Inbox and its listed subject keywords. Archived mail requires removing `in:inbox`; other subject wording requires adding the appropriate term or sender/label condition.
+3. For older mail, add the intended Gmail date range, for example `after:2025/01/01 before:2025/02/01`, then **Save filter**. Use **Refresh** to recheck an unchanged query. Date limits are respected.
+4. Check the displayed sync error. A disconnected grant, Gmail rate limit or more than 1,000 query matches prevents checkpoint advancement; existing saved alerts remain available.
+
+The Gmail API searches individual messages rather than performing the Gmail web UI's thread-wide matching, and does not expand account aliases in the same way. See [Google's search differences](https://developers.google.com/workspace/gmail/api/guides/filtering#differences_from_the_gmail_ui) when comparing results.
 
 For live verification after Google setup, connect the actual mailbox, receive a matching customer email, wait up to a minute with the dashboard visible, verify one new bell alert/toast, open it in Gmail, and mark it read locally. Repeated refreshes must not duplicate it. Confirm disconnect removes stored alerts and stops syncing. The integration does not send a test email automatically.
 

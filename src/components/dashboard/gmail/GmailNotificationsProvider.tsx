@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { getGmailInboxAction, type GmailInboxData } from "@/lib/actions/dashboard/gmail/inboxActions";
 
 const GmailContext = createContext<{
-  data: GmailInboxData | null; loading: boolean; error: string | null; refresh: () => Promise<void>;
+  data: GmailInboxData | null; loading: boolean; error: string | null; refresh: (options?: { rescan?: boolean }) => Promise<void>;
 } | null>(null);
 
 export function GmailNotificationsProvider({ children, enabled = true }: { children: React.ReactNode; enabled?: boolean }) {
@@ -13,15 +13,15 @@ export function GmailNotificationsProvider({ children, enabled = true }: { child
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
-  const refreshQueued = useRef(false);
+  const refreshQueued = useRef<{ rescan?: boolean } | null>(null);
   const seen = useRef<Set<string> | null>(null);
   const mounted = useRef(false);
-  const refresh = useCallback(async function refreshInbox() {
+  const refresh = useCallback(async function refreshInbox(options: { rescan?: boolean } = {}) {
     if (!enabled) return;
-    if (busy.current) { refreshQueued.current = true; return; }
+    if (busy.current) { refreshQueued.current = { rescan: options.rescan || refreshQueued.current?.rescan }; return; }
     busy.current = true;
     try {
-      const next = await getGmailInboxAction();
+      const next = await getGmailInboxAction(options);
       if (!mounted.current) return;
       const newMessages = seen.current ? next.notifications.filter((item) => !item.read && !seen.current!.has(item.id)) : [];
       seen.current = new Set(next.notifications.map((item) => item.id));
@@ -37,8 +37,9 @@ export function GmailNotificationsProvider({ children, enabled = true }: { child
       busy.current = false;
       if (mounted.current) setLoading(false);
       if (refreshQueued.current && mounted.current) {
-        refreshQueued.current = false;
-        await refreshInbox();
+        const nextOptions = refreshQueued.current;
+        refreshQueued.current = null;
+        await refreshInbox(nextOptions);
       }
     }
   }, [enabled]);

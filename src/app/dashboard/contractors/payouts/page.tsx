@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import MonthlyPayoutsManager from "@/components/dashboard/contractors/MonthlyPayoutsManager";
 import {
   buildPayoutOrderBy,
@@ -6,6 +7,8 @@ import {
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 import { prisma } from "@/lib/prisma/db";
 import { payoutsSearchParamsCache } from "@/lib/searchParams/dashboard/contractors/payoutsSearchParams";
+import { calculatePayoutAmounts, payrollMonthBounds } from "@/lib/contractors/payoutAmounts";
+import { formatInTimeZone } from "date-fns-tz";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +17,12 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requirePermission("accounts.read");
   const raw = await searchParams;
   const castingMode = raw.workforce === "casting";
   const sp = payoutsSearchParamsCache.parse(raw);
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const monthYear = sp.monthYear || currentMonth;
+  const currentMonth = formatInTimeZone(new Date(), "Asia/Kolkata", "yyyy-MM");
+  const monthYear = /^(20\d{2})-(0[1-9]|1[0-2])$/.test(sp.monthYear || "") ? sp.monthYear : currentMonth;
 
   const [workers, payouts] = await Promise.all([
     prisma.worker.findMany({
@@ -59,6 +63,8 @@ export default async function Page({
     amountPaid: number;
     applyAdvances: boolean;
     notes: string;
+    availableBeforeAdvances: number;
+    unpaidWagesBroughtForward: number;
   } | null = null;
   let ledgerRows: {
     id: string;
@@ -81,11 +87,9 @@ export default async function Page({
   let selectedWorkerName = "";
 
   if (sp.workerId) {
-    const [year, month] = monthYear.split("-").map(Number);
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 1);
+    const { start, end } = payrollMonthBounds(monthYear);
 
-    const [entryAgg, castingAgg, entries, ledger, existingPayout, worker] = await Promise.all([
+    const [entryAgg, castingAgg, entries, ledger, existingPayout, worker, advancesLedger, applied, previous] = await Promise.all([
       prisma.workEntry.aggregate({
         where: {
           workerId: sp.workerId,
@@ -149,6 +153,9 @@ export default async function Page({
         where: { id: sp.workerId },
         select: { name: true },
       }),
+      prisma.workerLedgerEntry.aggregate({ where: { workerId: sp.workerId, deletedAt: null, kind: "ADVANCE", date: { lt: end } }, _sum: { amount: true } }),
+      prisma.workerPayout.aggregate({ where: { workerId: sp.workerId, monthYear: { lt: monthYear } }, _sum: { advanceApplied: true } }),
+      prisma.workerPayout.findFirst({ where: { workerId: sp.workerId, monthYear: { lt: monthYear } }, orderBy: { monthYear: "desc" }, select: { unpaidWagesForward: true } }),
     ]);
 
     const sumByKind = (kind: string) =>
@@ -158,22 +165,25 @@ export default async function Page({
 
     const earnings =
       Number(entryAgg._sum.amount ?? 0) + Number(castingAgg._sum.laborAmount ?? 0);
-    const advances = sumByKind("ADVANCE");
     const deductions = sumByKind("DEDUCTION");
     const adjustments = sumByKind("ADJUSTMENT");
     const bonus = sumByKind("BONUS");
     const applyAdvances = existingPayout?.applyAdvances ?? true;
-    const advanceApplied = applyAdvances ? advances : 0;
+    const amounts = calculatePayoutAmounts({ earnings, bonus, deductions: deductions + adjustments,
+      lifetimeAdvances: advancesLedger._sum.amount, priorAdvanceApplied: applied._sum.advanceApplied,
+      priorUnpaidWages: previous?.unpaidWagesForward, applyAdvances });
 
     summary = {
       monthYear,
       workerId: sp.workerId,
       earnings,
-      advances,
+      advances: amounts.advances.toNumber(),
       deductions,
       adjustments,
       bonus,
-      netPayable: Math.max(0, earnings + bonus - deductions - adjustments - advanceApplied),
+      netPayable: amounts.netPayable.toNumber(),
+      availableBeforeAdvances: amounts.available.toNumber(),
+      unpaidWagesBroughtForward: Number(previous?.unpaidWagesForward ?? 0),
       amountPaid: Number(existingPayout?.amountPaid ?? 0),
       applyAdvances,
       notes: existingPayout?.notes ?? "",

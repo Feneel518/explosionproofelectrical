@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import ConversionFunnel from "@/components/dashboard/sales/quotation/Analytics/ConversionFunnel";
 import DashboardAlerts from "@/components/dashboard/sales/quotation/Analytics/DashboardAlerts";
 import FollowupAlerts from "@/components/dashboard/sales/quotation/Analytics/FollowupAlerts";
@@ -17,6 +18,7 @@ import { FC } from "react";
 interface pageProps {}
 
 const page: FC<pageProps> = async ({}) => {
+  await requirePermission("sales.read");
   const analytics = await getQuotationDashboardAnalytics();
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">

@@ -1,3 +1,4 @@
+import { lockStockEntity } from "./lockStockEntity";
 ﻿import { Prisma, StockMovementType, StockReferenceType } from "@prisma/client";
 
 type PostStockMovementInput = {
@@ -88,6 +89,8 @@ export async function postStockMovement(
       "Stock movement cannot include more than one stock entity at a time.",
     );
   }
+
+  await lockStockEntity(tx, input);
 
   const settings = await tx.inventorySetting.findUnique({
     where: { id: "default" },

@@ -10,13 +10,13 @@ export const fallbackProductInterestOptions = [
 ] as const;
 
 export const QuoteInquirySchema = z.object({
-  fullName: z.string().trim().min(2, "Full name is required"),
+  fullName: z.string().trim().min(2, "Full name is required").max(160),
   company: z.string().trim().max(120, "Company name is too long").optional().or(z.literal("")),
   email: z.email("Enter a valid email address").trim().toLowerCase(),
   phone: z.string().trim().max(40, "Phone number is too long").optional().or(z.literal("")),
   productInterest: z.string().trim().min(1, "Select a product").max(160, "Product name is too long"),
   quantity: z.string().trim().max(40, "Quantity is too long").optional().or(z.literal("")),
-  requirement: z.string().trim().min(10, "Please describe your requirement"),
+  requirement: z.string().trim().min(10, "Please describe your requirement").max(10000),
 });
 
 export type QuoteInquiryRequest = z.infer<typeof QuoteInquirySchema>;

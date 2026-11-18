@@ -1,5 +1,6 @@
-﻿"use server";
+"use server";
 
+import { lockStockEntity } from "@/lib/helpers/inventory/lockStockEntity";
 import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
@@ -47,6 +48,7 @@ async function recomputeRawMaterialBalance(
   tx: Prisma.TransactionClient,
   rawMaterialId: string,
 ) {
+  await lockStockEntity(tx, { rawMaterialId });
   const [rawMaterial, ledgerAgg, latestLedger, existingBalance, openingMovement] =
     await Promise.all([
       tx.rawMaterial.findUnique({
@@ -123,6 +125,7 @@ export async function finalizeGrnAction(id: string) {
       grnNo: true,
       grnFy: true,
       draftData: true,
+      draftVersion: true,
     },
   });
 
@@ -135,6 +138,7 @@ export async function finalizeGrnAction(id: string) {
   }
 
   const isUpdatingFinalizedGrn = grn.status === "FINALIZED";
+  if (isUpdatingFinalizedGrn) await requireInventoryAccess("MANAGE");
 
   const draft = grn.draftData as GrnDraftData | null;
   if (!draft) {
@@ -261,6 +265,7 @@ export async function finalizeGrnAction(id: string) {
   }
 
   await prisma.$transaction(async (tx) => {
+      await tx.goodsReceiptNote.update({ where: { id: grn.id, status: grn.status, draftVersion: grn.draftVersion }, data: { draftVersion: { increment: 1 } } });
     const previousLedgerRows = await tx.stockLedger.findMany({
       where: {
         referenceType: "GRN",

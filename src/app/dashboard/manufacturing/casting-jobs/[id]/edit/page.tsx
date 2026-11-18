@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { redirect } from "next/navigation";
 
 import CastingJobForm from "@/components/dashboard/manufacturing/casting-job/CastingJobForm";
@@ -12,6 +13,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("production.write");
   const { id } = await params;
   const res = await getCastingJobDraftAction(id);
 

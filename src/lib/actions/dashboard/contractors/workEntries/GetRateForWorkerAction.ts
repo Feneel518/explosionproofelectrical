@@ -1,10 +1,10 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export const getContractorRateDetailsAction = async (contractorRateId: string) => {
-  await requireAuth();
+  await requirePermission("production.read");
 
   if (!contractorRateId) {
     return { ok: false as const, rate: 0 };

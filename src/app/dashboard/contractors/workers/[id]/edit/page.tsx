@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import WorkerForm from "@/components/dashboard/contractors/WorkerForm";
 import { prisma } from "@/lib/prisma/db";
 import { notFound } from "next/navigation";
@@ -10,6 +11,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("accounts.write");
   const { id } = await params;
   if (!id) {
     notFound();

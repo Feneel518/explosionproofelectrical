@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { normalizeInvoiceDraft } from "@/lib/invoices/draft";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { ProductMediaKind } from "@prisma/client";
 import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
@@ -108,10 +109,12 @@ export type UpdateInvoiceDraftPayload = {
 export async function updateInvoiceDraftAction(
   invoiceId: string,
   payload: UpdateInvoiceDraftPayload,
+  clientVersion: number,
 ) {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
+    if (!Number.isInteger(clientVersion) || clientVersion < 0) throw new Error("Reload the invoice before saving.");
     const result = await prisma.$transaction(
       async (tx) => {
         const invoice = await tx.invoice.findUnique({
@@ -121,6 +124,9 @@ export async function updateInvoiceDraftAction(
           invoiceFy: true,
           status: true,
           customerId: true,
+          draftVersion: true,
+          gstMode: true,
+          salesOrder: { select: { gst: true } },
         },
       });
 
@@ -128,13 +134,14 @@ export async function updateInvoiceDraftAction(
         return { ok: false as const, message: "Invoice not found" };
       }
 
-      if (invoice.status === "CANCELLED") {
+      if (invoice.status !== "DRAFT") {
         return {
           ok: false as const,
-          message: "Cancelled invoice cannot be edited",
+          message: "Reopen the invoice before editing it",
         };
       }
 
+      const normalized = normalizeInvoiceDraft(payload, invoice.salesOrder?.gst ?? invoice.gstMode);
       const duplicate = await tx.invoice.findFirst({
         where: {
           invoiceFy: invoice.invoiceFy,
@@ -151,8 +158,8 @@ export async function updateInvoiceDraftAction(
         };
       }
 
-        await tx.invoice.update({
-          where: { id: invoiceId },
+        const updated = await tx.invoice.update({
+          where: { id: invoiceId, status: "DRAFT", draftVersion: clientVersion },
           data: {
             customerId:
               normalizeIdOrNull(payload.header.customerId) ??
@@ -188,23 +195,26 @@ export async function updateInvoiceDraftAction(
             ),
             remarks: payload.header.remarks || null,
 
-            subtotal: payload.header.subtotal,
-            taxableTotal: payload.header.taxableTotal,
-            gstTotal: payload.header.gstTotal,
-            grandTotal: payload.header.grandTotal,
+            subtotal: normalized.header.subtotal,
+            taxableTotal: normalized.header.taxableTotal,
+            gstTotal: normalized.header.gstTotal,
+            grandTotal: normalized.header.grandTotal,
 
-            draftData: payload,
+            draftData: normalized,
+            gstMode: normalized.header.gstMode,
+            discountTotal: normalized.header.discountTotal,
             draftVersion: { increment: 1 },
           },
         });
 
-        return { ok: true as const };
+        return { ok: true as const, serverVersion: updated.draftVersion };
       },
       INVOICE_TRANSACTION_OPTIONS,
     );
 
     return result;
   } catch (error) {
+    if ((error as { code?: string }).code === "P2025") return { ok: false as const, code: "VERSION_CONFLICT" as const, message: "This invoice changed in another tab. Your entries are still here; reload to review the latest version before saving." };
     console.error("updateInvoiceDraftAction", error);
     return { ok: false as const, message: "Failed to save invoice draft" };
   }

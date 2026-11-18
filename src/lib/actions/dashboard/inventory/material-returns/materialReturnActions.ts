@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
@@ -22,7 +22,7 @@ export type MaterialReturnInput = {
 };
 
 export async function getReturnableMaterialIssueAction(materialIssueId: string) {
-  await requireAuth();
+  await requirePermission("inventory.write");
   const issue = await prisma.materialIssue.findFirst({
     where: { id: materialIssueId, status: "FINALIZED" },
     select: {

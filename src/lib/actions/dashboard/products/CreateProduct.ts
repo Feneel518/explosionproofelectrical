@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import {
   getProductApprovalSettings,
@@ -14,7 +14,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 export const createProductAction = async (values: ProductSchemaRequest) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
   const parsed = ProductSchema.safeParse(values);
 
   if (!parsed.success) {

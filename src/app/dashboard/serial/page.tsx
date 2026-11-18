@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
@@ -15,6 +16,7 @@ type SerialPageProps = {
 };
 
 export default async function SerialPage({ searchParams }: SerialPageProps) {
+  await requirePermission("master.read");
   const currentYear = new Date().getFullYear();
   const params = await searchParams;
   const searchValue = Array.isArray(params.search)

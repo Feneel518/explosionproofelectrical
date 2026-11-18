@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import InvoiceDetailView from "@/components/dashboard/sales/invoice/InvoiceDetailView";
 import { getInvoiceByIdAction } from "@/lib/actions/dashboard/sales/invoice/getInvoiceById";
 
@@ -6,6 +7,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("accounts.read");
   const { id } = await params;
   const res = await getInvoiceByIdAction(id);
 

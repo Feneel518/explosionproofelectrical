@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
 
 export const softDeleteWorkerAction = async (workerId: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   if (!workerId) {
     return { ok: false, message: "No worker id provided." };
@@ -34,7 +34,7 @@ export const softDeleteWorkerAction = async (workerId: string) => {
 };
 
 export const restoreWorkerAction = async (workerId: string) => {
-  await requireAuth();
+  await requirePermission("master.write");
 
   if (!workerId) {
     return { ok: false, message: "No worker id provided." };

@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { redirect } from "next/navigation";
 
 import MaterialIssueForm from "@/components/dashboard/manufacturing/material-issue/MaterialIssueForm";
@@ -12,6 +13,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("inventory.write");
   const { id } = await params;
   const res = await getMaterialIssueDraftAction(id);
 

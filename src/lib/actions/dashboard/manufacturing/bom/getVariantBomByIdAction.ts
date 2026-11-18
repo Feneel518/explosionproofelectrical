@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 import { prisma } from "@/lib/prisma/db";
 
 export async function getVariantBomByIdAction(id: string) {
-  await requireAuth();
+  await requirePermission("production.read");
 
   const bom = await prisma.variantBom.findUnique({
     where: { id },

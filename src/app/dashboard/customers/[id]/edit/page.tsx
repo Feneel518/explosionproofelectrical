@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import CustomerForm from "@/components/dashboard/customer/CustomerForm";
 import { prisma } from "@/lib/prisma/db";
 import { FC } from "react";
@@ -9,6 +10,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("master.write");
   const { id } = await params;
   const c = await prisma.customer.findUnique({
     where: { id },

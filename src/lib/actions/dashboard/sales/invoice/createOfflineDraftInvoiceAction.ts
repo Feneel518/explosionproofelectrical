@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { getFinancialYearLabelFromStartYear } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
@@ -13,7 +13,7 @@ function getFinancialYearStartYear(date = new Date()) {
 }
 
 export async function createOfflineDraftInvoiceAction() {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
     const result = await prisma.$transaction(

@@ -43,7 +43,7 @@ export type WorkerLedgerSchemaRequest = z.infer<typeof WorkerLedgerSchema>;
 // Settle a month payout
 export const SettlePayoutSchema = z.object({
   workerId: z.string().uuid(),
-  monthYear: z.string().regex(/^\d{4}-\d{2}$/, "Month must be YYYY-MM."),
+  monthYear: z.string().regex(/^(20\d{2})-(0[1-9]|1[0-2])$/, "Month must be YYYY-MM between 2000 and 2099."),
   applyAdvances: z.boolean().optional().default(true),
   amountPaid: z.coerce.number().min(0).max(100_000_000).optional().default(0),
   notes: z.string().trim().max(500).optional().nullable(),

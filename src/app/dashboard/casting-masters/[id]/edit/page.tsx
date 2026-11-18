@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { FC } from "react";
 
 import CastingMasterForm from "@/components/dashboard/casting-master/CastingMasterForm";
@@ -8,6 +9,7 @@ interface PageProps {
 }
 
 const Page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("master.write");
   const { id } = await params;
 
   const casting = await prisma.castingMaster.findUnique({

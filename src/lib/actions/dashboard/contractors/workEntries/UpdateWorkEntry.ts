@@ -1,6 +1,8 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { withSerializableRetry } from "@/lib/prisma/withSerializableRetry";
+import { assertPayrollPeriodOpen } from "@/lib/contractors/periodLock";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -11,7 +13,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 
 export const updateWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const parsed = WorkEntrySchema.safeParse(values);
   if (!parsed.success) return { ok: false, message: "Enter the fields properly." };
@@ -34,7 +36,10 @@ export const updateWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
     });
     if (!rateRow) return fail("Selected rate row not found.");
 
-    const updated = await prisma.workEntry.update({
+    const updated = await withSerializableRetry(async tx => {
+      const existing = await tx.workEntry.findUniqueOrThrow({ where: { id: data.id } });
+      for (const workerId of [...new Set([existing.workerId, data.workerId])].sort()) { await assertPayrollPeriodOpen(tx, workerId, existing.date); await assertPayrollPeriodOpen(tx, workerId, entryDate); }
+      return tx.workEntry.update({
       where: { id: data.id },
       data: {
         date: entryDate,
@@ -54,6 +59,7 @@ export const updateWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
       },
       select: { id: true, workerId: true },
     });
+    });
 
     revalidatePath("/dashboard/contractors/entries");
     revalidatePath(`/dashboard/contractors/workers/${updated.workerId}`);
@@ -64,14 +70,18 @@ export const updateWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
 };
 
 export const softDeleteWorkEntryAction = async (entryId: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
   if (!entryId) return { ok: false, message: "No entry id provided." };
 
   try {
-    const e = await prisma.workEntry.update({
+    const e = await withSerializableRetry(async tx => {
+      const existing = await tx.workEntry.findUniqueOrThrow({ where: { id: entryId } });
+      await assertPayrollPeriodOpen(tx, existing.workerId, existing.date);
+      return tx.workEntry.update({
       where: { id: entryId },
       data: { deletedAt: new Date(), deletedById: session.user.id },
       select: { workerId: true },
+    });
     });
     revalidatePath("/dashboard/contractors/entries");
     revalidatePath(`/dashboard/contractors/workers/${e.workerId}`);
@@ -82,13 +92,17 @@ export const softDeleteWorkEntryAction = async (entryId: string) => {
 };
 
 export const restoreWorkEntryAction = async (entryId: string) => {
-  await requireAuth();
+  await requirePermission("production.write");
   if (!entryId) return { ok: false, message: "No entry id provided." };
   try {
-    const e = await prisma.workEntry.update({
+    const e = await withSerializableRetry(async tx => {
+      const existing = await tx.workEntry.findUniqueOrThrow({ where: { id: entryId } });
+      await assertPayrollPeriodOpen(tx, existing.workerId, existing.date);
+      return tx.workEntry.update({
       where: { id: entryId },
       data: { deletedAt: null, deletedById: null },
       select: { workerId: true },
+    });
     });
     revalidatePath("/dashboard/contractors/entries");
     revalidatePath(`/dashboard/contractors/workers/${e.workerId}`);

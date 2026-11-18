@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Image from "next/image";
 import Link from "next/link";
 import { FileText, Plus } from "lucide-react";
@@ -10,6 +11,7 @@ import { prisma } from "@/lib/prisma/db";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardBlogPage() {
+  await requirePermission("content.read");
   const posts = await prisma.blogPost.findMany({ orderBy: [{ featured: "desc" }, { updatedAt: "desc" }] });
   const published = posts.filter((post) => post.status === "PUBLISHED").length;
   return <div className="space-y-6">

@@ -1,6 +1,8 @@
 "use server";
+import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { GrnDraftData } from "./createDraftGrnAction";
 
@@ -13,7 +15,7 @@ export async function saveGrnDraftSnapshotAction({
   draft: GrnDraftData;
   clientVersion: number;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.write");
 
   const grn = await prisma.goodsReceiptNote.findUnique({
     where: { id: grnId },
@@ -25,9 +27,10 @@ export async function saveGrnDraftSnapshotAction({
   }
 
   if (grn.status === "CANCELLED") {
-    return { ok: false as const, message: "Cancelled GRN cannot be saved." };
+    return { ok: false as const, message: "Reopen the GRN through the correction workflow before saving a draft." };
   }
 
+  if (grn.status === "FINALIZED") await requireInventoryAccess("MANAGE");
   if (clientVersion !== grn.draftVersion) {
     return {
       ok: false as const,
@@ -36,19 +39,17 @@ export async function saveGrnDraftSnapshotAction({
     };
   }
 
-  const updated = await prisma.goodsReceiptNote.update({
-    where: { id: grnId },
+
+  return saveVersionedDraft(
+    () => prisma.goodsReceiptNote.update({
+    where: { id: grnId, status: grn.status, draftVersion: clientVersion },
     data: {
       draftData: draft,
       draftVersion: { increment: 1 },
       updatedById: session.user.id,
     },
     select: { draftVersion: true, updatedAt: true },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.goodsReceiptNote.findUnique({ where: { id: grnId }, select: { draftVersion: true } }),
+  );
 }

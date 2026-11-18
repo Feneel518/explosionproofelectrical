@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import ConversionFunnel from "@/components/dashboard/sales/order/Analytics/ConversionFunnel";
 import DashboardAlerts from "@/components/dashboard/sales/order/Analytics/DashboardAlerts";
 import MonthlyOrderChart from "@/components/dashboard/sales/order/Analytics/MonthlyOrderChart";
@@ -14,6 +15,7 @@ import { FC } from "react";
 interface PageProps {}
 
 const page: FC<PageProps> = async () => {
+  await requirePermission("sales.read");
   const analytics = await getOrderDashboardAnalytics();
 
   return (

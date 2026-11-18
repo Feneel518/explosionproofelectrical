@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 import { prisma } from "@/lib/prisma/db";
 import BomTable from "@/components/dashboard/manufacturing/bom/BomTable";
@@ -5,6 +6,7 @@ import BomTable from "@/components/dashboard/manufacturing/bom/BomTable";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await requirePermission("production.read");
   const boms = await prisma.variantBom.findMany({
     orderBy: [{ updatedAt: "desc" }],
     include: {

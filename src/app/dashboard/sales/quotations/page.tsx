@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import QuotationTable from "@/components/dashboard/sales/quotation/QuotationTable";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ searchParams }) => {
+  await requirePermission("sales.read");
   const sp = quotationSearchParamsCache.parse(await searchParams);
 
   const pageParams = Math.max(1, sp.page);

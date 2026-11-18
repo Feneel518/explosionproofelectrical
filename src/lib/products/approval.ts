@@ -22,6 +22,9 @@ export function productCreateData(data: ProductSchemaRequest) {
   return {
     name: data.name,
     slug: data.slug,
+    certificationMarking: data.certificationMarking || null,
+    certificationReference: data.certificationReference || null,
+    certificationVerifiedAt: data.certificationVerified && data.certificationMarking && data.certificationReference ? new Date() : null,
     flpType: data.flpType ?? null,
     protection: data.protection ?? null,
     gasGroup: data.gasGroup ?? null,

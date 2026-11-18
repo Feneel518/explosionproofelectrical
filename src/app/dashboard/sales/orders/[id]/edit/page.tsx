@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import SalesOrderFormNew from "@/components/dashboard/sales/order/SalesOrderFormNew";
 import { listCustomersForSelect } from "@/lib/actions/dashboard/global/listCustomersForSelect";
 import { getSalesOrderDraftAction } from "@/lib/actions/dashboard/sales/order/getSalesOrderDraftAction";
@@ -10,6 +11,7 @@ interface PageProps {
 }
 
 const page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("sales.write");
   const { id } = await params;
   const res = await getSalesOrderDraftAction(id);
 

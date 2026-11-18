@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay, addDays } from "date-fns";
 
 export async function getQuotationFollowupRemindersAction() {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   const now = new Date();
   const todayStart = startOfDay(now);

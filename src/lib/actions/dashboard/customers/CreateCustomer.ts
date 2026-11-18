@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { ActionResult, fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -10,7 +10,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 export const createCustomerAction = async (values: CustomerSchemaRequest) => {
-  await requireAuth();
+  await requirePermission("master.write");
 
   const parsed = CustomerSchema.safeParse(values);
 

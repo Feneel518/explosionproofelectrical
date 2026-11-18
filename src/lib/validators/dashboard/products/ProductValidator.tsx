@@ -14,6 +14,9 @@ export const ProductSchema = z.object({
     .min(2)
     .max(200),
 
+  certificationMarking: z.string().trim().max(200).optional().nullable(),
+  certificationReference: z.string().trim().max(500).optional().nullable(),
+  certificationVerified: z.boolean().optional(),
   flpType: z.string().trim().max(120).optional().nullable(),
   protection: z.string().trim().max(120).optional().nullable(),
   gasGroup: z.string().trim().max(120).optional().nullable(),
@@ -24,7 +27,6 @@ export const ProductSchema = z.object({
 
   zones: z
     .array(z.string().trim().min(1))
-    .min(1, "Select at least one zone")
     .max(10)
     .refine(
       (arr) => new Set(arr.map((s) => s.toLowerCase())).size === arr.length,
@@ -39,6 +41,11 @@ export const ProductSchema = z.object({
   categoryId: z.string().uuid("Invalid categoryId"),
 
   status: ProductStatusSchema.optional(),
+}).superRefine((data, ctx) => {
+  if (!data.certificationVerified) return;
+  if (!data.certificationMarking) ctx.addIssue({ code: "custom", path: ["certificationMarking"], message: "Enter the exact approved marking before verifying it." });
+  if (!data.certificationReference) ctx.addIssue({ code: "custom", path: ["certificationReference"], message: "Enter the certificate number and revision." });
+  if (!data.zones.length) ctx.addIssue({ code: "custom", path: ["zones"], message: "Select only the zones supported by the certificate." });
 });
 
 export type ProductSchemaRequest = z.infer<typeof ProductSchema>;

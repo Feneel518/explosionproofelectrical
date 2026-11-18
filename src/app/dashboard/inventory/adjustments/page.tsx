@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
+import Link from "next/link";
 
 import StockAdjustmentToolbar from "@/components/dashboard/inventory/stock-adjustment/StockAdjustmentToolbar";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,7 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requirePermission("inventory.read");
   const sp = stockAdjustmentSearchParamsCache.parse(await searchParams);
 
   const q = sp.q.trim();

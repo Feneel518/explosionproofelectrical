@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import transporter from "@/lib/email/nodemailer";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import {
@@ -77,7 +77,7 @@ export async function sendInvoiceDispatchDetailsEmailAction(
   invoiceId: string,
   recipient: string,
 ) {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
     const recipients = normalizeSendToEmailList(recipient);

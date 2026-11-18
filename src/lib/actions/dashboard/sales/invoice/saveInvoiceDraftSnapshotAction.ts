@@ -1,6 +1,8 @@
 "use server";
+import { normalizeInvoiceDraft } from "@/lib/invoices/draft";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 
@@ -13,11 +15,11 @@ export const saveInvoiceDraftSnapshotAction = async ({
   draft: InvoiceDraftData;
   clientVersion: number;
 }) => {
-  const session = await requireAuth();
+  const session = await requirePermission("accounts.write");
 
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
-    select: { id: true, status: true, draftVersion: true },
+    select: { id: true, status: true, draftVersion: true, gstMode: true, salesOrder: { select: { gst: true } } },
   });
 
   if (!invoice) return { ok: false as const, message: "Invoice not found" };
@@ -34,21 +36,19 @@ export const saveInvoiceDraftSnapshotAction = async ({
     };
   }
 
-  const updated = await prisma.invoice.update({
-    where: { id: invoiceId },
+
+  return saveVersionedDraft(
+    () => prisma.invoice.update({
+    where: { id: invoiceId, status: "DRAFT", draftVersion: clientVersion },
     data: {
-      draftData: draft,
+      draftData: normalizeInvoiceDraft(draft, invoice.salesOrder?.gst ?? invoice.gstMode),
       draftVersion: { increment: 1 },
     },
     select: {
       draftVersion: true,
       updatedAt: true,
     },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.invoice.findUnique({ where: { id: invoiceId }, select: { draftVersion: true } }),
+  );
 };

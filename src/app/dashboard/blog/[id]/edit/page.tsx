@@ -1,8 +1,10 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { notFound } from "next/navigation";
 import { BlogPostEditor } from "@/components/dashboard/blog/BlogPostEditor";
 import { prisma } from "@/lib/prisma/db";
 
 export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePermission("content.write");
   const { id } = await params;
   const post = await prisma.blogPost.findUnique({ where: { id } });
   if (!post) notFound();

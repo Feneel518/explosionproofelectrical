@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Edit, Printer } from "lucide-react";
@@ -17,6 +18,7 @@ export default async function PurchaseOrderDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePermission("purchase.read");
   const { id } = await params;
   const order = await prisma.purchaseOrder.findUnique({
     where: { id },

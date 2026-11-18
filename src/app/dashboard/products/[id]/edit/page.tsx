@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import ProductForm from "@/components/dashboard/product/ProductForm";
 import { prisma } from "@/lib/prisma/db";
 import { redirect } from "next/navigation";
@@ -10,6 +11,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("master.write");
   const { id } = await params;
   if (!id) {
     redirect("/dashboard/products");
@@ -27,6 +29,9 @@ const page: FC<pageProps> = async ({ params }) => {
       flpType: true,
       protection: true,
       gasGroup: true,
+      certificationMarking: true,
+      certificationReference: true,
+      certificationVerifiedAt: true,
       material: true,
       finish: true,
       hardware: true,
@@ -52,7 +57,7 @@ const page: FC<pageProps> = async ({ params }) => {
     <div>
       <ProductForm
         mode="edit"
-        initial={{ ...product }}
+        initial={{ ...product, certificationVerified: Boolean(product.certificationVerifiedAt) }}
         categories={categories}></ProductForm>
     </div>
   );

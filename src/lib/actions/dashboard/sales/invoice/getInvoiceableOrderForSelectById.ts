@@ -1,13 +1,13 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { InvoiceableOrderSearchItem } from "./searchInvoiceableOrdersForSelectAction";
 
 export async function getInvoiceableOrderForSelectById(
   id: string,
 ): Promise<InvoiceableOrderSearchItem | null> {
-  await requireAuth();
+  await requirePermission("accounts.read");
 
   const row = await prisma.salesOrder.findUnique({
     where: { id },

@@ -3,7 +3,7 @@
 import { StockMovementType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
@@ -40,7 +40,7 @@ function toDateOrNull(value?: string | null) {
 export async function adjustCastingMasterStockAction(
   input: AdjustCastingMasterStockInput,
 ) {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.manage");
 
   if (!input.castingMasterId) {
     return { ok: false as const, message: "Casting master ID is required." };

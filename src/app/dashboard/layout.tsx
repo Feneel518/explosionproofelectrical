@@ -1,4 +1,6 @@
 import DashboardBreadcrumbs from "@/components/dashboard/global/DashboardBreadcrumbs";
+import { GmailNotificationsProvider } from "@/components/dashboard/gmail/GmailNotificationsProvider";
+import { GmailNotificationBell } from "@/components/dashboard/gmail/GmailNotificationBell";
 import QuotationFollowupReminderToast from "@/components/dashboard/sales/quotation/QuotationFollowupReminderToast";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -9,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { requireAuth } from "@/lib/check/requireAuth";
 import type { Metadata } from "next";
+import { hasPermission, type Permission } from "@/lib/check/permissionPolicy";
 import { FC } from "react";
 
 interface layoutProps {
@@ -25,6 +28,8 @@ export const metadata: Metadata = {
 
 const layout: FC<layoutProps> = async ({ children }) => {
   const { user } = await requireAuth();
+  const permissions = (["sales.read", "accounts.read", "purchase.read", "inventory.read", "production.read", "master.read", "content.read", "analytics.read"] as Permission[]).filter(permission => hasPermission(user, permission));
+  const canReadSales = permissions.includes("sales.read");
   const sidebarUser = {
     name: user.name || "Dashboard User",
     email: user.email || "unknown@example.com",
@@ -36,23 +41,28 @@ const layout: FC<layoutProps> = async ({ children }) => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={sidebarUser} />
-      <SidebarInset>
-        <header className="flex h-14 xl:h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
-          <QuotationFollowupReminderToast />
-          <div className="flex min-w-0 items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1  p-2 cursor-pointer" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-10"
-            />
-            <DashboardBreadcrumbs></DashboardBreadcrumbs>
-          </div>
-        </header>
-        <div className="min-w-0 p-3 sm:p-4 xl:p-8">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+    <GmailNotificationsProvider enabled={canReadSales}>
+      <SidebarProvider>
+        <AppSidebar user={sidebarUser} permissions={permissions} />
+        <SidebarInset>
+          <header className="flex h-14 xl:h-24 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
+            {canReadSales && <QuotationFollowupReminderToast />}
+            <div className="flex min-w-0 items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1  p-2 cursor-pointer" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-10"
+              />
+              <DashboardBreadcrumbs></DashboardBreadcrumbs>
+            </div>
+            <div className="ml-auto shrink-0 px-4">
+              {canReadSales && <GmailNotificationBell />}
+            </div>
+          </header>
+          <div className="min-w-0 p-3 sm:p-4 xl:p-8">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+    </GmailNotificationsProvider>
   );
 };
 

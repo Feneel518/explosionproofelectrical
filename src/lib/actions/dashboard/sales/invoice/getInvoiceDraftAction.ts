@@ -1,10 +1,10 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export const getInvoiceDraftAction = async (id: string) => {
-  await requireAuth();
+  await requirePermission("accounts.read");
 
   const invoice = await prisma.invoice.findUnique({
     where: { id },

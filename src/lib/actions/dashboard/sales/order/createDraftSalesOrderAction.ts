@@ -1,9 +1,10 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
+import { inheritQuotationConversations } from "@/lib/gmail/salesConversation";
 
 function normalizeString(value?: string | null) {
   const trimmed = value?.trim();
@@ -11,7 +12,7 @@ function normalizeString(value?: string | null) {
 }
 
 export const createDraftSalesOrderAction = async (quotationId?: string | null) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const fy = getFinancialYearLabel();
 
@@ -79,8 +80,6 @@ export const createDraftSalesOrderAction = async (quotationId?: string | null) =
   let draftData: { header: Record<string, any>; items: any[] } = defaultDraft;
   let linkedQuotationId: string | null = null;
   let sourceType: "DIRECT" | "QUOTATION" = "DIRECT";
-  let shouldResetQuotationFollowup = false;
-  let shouldMoveQuotationOutOfFollowup = false;
 
   if (normalizedQuotationId) {
     const quotation = await prisma.quotation.findUnique({
@@ -186,8 +185,6 @@ export const createDraftSalesOrderAction = async (quotationId?: string | null) =
 
     linkedQuotationId = quotation.id;
     sourceType = "QUOTATION";
-    shouldResetQuotationFollowup = true;
-    shouldMoveQuotationOutOfFollowup = quotation.status === "FOLLOWUP";
 
     const mappedItems = quotation.items.map((item, index) => {
       const qty = Number(item.qty ?? 1);
@@ -354,8 +351,14 @@ export const createDraftSalesOrderAction = async (quotationId?: string | null) =
     draftVersion: 0,
   };
 
-  const created = shouldResetQuotationFollowup && linkedQuotationId
+  const created = linkedQuotationId
     ? await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${session.user.id}), hashtext(${linkedQuotationId}))`;
+        const existing = await tx.salesOrder.findFirst({ where: { quotationId: linkedQuotationId, status: "DRAFT", deletedAt: null }, select: { id: true } });
+        if (existing) {
+          await inheritQuotationConversations(tx, session.user.id, linkedQuotationId, existing.id);
+          return existing;
+        }
         const createdOrder = await tx.salesOrder.create({
           data: orderCreateData,
           select: {
@@ -363,15 +366,7 @@ export const createDraftSalesOrderAction = async (quotationId?: string | null) =
           },
         });
 
-        await tx.quotation.update({
-          where: { id: linkedQuotationId },
-          data: {
-            nextFollowupAt: null,
-            status: shouldMoveQuotationOutOfFollowup ? "SENT" : undefined,
-            updatedById: session.user.id,
-          },
-        });
-
+        await inheritQuotationConversations(tx, session.user.id, linkedQuotationId, createdOrder.id);
         return createdOrder;
       })
     : await prisma.salesOrder.create({

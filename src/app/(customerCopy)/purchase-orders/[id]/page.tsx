@@ -1,3 +1,5 @@
+import { requirePermission } from "@/lib/check/permissions";
+import { validPurchaseOrderShare } from "@/lib/purchase/sharing";
 import { notFound } from "next/navigation";
 import { Lora } from "next/font/google";
 import PurchaseOrderCustomerCopy from "@/components/customerCopy/purchase-order/PurchaseOrderCustomerCopy";
@@ -10,17 +12,20 @@ const lora = Lora({
 });
 
 export default async function PurchaseOrderCopyPage({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string | string[] }>;
 }) {
   const { id } = await params;
+  const { token } = await searchParams;
+  if (!token) await requirePermission("purchase.read");
   const order = await prisma.purchaseOrder.findUnique({
     where: { id },
     include: { items: { orderBy: { sortOrder: "asc" } } },
   });
 
-  if (!order) notFound();
+  if (!order || (token && !validPurchaseOrderShare(order, token))) notFound();
 
   const copy = {
     number: formatFinancialDocumentNumber(order.poFy, order.poNo),

@@ -1,93 +1,53 @@
 "use server";
-
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
-import { prisma } from "@/lib/prisma/db";
-import {
-  WorkerLedgerSchema,
-  WorkerLedgerSchemaRequest,
-} from "@/lib/validators/dashboard/contractors/WorkerLedgerValidator";
+import { withSerializableRetry } from "@/lib/prisma/withSerializableRetry";
+import { assertPayrollPeriodOpen } from "@/lib/contractors/periodLock";
+import { WorkerLedgerSchema, type WorkerLedgerSchemaRequest } from "@/lib/validators/dashboard/contractors/WorkerLedgerValidator";
 import { revalidatePath } from "next/cache";
 
-export const createLedgerEntryAction = async (
-  values: WorkerLedgerSchemaRequest,
-) => {
-  const session = await requireAuth();
-
+function refresh(workerId: string) { revalidatePath(`/dashboard/contractors/workers/${workerId}`); revalidatePath("/dashboard/contractors/payouts"); }
+export async function createLedgerEntryAction(values: WorkerLedgerSchemaRequest) {
+  const { user } = await requirePermission("accounts.write");
   const parsed = WorkerLedgerSchema.safeParse(values);
-  if (!parsed.success) return { ok: false, message: "Enter the fields properly." };
+  if (!parsed.success || !parsed.data.date) return fail("Enter a valid worker, date and amount.");
   const data = parsed.data;
-  if (!data.date) return fail("A valid date is required.");
-  const ledgerDate = data.date;
-
-  // PAYOUT records are usually generated automatically, but allow manual ones.
+  if (data.kind === "PAYOUT") return fail("Use monthly settlement to record a payment.");
   try {
-    const created = await prisma.workerLedgerEntry.create({
-      data: {
-        workerId: data.workerId,
-        date: ledgerDate,
-        kind: data.kind,
-        amount: data.amount,
-        notes: data.notes || null,
-        createdById: session.user.id,
-      },
-      select: { id: true },
+    const created = await withSerializableRetry(async tx => {
+      await assertPayrollPeriodOpen(tx, data.workerId, data.date!);
+      return tx.workerLedgerEntry.create({ data: { workerId: data.workerId, date: data.date!, kind: data.kind, amount: data.amount, notes: data.notes || null, createdById: user.id }, select: { id: true } });
     });
-
-    revalidatePath(`/dashboard/contractors/workers/${data.workerId}`);
-    revalidatePath("/dashboard/contractors/payouts");
-    return { ok: true, message: "Ledger entry added.", data: created };
-  } catch (error: any) {
-    return fail(error?.message ?? "Failed to add ledger entry.");
-  }
-};
-
-export const updateLedgerEntryAction = async (
-  values: WorkerLedgerSchemaRequest,
-) => {
-  const session = await requireAuth();
-
+    refresh(data.workerId); return { ok: true as const, message: "Ledger entry added.", data: created };
+  } catch (error) { return fail(error instanceof Error ? error.message : "Failed to add ledger entry."); }
+}
+export async function updateLedgerEntryAction(values: WorkerLedgerSchemaRequest) {
+  const { user } = await requirePermission("accounts.write");
   const parsed = WorkerLedgerSchema.safeParse(values);
-  if (!parsed.success) return { ok: false, message: "Enter the fields properly." };
+  if (!parsed.success || !parsed.data.id || !parsed.data.date) return fail("Enter a valid entry, date and amount.");
   const data = parsed.data;
-  if (!data.id) return fail("Ledger id is required.");
-  if (!data.date) return fail("A valid date is required.");
-  const ledgerDate = data.date;
-
+  if (data.kind === "PAYOUT") return fail("Payments are recorded only through monthly settlement.");
   try {
-    const updated = await prisma.workerLedgerEntry.update({
-      where: { id: data.id },
-      data: {
-        date: ledgerDate,
-        kind: data.kind,
-        amount: data.amount,
-        notes: data.notes || null,
-        updatedById: session.user.id,
-      },
-      select: { id: true, workerId: true },
+    const updated = await withSerializableRetry(async tx => {
+      const existing = await tx.workerLedgerEntry.findUniqueOrThrow({ where: { id: data.id } });
+      if (existing.payoutId || existing.kind === "PAYOUT") throw new Error("Payment history cannot be edited. Record a correction in an open month.");
+      if (existing.workerId !== data.workerId) throw new Error("A ledger entry cannot be moved to another worker.");
+      await assertPayrollPeriodOpen(tx, existing.workerId, existing.date);
+      await assertPayrollPeriodOpen(tx, existing.workerId, data.date!);
+      return tx.workerLedgerEntry.update({ where: { id: data.id }, data: { date: data.date!, kind: data.kind, amount: data.amount, notes: data.notes || null, updatedById: user.id }, select: { workerId: true } });
     });
-
-    revalidatePath(`/dashboard/contractors/workers/${updated.workerId}`);
-    revalidatePath("/dashboard/contractors/payouts");
-    return { ok: true, message: "Ledger entry updated." };
-  } catch (error: any) {
-    return fail(error?.message ?? "Failed to update ledger entry.");
-  }
-};
-
-export const softDeleteLedgerEntryAction = async (id: string) => {
-  const session = await requireAuth();
-  if (!id) return { ok: false, message: "No id provided." };
+    refresh(updated.workerId); return { ok: true as const, message: "Ledger entry updated." };
+  } catch (error) { return fail(error instanceof Error ? error.message : "Failed to update ledger entry."); }
+}
+export async function softDeleteLedgerEntryAction(id: string) {
+  const { user } = await requirePermission("accounts.write");
   try {
-    const e = await prisma.workerLedgerEntry.update({
-      where: { id },
-      data: { deletedAt: new Date(), deletedById: session.user.id },
-      select: { workerId: true },
+    const entry = await withSerializableRetry(async tx => {
+      const existing = await tx.workerLedgerEntry.findUniqueOrThrow({ where: { id } });
+      if (existing.payoutId || existing.kind === "PAYOUT") throw new Error("Payment history cannot be deleted. Record a correction in an open month.");
+      await assertPayrollPeriodOpen(tx, existing.workerId, existing.date);
+      return tx.workerLedgerEntry.update({ where: { id }, data: { deletedAt: new Date(), deletedById: user.id }, select: { workerId: true } });
     });
-    revalidatePath(`/dashboard/contractors/workers/${e.workerId}`);
-    revalidatePath("/dashboard/contractors/payouts");
-    return { ok: true, message: "Ledger entry removed." };
-  } catch (error: any) {
-    return fail(error?.message ?? "Failed to remove ledger entry.");
-  }
-};
+    refresh(entry.workerId); return { ok: true as const, message: "Ledger entry removed." };
+  } catch (error) { return fail(error instanceof Error ? error.message : "Failed to remove ledger entry."); }
+}

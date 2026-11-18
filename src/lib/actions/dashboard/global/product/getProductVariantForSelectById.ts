@@ -1,13 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma/db";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
 
 export async function getProductVariantForSelectById(
   id: string,
 ): Promise<ProductVariantSearchItem | null> {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const v = await prisma.productVariant.findUnique({
     where: { id },

@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import InventoryEmployeeManager from "@/components/dashboard/inventory/employees/InventoryEmployeeManager";
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
@@ -5,6 +6,7 @@ import { prisma } from "@/lib/prisma/db";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await requirePermission("inventory.read");
   await requireAuth();
   const employees = await prisma.inventoryEmployee.findMany({
     orderBy: [{ status: "asc" }, { name: "asc" }],

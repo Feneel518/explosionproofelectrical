@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import {
   formatProductSerial,
   normalizeSerialPrefix,
@@ -20,7 +20,7 @@ type GenerateProductSerialsInput = {
 export async function generateProductSerialsAction(
   input: GenerateProductSerialsInput,
 ) {
-  await requireAuth();
+  await requirePermission("production.write");
 
   const productId = input.productId?.trim();
   const prefix = normalizeSerialPrefix(input.prefix ?? "");

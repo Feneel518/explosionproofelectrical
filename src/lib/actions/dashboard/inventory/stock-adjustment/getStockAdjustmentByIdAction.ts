@@ -1,11 +1,11 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 export async function getStockAdjustmentByIdAction(id: string) {
-  await requireAuth();
+  await requirePermission("inventory.read");
 
   const stockAdjustment = await prisma.stockAdjustment.findUnique({
     where: { id },

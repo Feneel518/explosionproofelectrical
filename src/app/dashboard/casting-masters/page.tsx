@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { FC } from "react";
 
 import CastingMastersTable from "@/components/dashboard/casting-master/CastingMastersTable";
@@ -14,6 +15,7 @@ interface PageProps {
 }
 
 const Page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("master.read");
   const sp = castingMastersSearchParamsCache.parse(await searchParams);
 
   const page = Math.max(1, sp.page);

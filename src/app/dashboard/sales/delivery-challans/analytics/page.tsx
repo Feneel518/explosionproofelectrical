@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import ChallansByType from "@/components/dashboard/sales/delivery-challan/analytics/ChallansByType";
 import DeliveryChallanKpiCards from "@/components/dashboard/sales/delivery-challan/analytics/DeliveryChallanKpiCards";
 import MonthlyDispatchChart from "@/components/dashboard/sales/delivery-challan/analytics/MonthlyDispatchChart";
@@ -10,6 +11,7 @@ import { FC } from "react";
 interface PageProps {}
 
 const page: FC<PageProps> = async () => {
+  await requirePermission("sales.read");
   const analytics = await getDeliveryChallanDashboardAnalytics();
 
   return (

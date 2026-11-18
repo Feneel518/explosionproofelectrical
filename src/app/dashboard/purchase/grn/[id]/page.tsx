@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import GrnDetailView from "@/components/dashboard/purchase/grn/GrnDetailView";
 import { getGrnByIdAction } from "@/lib/actions/dashboard/purchase/grn/getGrnByIdAction";
 
@@ -8,6 +9,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("inventory.read");
   const { id } = await params;
   const res = await getGrnByIdAction(id);
 

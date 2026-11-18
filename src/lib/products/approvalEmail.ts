@@ -1,4 +1,4 @@
-import { sendEmail } from "@/lib/actions/emails/send-emails.action";
+import { sendEmail } from "@/lib/email/sendAuthEmail";
 
 export type ProductApprovalRequestKind =
   | "PRODUCT_CREATE"

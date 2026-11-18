@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import DeliveryChallanFormNew from "@/components/dashboard/sales/delivery-challan/DeliveryChallanFormNew";
 import { listCustomersForSelect } from "@/lib/actions/dashboard/global/listCustomersForSelect";
 import { getDeliveryChallanDraftAction } from "@/lib/actions/dashboard/sales/delivery-challan/getDeliveryChallanDraftAction";
@@ -13,6 +14,7 @@ interface PageProps {
 }
 
 const page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("sales.write");
   const { id } = await params;
   const res = await getDeliveryChallanDraftAction(id);
 

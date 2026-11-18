@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { FC } from "react";
 import Link from "next/link";
 
@@ -42,6 +43,7 @@ function formatMonthLabel(value: Date) {
 }
 
 const Page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("master.read");
   const { id } = await params;
   const monthStart = new Date();
   monthStart.setDate(1);

@@ -1,6 +1,7 @@
 ﻿"use server";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { StockAdjustmentDraftData } from "./createDraftStockAdjustmentAction";
 
@@ -13,7 +14,7 @@ export async function saveStockAdjustmentDraftSnapshotAction({
   draft: StockAdjustmentDraftData;
   clientVersion: number;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.write");
 
   const adjustment = await prisma.stockAdjustment.findUnique({
     where: { id: stockAdjustmentId },
@@ -39,19 +40,17 @@ export async function saveStockAdjustmentDraftSnapshotAction({
     };
   }
 
-  const updated = await prisma.stockAdjustment.update({
-    where: { id: stockAdjustmentId },
+
+  return saveVersionedDraft(
+    () => prisma.stockAdjustment.update({
+    where: { id: stockAdjustmentId, status: "DRAFT", draftVersion: clientVersion },
     data: {
       draftData: draft,
       draftVersion: { increment: 1 },
       updatedById: session.user.id,
     },
     select: { draftVersion: true, updatedAt: true },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.stockAdjustment.findUnique({ where: { id: stockAdjustmentId }, select: { draftVersion: true } }),
+  );
 }

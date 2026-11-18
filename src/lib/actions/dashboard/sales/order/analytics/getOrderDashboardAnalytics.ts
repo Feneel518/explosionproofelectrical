@@ -1,4 +1,5 @@
 "use server";
+import { requirePermission } from "@/lib/check/permissions";
 
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -57,6 +58,7 @@ function isOpenOrder(status: SalesOrderStatus) {
 }
 
 export async function getOrderDashboardAnalytics(): Promise<OrderDashboardAnalytics> {
+  await requirePermission("analytics.read");
   const orders = await prisma.salesOrder.findMany({
     where: {
       deletedAt: null,

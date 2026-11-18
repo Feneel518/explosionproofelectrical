@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +38,7 @@ function formatMoney(n: number) {
 }
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("accounts.read");
   const { id } = await params;
   if (!id) {
     notFound();

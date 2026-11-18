@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import PendingOrdersBoard from "@/components/dashboard/sales/order/PendingOrdersBoard";
 import { prisma } from "@/lib/prisma/db";
 import { SalesOrderStatus } from "@prisma/client";
@@ -23,6 +24,7 @@ function normalizeKey(value: string) {
 }
 
 export default async function Page() {
+  await requirePermission("sales.read");
   const orders = await prisma.salesOrder.findMany({
     where: {
       deletedAt: null,

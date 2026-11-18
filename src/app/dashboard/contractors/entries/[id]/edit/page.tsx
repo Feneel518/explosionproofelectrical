@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { notFound } from "next/navigation";
 
 import WorkEntryEditForm from "@/components/dashboard/contractors/WorkEntryEditForm";
@@ -11,6 +12,7 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePermission("production.write");
   const { id } = await params;
 
   const entry = await prisma.workEntry.findUnique({

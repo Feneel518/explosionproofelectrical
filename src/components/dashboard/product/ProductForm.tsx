@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import { useRouter } from "nextjs-toploader/app";
@@ -76,11 +76,14 @@ export default function ProductForm({
       id: initial?.id ?? undefined,
       name: initial?.name ?? "FLP/WP ",
       slug: initial?.slug ?? "",
-      zones: initial?.zones ?? ["Zone-0", "Zone-1", "Zone-2"], // ðŸ‘ˆ default checked,
+      zones: initial?.zones ?? [],
       status: initial?.status ?? "ACTIVE",
-      flpType: initial?.flpType ?? "Flameproof as per IEC:60079-1:2014",
-      protection: initial?.protection ?? "IP-66 as per IS/IEC:60079-1",
-      gasGroup: initial?.gasGroup ?? "IIA, IIB & IIC as per IS/IEC:60079-1",
+      flpType: initial?.flpType ?? "",
+      protection: initial?.protection ?? "",
+      gasGroup: initial?.gasGroup ?? "",
+      certificationMarking: initial?.certificationMarking ?? "",
+      certificationReference: initial?.certificationReference ?? "",
+      certificationVerified: initial?.certificationVerified ?? false,
       material: initial?.material ?? "Cast Aluminum Alloy LM-6",
       finish: initial?.finish ?? "Powder Coated RAL-7032",
       hardware: initial?.hardware ?? "SS 304",
@@ -211,6 +214,8 @@ export default function ProductForm({
             {/* TECHNICAL FIELDS GRID */}
 
             {[
+              { name: "certificationMarking", label: "Exact approved Ex marking", placeholder: "Copy the full marking from the certificate" },
+              { name: "certificationReference", label: "Certificate reference and revision", placeholder: "Certificate number, revision and document reference" },
               {
                 name: "flpType",
                 label: "Flameproof Type",
@@ -291,6 +296,7 @@ export default function ProductForm({
               )}
             />
 
+            <FormField control={form.control} name="certificationVerified" render={({ field }) => <FormItem><div className="flex items-start gap-3"><FormControl><Checkbox checked={field.value ?? false} onCheckedChange={value => field.onChange(value === true)} /></FormControl><FormLabel>Marking and selected zones match the referenced certificate</FormLabel></div><FormDescription>The owner reviews this declaration before it is published. Leave unverified if the certificate has not been checked.</FormDescription><FormMessage /></FormItem>} />
             {/* ZONES */}
             <FormField
               control={form.control}

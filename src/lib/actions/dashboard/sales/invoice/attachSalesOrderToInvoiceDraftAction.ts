@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
 
@@ -13,8 +13,9 @@ import { resolveSalesOrderCustomerSnapshot } from "./resolveSalesOrderCustomerSn
 export async function attachSalesOrderToInvoiceDraftAction(
   invoiceId: string,
   salesOrderId: string,
+  clientVersion: number,
 ) {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
     const result = await prisma.$transaction(
@@ -74,6 +75,7 @@ export async function attachSalesOrderToInvoiceDraftAction(
             id: true,
             status: true,
             orderVersion: true,
+            gst: true,
             customerId: true,
             clientName: true,
             poNumber: true,
@@ -190,6 +192,7 @@ export async function attachSalesOrderToInvoiceDraftAction(
         const nextDraftData: InvoiceDraftData = {
           header: {
             salesOrderId: order.id,
+            gstMode: order.gst,
             customerId: order.customerId ?? null,
             invoiceDate:
               draftData.header?.invoiceDate ?? invoice.invoiceDate.toISOString(),
@@ -243,7 +246,7 @@ export async function attachSalesOrderToInvoiceDraftAction(
         };
 
         await tx.invoice.update({
-          where: { id: invoiceId },
+          where: { id: invoiceId, status: "DRAFT", draftVersion: clientVersion },
           data: {
             salesOrderId: order.id,
             salesOrderVersionSnapshot: order.orderVersion,

@@ -1,3 +1,4 @@
+import { consumeSubmissionLimit, SubmissionLimitError } from "@/lib/security/submissionLimit";
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma/db";
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
+    await consumeSubmissionLimit("analytics-ip", getClientIp(req) || "unknown", 120, 60);
     const queryString = normalizeNullableString(body?.query)?.slice(0, 800) ?? null;
     const pageTitle = normalizeNullableString(body?.title)?.slice(0, 255) ?? null;
     const referrer = normalizeNullableString(body?.referrer)?.slice(0, 1000) ?? null;
@@ -145,6 +147,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
+    if (error instanceof SubmissionLimitError) return NextResponse.json({ ok: false }, { status: 429 });
     console.error("website analytics visit tracking failed", error);
     return NextResponse.json({ ok: true, skipped: true });
   }

@@ -5,9 +5,10 @@ import { hashPassword, verifyPassword } from "./argon2";
 import { nextCookies } from "better-auth/next-js";
 import { createAuthMiddleware } from "better-auth/api";
 import { normalizeName } from "../utils";
-import { sendEmail } from "../actions/emails/send-emails.action";
+import { sendEmail } from "../email/sendAuthEmail";
 
 export const auth = betterAuth({
+  rateLimit: { enabled: true, storage: "database", window: 60, max: 30 },
   trustedOrigins: [
     "https://www.explosionproofelectrical.com",
     "https://explosionproofelectrical.com",

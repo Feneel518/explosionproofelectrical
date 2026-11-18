@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 
@@ -27,7 +27,7 @@ export type CastingJobDraftData = {
 };
 
 export async function createDraftCastingJobAction(workerId?: string | null) {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
   const fy = getFinancialYearLabel(new Date());
   const worker = workerId
     ? await prisma.worker.findFirst({

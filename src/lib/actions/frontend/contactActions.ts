@@ -1,178 +1,40 @@
 "use server";
-
+import { headers } from "next/headers";
 import { z } from "zod";
-import transporter from "@/lib/email/nodemailer";
 import { prisma } from "@/lib/prisma/db";
-import {
-  escapeEmailHtml,
-  renderEmailInfoTable,
-  renderThemedEmailLayout,
-} from "@/lib/email/themeTemplate";
+import { acceptWebsiteEnquiry } from "@/lib/enquiries/accept";
+import { consumeSubmissionLimit, SubmissionLimitError } from "@/lib/security/submissionLimit";
+import { dispatchEmailOutbox } from "@/lib/email/outbox";
+import { renderEmailInfoTable, renderThemedEmailLayout } from "@/lib/email/themeTemplate";
 
-const SALES_EMAIL = "sales1.exec@gmail.com";
+const newsletterSchema = z.object({ name: z.string().trim().min(2).max(160), email: z.email().trim().toLowerCase().max(254), companyName: z.string().trim().min(2).max(200) });
+const enquirySchema = z.object({ productName: z.string().trim().max(160).optional(), name: z.string().trim().min(2).max(160), email: z.email().trim().toLowerCase().max(254), phone: z.string().trim().min(7).max(40), companyName: z.string().trim().max(200).optional(), message: z.string().trim().min(5).max(10000) });
 
-const newsletterSchema = z.object({
-  name: z.string().trim().min(2, "Name is required"),
-  email: z.string().trim().email("Valid email is required"),
-  companyName: z.string().trim().min(2, "Company name is required"),
-});
-
-const enquirySchema = z.object({
-  productName: z.string().trim().optional(),
-  name: z.string().trim().min(2, "Name is required"),
-  email: z.string().trim().email("Valid email is required"),
-  phone: z.string().trim().min(7, "Phone is required"),
-  companyName: z.string().trim().optional(),
-  message: z.string().trim().min(5, "Message is required"),
-});
-
-export async function submitNewsletterLeadAction(input: {
-  name: string;
-  email: string;
-  companyName: string;
-}) {
+export async function submitNewsletterLeadAction(input: { name: string; email: string; companyName: string }) {
   const parsed = newsletterSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      ok: false as const,
-      message: parsed.error.issues[0]?.message ?? "Please fill all fields correctly.",
-    };
-  }
-
+  if (!parsed.success) return { ok: false as const, message: "Please enter a name, valid email and company name." };
   const data = parsed.data;
-
   try {
-    await prisma.newsletterSubscriber.upsert({
-      where: { email: data.email.toLowerCase() },
-      create: {
-        email: data.email.toLowerCase(),
-        name: data.name,
-        status: "SUBSCRIBED",
-        source: "FOOTER_FORM",
-      },
-      update: {
-        name: data.name,
-        status: "SUBSCRIBED",
-        source: "FOOTER_FORM",
-        unsubscribedAt: null,
-      },
+    const requestHeaders = await headers();
+    await consumeSubmissionLimit("newsletter-ip", requestHeaders.get("x-vercel-forwarded-for") || requestHeaders.get("x-real-ip") || requestHeaders.get("x-forwarded-for")?.split(",")[0] || "unknown", 10, 3600);
+    await consumeSubmissionLimit("newsletter-email", data.email, 3, 3600);
+    const mail = await prisma.$transaction(async tx => {
+      await tx.newsletterSubscriber.upsert({ where: { email: data.email }, create: { email: data.email, name: data.name, source: "FOOTER_FORM" }, update: { name: data.name, status: "SUBSCRIBED", source: "FOOTER_FORM", unsubscribedAt: null } });
+      return tx.emailOutbox.upsert({ where: { deduplicationKey: `newsletter:${data.email}:${new Date().toISOString().slice(0, 10)}` }, update: {}, create: {
+        deduplicationKey: `newsletter:${data.email}:${new Date().toISOString().slice(0, 10)}`, recipient: process.env.SALES_NOTIFICATION_EMAIL || "sales1.exec@gmail.com", replyTo: data.email,
+        subject: "New website subscriber", html: renderThemedEmailLayout({ title: "New website subscriber", bodyHtml: renderEmailInfoTable([{ label: "Name", value: data.name }, { label: "Email", value: data.email }, { label: "Company", value: data.companyName }]) }),
+      } });
     });
-
-    const subject = `New Newsletter Subscriber - ${data.name}`;
-    const html = renderThemedEmailLayout({
-      title: "New Newsletter Subscription",
-      preheader: `${data.name} subscribed from website`,
-      bodyHtml: `
-        <p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#334155;">
-          A new website visitor subscribed to your newsletter.
-        </p>
-        ${renderEmailInfoTable([
-          { label: "Name", value: data.name },
-          { label: "Email", value: data.email },
-          { label: "Company", value: data.companyName },
-          {
-            label: "Submitted At",
-            value: new Intl.DateTimeFormat("en-IN", {
-              dateStyle: "medium",
-              timeStyle: "short",
-              timeZone: "Asia/Kolkata",
-            }).format(new Date()),
-          },
-        ])}
-      `,
-    });
-
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.EMAIL_USER,
-      to: SALES_EMAIL,
-      subject,
-      html,
-    });
-
-    return {
-      ok: true as const,
-      message: "Thanks for subscribing. Our team will contact you soon.",
-    };
-  } catch (error) {
-    console.error("submitNewsletterLeadAction", error);
-    return {
-      ok: false as const,
-      message: "Could not submit newsletter right now. Please try again.",
-    };
-  }
+    await dispatchEmailOutbox(mail.id).catch(() => undefined);
+    return { ok: true as const, message: "Thanks for subscribing. Your details have been saved." };
+  } catch (error) { return { ok: false as const, message: error instanceof SubmissionLimitError ? error.message : "Could not save your subscription. Please try again shortly." }; }
 }
-
-export async function submitProductEnquiryAction(input: {
-  productName?: string;
-  name: string;
-  email: string;
-  phone: string;
-  companyName?: string;
-  message: string;
-}) {
+export async function submitProductEnquiryAction(input: { productName?: string; name: string; email: string; phone: string; companyName?: string; message: string }) {
   const parsed = enquirySchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      ok: false as const,
-      message: parsed.error.issues[0]?.message ?? "Please fill all fields correctly.",
-    };
-  }
-
+  if (!parsed.success) return { ok: false as const, message: "Please check your name, email, phone and message." };
   const data = parsed.data;
-
   try {
-    const subject = data.productName?.trim()
-      ? `Product Enquiry - ${data.productName.trim()}`
-      : "New Product Enquiry";
-
-    const safeMessage = escapeEmailHtml(data.message).replaceAll("\n", "<br/>");
-
-    const html = renderThemedEmailLayout({
-      title: "Website Product Enquiry",
-      preheader: `${data.name} submitted a product enquiry`,
-      bodyHtml: `
-        <p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#334155;">
-          A new enquiry has been submitted from the frontend website.
-        </p>
-        ${renderEmailInfoTable([
-          { label: "Product", value: data.productName?.trim() || "General Enquiry" },
-          { label: "Name", value: data.name },
-          { label: "Email", value: data.email },
-          { label: "Phone", value: data.phone },
-          { label: "Company", value: data.companyName?.trim() || "N/A" },
-          {
-            label: "Submitted At",
-            value: new Intl.DateTimeFormat("en-IN", {
-              dateStyle: "medium",
-              timeStyle: "short",
-              timeZone: "Asia/Kolkata",
-            }).format(new Date()),
-          },
-        ])}
-        <div style="margin:0 0 8px;font-weight:600;color:#1f3d5b;">Message</div>
-        <div style="padding:12px;border:1px solid #d7e0ea;border-radius:8px;background:#fbfdff;color:#12263a;font-size:14px;line-height:1.6;">
-          ${safeMessage}
-        </div>
-      `,
-    });
-
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.EMAIL_USER,
-      to: SALES_EMAIL,
-      replyTo: data.email,
-      subject,
-      html,
-    });
-
-    return {
-      ok: true as const,
-      message: "Enquiry sent successfully. Our sales team will contact you.",
-    };
-  } catch (error) {
-    console.error("submitProductEnquiryAction", error);
-    return {
-      ok: false as const,
-      message: "Could not send enquiry right now. Please try again.",
-    };
-  }
+    await acceptWebsiteEnquiry({ name: data.name, email: data.email, phone: data.phone, company: data.companyName, productInterest: data.productName || "General enquiry", message: data.message, source: "PRODUCT_FORM" });
+    return { ok: true as const, message: "Enquiry saved successfully. Our sales team will contact you." };
+  } catch (error) { return { ok: false as const, message: error instanceof SubmissionLimitError ? error.message : "Could not save your enquiry. Please try again shortly." }; }
 }

@@ -1,6 +1,7 @@
 "use server";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { MaterialIssueDraftData } from "./createDraftMaterialIssueAction";
 
@@ -13,7 +14,7 @@ export async function saveMaterialIssueDraftSnapshotAction({
   draft: MaterialIssueDraftData;
   clientVersion: number;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.write");
 
   const issue = await prisma.materialIssue.findUnique({
     where: { id: materialIssueId },
@@ -39,19 +40,17 @@ export async function saveMaterialIssueDraftSnapshotAction({
     };
   }
 
-  const updated = await prisma.materialIssue.update({
-    where: { id: materialIssueId },
+
+  return saveVersionedDraft(
+    () => prisma.materialIssue.update({
+    where: { id: materialIssueId, status: "DRAFT", draftVersion: clientVersion },
     data: {
       draftData: draft,
       draftVersion: { increment: 1 },
       updatedById: session.user.id,
     },
     select: { draftVersion: true, updatedAt: true },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.materialIssue.findUnique({ where: { id: materialIssueId }, select: { draftVersion: true } }),
+  );
 }

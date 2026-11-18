@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 import { prisma } from "@/lib/prisma/db";
 
 export async function getCastingJobByIdAction(id: string) {
-  await requireAuth();
+  await requirePermission("production.read");
 
   const castingJob = await prisma.castingJob.findUnique({
     where: { id },

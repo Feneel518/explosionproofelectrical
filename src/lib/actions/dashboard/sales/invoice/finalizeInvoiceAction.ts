@@ -1,11 +1,15 @@
 "use server";
+import { normalizeInvoiceDraft } from "@/lib/invoices/draft";
+import { captureInvoiceCustomerSnapshot } from "@/lib/invoices/customerSnapshot";
+import { withSerializableRetry } from "@/lib/prisma/withSerializableRetry";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+
+import { requirePermission } from "@/lib/check/permissions";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
-import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
-import { InvoiceDraftData } from "@/lib/types/Invoicetable";
+
+
 import { ProductMediaKind } from "@prisma/client";
 import {
   refreshSalesOrderInvoiceProgress,
@@ -26,7 +30,7 @@ function toNumber(value: unknown, fallback = 0) {
 }
 
 export const finalizeInvoiceAction = async (id: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("accounts.write");
 
   try {
     const invoice = await prisma.invoice.findUnique({
@@ -39,6 +43,9 @@ export const finalizeInvoiceAction = async (id: string) => {
         salesOrderId: true,
         customerId: true,
         draftData: true,
+        draftVersion: true,
+        gstMode: true,
+        salesOrder: { select: { gst: true } },
       },
     });
 
@@ -50,7 +57,7 @@ export const finalizeInvoiceAction = async (id: string) => {
       return { ok: false as const, message: "Invoice already finalized" };
     }
 
-    const draft = invoice.draftData as InvoiceDraftData | null;
+    const draft = normalizeInvoiceDraft(invoice.draftData, invoice.salesOrder?.gst ?? invoice.gstMode, true);
 
     if (!draft) {
       return { ok: false as const, message: "No draft data found" };
@@ -65,7 +72,7 @@ export const finalizeInvoiceAction = async (id: string) => {
     const preparedItems = draft.items.map((it, index) => {
       const qty = toNumber(it.qty, 0);
       const unitPrice = toNumber(it.unitPrice, 0);
-      const lineSubtotal = qty * unitPrice;
+      const lineSubtotal = it.lineSubtotal;
 
       return {
         draftItemId: it.id,
@@ -86,7 +93,7 @@ export const finalizeInvoiceAction = async (id: string) => {
         unitPrice,
         lineSubtotal,
         lineGstTotal: toNumber(it.lineGstTotal, 0),
-        lineGrandTotal: lineSubtotal + toNumber(it.lineGstTotal, 0),
+        lineGrandTotal: it.lineGrandTotal,
         sortOrder: toNumber(it.sortOrder, index),
         cimfrNumber: it.cimfrNumber ?? null,
         pesoNumber: it.pesoNumber ?? null,
@@ -112,7 +119,9 @@ export const finalizeInvoiceAction = async (id: string) => {
       };
     }
 
-    await prisma.$transaction(async (tx) => {
+    await withSerializableRetry(async (tx) => {
+      await tx.invoice.update({ where: { id, status: "DRAFT", draftVersion: invoice.draftVersion }, data: { status: "FINALIZED" } });
+      for (const item of preparedItems) item.resolvedSerialNumbers = [];
       if (invoice.salesOrderId) {
         const linkedOrder = await tx.salesOrder.findUnique({
           where: { id: invoice.salesOrderId },
@@ -191,12 +200,8 @@ export const finalizeInvoiceAction = async (id: string) => {
           );
         }
 
-        if (!item.productId && live.productId) {
-          item.productId = live.productId;
-        }
-        if (!item.variantId && live.variantId) {
-          item.variantId = live.variantId;
-        }
+        item.productId = live.productId;
+        item.variantId = live.variantId;
       }
 
       const productIds = Array.from(
@@ -396,6 +401,7 @@ export const finalizeInvoiceAction = async (id: string) => {
       await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
       await tx.productMedia.deleteMany({ where: { invoiceId: id } });
 
+      const customerSnapshot = await captureInvoiceCustomerSnapshot(tx, draft.header.customerId ?? invoice.customerId, invoice.salesOrderId, draft.header);
       await tx.invoice.update({
         where: { id },
         data: {
@@ -427,7 +433,11 @@ export const finalizeInvoiceAction = async (id: string) => {
               : null,
           remarks: draft.header.remarks ?? null,
 
-          subtotal: toNumber(draft.header.subtotal, 0),
+          customerSnapshot,
+          gstMode: draft.header.gstMode,
+          draftData: draft,
+          discountTotal: draft.header.discountTotal,
+          subtotal: draft.header.subtotal,
           taxableTotal: toNumber(draft.header.taxableTotal, 0),
           gstTotal: toNumber(draft.header.gstTotal, 0),
           grandTotal: toNumber(draft.header.grandTotal, 0),
@@ -669,7 +679,7 @@ export const finalizeInvoiceAction = async (id: string) => {
           updatedById: session.user.id,
         });
       }
-    }, FINALIZE_TRANSACTION_OPTIONS);
+    });
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${id}`);

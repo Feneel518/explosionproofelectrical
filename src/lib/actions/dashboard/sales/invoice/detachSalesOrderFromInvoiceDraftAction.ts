@@ -1,8 +1,9 @@
 "use server";
 
+import { normalizeInvoiceDraft } from "@/lib/invoices/draft";
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 import { getInvoiceEditDataAction } from "./getInvoiceEditDataAction";
@@ -18,8 +19,9 @@ function normalizeIdOrNull(value?: string | null) {
 export async function detachSalesOrderFromInvoiceDraftAction(
   invoiceId: string,
   payload: UpdateInvoiceDraftPayload,
+  clientVersion: number,
 ) {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
     const result = await prisma.$transaction(
@@ -32,6 +34,7 @@ export async function detachSalesOrderFromInvoiceDraftAction(
             salesOrderId: true,
             customerId: true,
             invoiceFy: true,
+            gstMode: true,
           },
         });
 
@@ -91,8 +94,9 @@ export async function detachSalesOrderFromInvoiceDraftAction(
           })),
         };
 
+        const normalized = normalizeInvoiceDraft(offlinePayload, invoice.gstMode);
         await tx.invoice.update({
-          where: { id: invoiceId },
+          where: { id: invoiceId, status: "DRAFT", draftVersion: clientVersion },
           data: {
             salesOrderId: null,
             salesOrderVersionSnapshot: null,
@@ -121,11 +125,12 @@ export async function detachSalesOrderFromInvoiceDraftAction(
             transportationAmount:
               offlinePayload.header.transportationAmount ?? null,
             remarks: offlinePayload.header.remarks || null,
-            subtotal: offlinePayload.header.subtotal,
-            taxableTotal: offlinePayload.header.taxableTotal,
-            gstTotal: offlinePayload.header.gstTotal,
-            grandTotal: offlinePayload.header.grandTotal,
-            draftData: offlinePayload,
+            subtotal: normalized.header.subtotal,
+            taxableTotal: normalized.header.taxableTotal,
+            gstTotal: normalized.header.gstTotal,
+            grandTotal: normalized.header.grandTotal,
+            draftData: normalized,
+            discountTotal: normalized.header.discountTotal,
             draftVersion: { increment: 1 },
           },
         });

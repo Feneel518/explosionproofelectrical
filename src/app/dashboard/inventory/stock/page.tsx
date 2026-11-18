@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import StockSummaryInfiniteTable from "@/components/dashboard/inventory/stock/StockSummaryInfiniteTable";
 import { prisma } from "@/lib/prisma/db";
 
@@ -17,6 +18,7 @@ function formatMonthLabel(value: Date) {
 }
 
 export default async function Page() {
+  await requirePermission("inventory.read");
   const monthStart = new Date();
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import transporter from "@/lib/email/nodemailer";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import {
   getPaymentDueDateFromTerms,
@@ -37,7 +37,7 @@ function formatCurrency(value: number) {
 }
 
 export async function sendInvoicePaymentReminderEmailAction(invoiceId: string) {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
     const invoice = await prisma.invoice.findUnique({

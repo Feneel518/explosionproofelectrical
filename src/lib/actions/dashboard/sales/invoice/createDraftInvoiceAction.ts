@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { getFinancialYearLabelFromStartYear } from "@/lib/helpers/globalHelpers/financialYear";
 import { InvoiceDraftData } from "@/lib/types/Invoicetable";
@@ -14,7 +14,7 @@ function getFinancialYearStartYear(date = new Date()) {
 }
 
 export const createDraftInvoiceAction = async (salesOrderId: string) => {
-  await requireAuth();
+  await requirePermission("accounts.write");
 
   try {
     const result = await prisma.$transaction(
@@ -25,6 +25,7 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
             id: true,
             status: true,
             orderVersion: true,
+            gst: true,
             customerId: true,
             clientName: true,
             poNumber: true,
@@ -168,6 +169,7 @@ export const createDraftInvoiceAction = async (salesOrderId: string) => {
         const draftData: InvoiceDraftData = {
           header: {
             salesOrderId: order.id,
+            gstMode: order.gst,
             customerId: order.customerId ?? null,
             invoiceDate: new Date().toISOString(),
             dueDate: null,

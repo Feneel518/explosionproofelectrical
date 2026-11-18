@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export type SupplierSearchItem = {
@@ -25,7 +25,7 @@ export const searchSuppliersForSelectAction = async ({
   cursor: string | null;
   take: number;
 }): Promise<SupplierSearchResponse> => {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const q = (query ?? "").trim();
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { FC, useMemo, useRef, useState } from "react";
 
@@ -57,6 +57,8 @@ type InvoiceView = {
   ewayBill?: string | null;
   remarks?: string | null;
   subtotal: number;
+  discountTotal?: number;
+  taxableTotal?: number;
   gstTotal: number;
   grandTotal: number;
   items: InvoiceItemView[];
@@ -284,6 +286,7 @@ const InvoiceCustomerCopy: FC<InvoiceCustomerCopyProps> = ({ invoice }) => {
                         <span className="">Subtotal</span>
                         <span>{fmtMoney(invoice.subtotal)}</span>
                       </div>
+                      {Boolean(invoice.discountTotal) && <><div className="flex items-center justify-between"><span>Discount</span><span>−{fmtMoney(invoice.discountTotal)}</span></div><div className="flex items-center justify-between"><span>Taxable total</span><span>{fmtMoney(invoice.taxableTotal)}</span></div></>}
                       <div className="flex items-center justify-between">
                         <span className="">GST</span>
                         <span>{fmtMoney(invoice.gstTotal)}</span>

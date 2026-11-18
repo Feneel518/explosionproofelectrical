@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
@@ -36,6 +36,7 @@ export async function finalizeMaterialIssueAction(id: string) {
       issueNo: true,
       issueFy: true,
       draftData: true,
+      draftVersion: true,
     },
   });
 
@@ -178,6 +179,7 @@ export async function finalizeMaterialIssueAction(id: string) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      await tx.materialIssue.update({ where: { id: issue.id, status: "DRAFT", draftVersion: issue.draftVersion }, data: { draftVersion: { increment: 1 } } });
       await tx.materialIssue.update({
         where: { id: issue.id },
         data: {

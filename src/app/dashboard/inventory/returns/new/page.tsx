@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import MaterialReturnForm from "@/components/dashboard/inventory/material-return/MaterialReturnForm";
 import { requireAuth } from "@/lib/check/requireAuth";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
@@ -6,6 +7,7 @@ import { prisma } from "@/lib/prisma/db";
 export const dynamic = "force-dynamic";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ issueId?: string }> }) {
+  await requirePermission("inventory.write");
   await requireAuth();
   const { issueId } = await searchParams;
   const rows = await prisma.materialIssue.findMany({

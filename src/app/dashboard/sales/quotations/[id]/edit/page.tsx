@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import QuotationFormNew from "@/components/dashboard/sales/quotation/QuotationFormNew";
 import { listCustomersForSelect } from "@/lib/actions/dashboard/global/listCustomersForSelect";
 import { getQuotationDraftAction } from "@/lib/actions/dashboard/sales/quotation/getQuotationDraftAction";
@@ -15,6 +16,7 @@ interface pageProps {
 export const dynamic = "force-dynamic";
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("sales.write");
   const { id } = await params;
   const res = await getQuotationDraftAction(id);
 

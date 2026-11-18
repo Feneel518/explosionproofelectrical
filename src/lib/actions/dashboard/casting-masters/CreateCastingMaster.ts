@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -13,7 +13,7 @@ import {
 export const createCastingMasterAction = async (
   values: CastingMasterSchemaRequest,
 ) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   const parsed = CastingMasterSchema.safeParse(values);
   if (!parsed.success) {

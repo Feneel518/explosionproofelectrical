@@ -1,10 +1,10 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export async function getAvailableProductSerialsAction(productId: string) {
-  await requireAuth();
+  await requirePermission("production.read");
 
   if (!productId) {
     return { ok: false as const, message: "Product is required" };

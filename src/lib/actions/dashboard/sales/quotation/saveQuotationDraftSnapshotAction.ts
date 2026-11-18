@@ -1,5 +1,6 @@
 "use server";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
 
@@ -12,7 +13,7 @@ export const saveQuotationDraftSnapshotAction = async ({
   draft: QuotationDraftData;
   clientVersion: number;
 }) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const q = await prisma.quotation.findUnique({
     where: { id: quotationId },
@@ -32,19 +33,17 @@ export const saveQuotationDraftSnapshotAction = async ({
     };
   }
 
-  const updated = await prisma.quotation.update({
-    where: { id: quotationId },
+
+  return saveVersionedDraft(
+    () => prisma.quotation.update({
+    where: { id: quotationId, status: "DRAFT", draftVersion: clientVersion },
     data: {
       draftData: draft,
       draftVersion: { increment: 1 },
       updatedById: session.user.id,
     },
     select: { draftVersion: true, updatedAt: true },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.quotation.findUnique({ where: { id: quotationId }, select: { draftVersion: true } }),
+  );
 };

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { lockStockEntity } from "@/lib/helpers/inventory/lockStockEntity";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
@@ -23,7 +24,7 @@ function toDateOrNull(value?: string | null) {
 export async function setCastingMasterOpeningStockAction(
   input: SetOpeningStockInput,
 ) {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.manage");
 
   if (!input.castingMasterId) {
     return { ok: false as const, message: "Casting master ID is required." };
@@ -63,6 +64,10 @@ export async function setCastingMasterOpeningStockAction(
     const delta = openingQty - previousOpeningQty;
 
     await prisma.$transaction(async (tx) => {
+      await lockStockEntity(tx, { castingMasterId: input.castingMasterId });
+      const current = await tx.castingMaster.findUniqueOrThrow({ where: { id: input.castingMasterId } });
+      const previousOpeningQty = Number(current.openingStockQty ?? 0);
+      const delta = openingQty - previousOpeningQty;
       if (delta !== 0) {
         await postStockMovement(tx, {
           castingMasterId: input.castingMasterId,

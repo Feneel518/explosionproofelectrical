@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import ProductForm from "@/components/dashboard/product/ProductForm";
 import VariantsSection from "@/components/dashboard/product/ProductVariantSection";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("master.read");
   const { id } = await params;
   if (!id) {
     redirect("/dashboard/products");

@@ -1,5 +1,6 @@
 ﻿"use server";
 
+import { lockStockEntity } from "@/lib/helpers/inventory/lockStockEntity";
 import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
@@ -62,6 +63,10 @@ export async function setRawMaterialOpeningStockAction(
     const delta = openingQty - previousOpeningQty;
 
     await prisma.$transaction(async (tx) => {
+      await lockStockEntity(tx, { rawMaterialId: input.rawMaterialId });
+      const current = await tx.rawMaterial.findUniqueOrThrow({ where: { id: input.rawMaterialId } });
+      const previousOpeningQty = Number(current.openingStockQty ?? 0);
+      const delta = openingQty - previousOpeningQty;
       if (delta !== 0) {
         await postStockMovement(tx, {
           rawMaterialId: input.rawMaterialId,

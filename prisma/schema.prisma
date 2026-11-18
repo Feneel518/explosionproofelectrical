@@ -110,6 +110,7 @@ model BlogPost {
 
 enum QuotationStatus {
   DRAFT
+  READY
   SENT
   FOLLOWUP
   WON
@@ -181,12 +182,15 @@ enum TransportationPayment {
 //enums
 
 model User {
+  gmailConnection GmailConnection?
+  quotationEmails QuotationEmailDelivery[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   email         String  @unique
   emailVerified Boolean
+  role          String @default("USER")
   name          String?
   image         String?
 
@@ -243,6 +247,109 @@ model User {
   workerPayoutsUpdatedBy        WorkerPayout[]        @relation("WorkerPayoutUpdatedBy")
 
   @@map("users")
+}
+
+model GmailConnection {
+  userId                String @id
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email                 String
+  encryptedRefreshToken String
+  grantedScopes         String @default("https://www.googleapis.com/auth/gmail.readonly")
+  searchQuery           String
+  connectedAt           DateTime @default(now())
+  lastSyncedAt          DateTime?
+  syncLeaseUntil        DateTime?
+  lastSyncAttemptAt     DateTime?
+  lastSyncError         String?
+  notifications         GmailNotification[]
+  salesLinks            GmailThreadLink[]
+  conversationCaches    GmailConversationCache[]
+  pdfImports            GmailPdfImport[]
+
+  @@map("gmail_connections")
+}
+
+model GmailNotification {
+  id         String @id @default(uuid())
+  userId     String
+  connection GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  messageId  String
+  threadId   String
+  subject    String
+  sender     String
+  receivedAt DateTime
+  createdAt  DateTime @default(now())
+  readAt     DateTime?
+  snippet    String?
+  bodyText   String? @db.Text
+  hasAttachments Boolean @default(false)
+  contentIndexedAt DateTime?
+  starred    Boolean @default(false)
+  status     GmailLeadStatus @default(NEW)
+  internalNote String? @db.Text
+  pdfImports GmailPdfImport[]
+
+  @@unique([userId, messageId])
+  @@index([userId, receivedAt])
+  @@index([userId, readAt])
+  @@map("gmail_notifications")
+}
+
+enum GmailLeadStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+}
+
+model GmailConversationCache {
+  id String @id @default(uuid())
+  userId String
+  connection GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  threadId String
+  content Json
+  fetchedAt DateTime @default(now())
+  @@unique([userId, threadId])
+  @@map("gmail_conversation_caches")
+}
+
+model GmailPdfImport {
+  id String @id @default(uuid())
+  userId String
+  connection GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  notificationId String
+  notification GmailNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  messageId String
+  threadId String
+  partId String
+  filename String
+  status String @default("PROCESSING")
+  leaseUntil DateTime?
+  result Json?
+  error String?
+  orderId String?
+  order SalesOrder? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, messageId, partId])
+  @@index([userId, createdAt])
+  @@map("gmail_pdf_imports")
+}
+
+model GmailThreadLink {
+  id           String @id @default(uuid())
+  userId       String
+  connection   GmailConnection @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  threadId     String
+  quotationId  String?
+  quotation    Quotation? @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  salesOrderId String?
+  salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, threadId, quotationId])
+  @@unique([userId, threadId, salesOrderId])
+  @@index([userId, threadId])
+  @@map("gmail_thread_links")
 }
 
 model Account {
@@ -525,6 +632,9 @@ model Product {
   serialPrefix          String? @unique
   serialTrackingEnabled Boolean @default(false)
 
+  certificationMarking String?
+  certificationReference String?
+  certificationVerifiedAt DateTime?
   flpType    String?
   protection String?
   gasGroup   String?
@@ -785,6 +895,7 @@ model FiscalCounter {
 }
 
 model Quotation {
+  gmailThreadLinks GmailThreadLink[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -844,6 +955,7 @@ model Quotation {
   // Relations
   items            QuotationItem[]
   followups        QuotationFollowup[]
+  emailDeliveries  QuotationEmailDelivery[]
   deliveryChallans DeliveryChallan[]
   salesOrders      SalesOrder[]
 
@@ -856,6 +968,24 @@ model Quotation {
   @@index([deletedAt])
   @@index([nextFollowupAt])
   @@map("quotations")
+}
+
+model QuotationEmailDelivery {
+  id               String @id // Client-generated idempotency key, scoped to the authenticated user below.
+  quotationId      String
+  quotation        Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender           String
+  recipient        String
+  subject          String
+  status           String @default("PENDING") // PENDING, SENT, FAILED, UNKNOWN
+  gmailMessageId   String?
+  createdAt        DateTime @default(now())
+  sentAt           DateTime?
+
+  @@index([quotationId, userId, createdAt])
+  @@map("quotation_email_deliveries")
 }
 
 model QuotationItem {
@@ -1190,6 +1320,8 @@ enum SalesOrderCompletionType {
 }
 
 model SalesOrder {
+  gmailThreadLinks GmailThreadLink[]
+  gmailPdfImports GmailPdfImport[]
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1469,6 +1601,8 @@ model Invoice {
   gstTotal                  Decimal @default(0) @db.Decimal(14, 2)
   grandTotal                Decimal @default(0) @db.Decimal(14, 2)
   salesOrderVersionSnapshot Int?
+  customerSnapshot Json?
+  gstMode GST @default(CGST_SGST_18)
 
   items    InvoiceItem[]
   packages InvoicePackage[]
@@ -1666,6 +1800,8 @@ model PurchaseOrder {
 
   draftData    Json?
   draftVersion Int       @default(0)
+  shareTokenHash String?
+  shareExpiresAt DateTime?
   finalizedAt  DateTime?
   sentAt       DateTime?
   sentTo       String?
@@ -2656,6 +2792,8 @@ model WorkerPayout {
   netPayable      Decimal @default(0) @db.Decimal(14, 2)
   amountPaid      Decimal @default(0) @db.Decimal(14, 2)
   carryForward    Decimal @default(0) @db.Decimal(14, 2)
+  advanceApplied Decimal @default(0) @db.Decimal(14, 2)
+  unpaidWagesForward Decimal @default(0) @db.Decimal(14, 2)
 
   applyAdvances Boolean   @default(true)
   paidAt        DateTime?
@@ -2674,4 +2812,56 @@ model WorkerPayout {
   @@index([monthYear])
   @@index([workerId])
   @@map("worker_payouts")
+}
+
+model RateLimit {
+  id String @id @default(uuid())
+  key String @unique
+  count Int
+  lastRequest BigInt
+  @@map("auth_rate_limits")
+}
+
+model SubmissionLimit {
+  key String @id
+  count Int @default(1)
+  expiresAt DateTime
+  @@index([expiresAt])
+  @@map("submission_limits")
+}
+
+model WebsiteEnquiry {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  name String
+  email String
+  phone String?
+  company String?
+  productInterest String
+  quantity String?
+  message String
+  source String
+  status String @default("NEW")
+  deduplicationKey String @unique
+  quotationId String?
+  @@index([status, createdAt])
+  @@map("website_enquiries")
+}
+
+model EmailOutbox {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  deduplicationKey String @unique
+  recipient String
+  replyTo String?
+  subject String
+  html String
+  status String @default("PENDING")
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  lockedUntil DateTime?
+  sentAt DateTime?
+  lastError String?
+  @@index([status, nextAttemptAt])
+  @@map("email_outbox")
 }

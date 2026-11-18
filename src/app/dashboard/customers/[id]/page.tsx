@@ -1,4 +1,5 @@
-﻿import { FC } from "react";
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
+import { FC } from "react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ interface PageProps {
 }
 
 const Page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("master.read");
   const { id } = await params;
 
   const [customer, orderedItems] = await Promise.all([

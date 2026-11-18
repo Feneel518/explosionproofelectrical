@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 const DEFAULT_TAKE = 40;
@@ -43,7 +43,7 @@ export async function searchStockSummaryRowsAction({
   items: StockSummaryListItem[];
   nextCursor: string | null;
 }> {
-  await requireAuth();
+  await requirePermission("inventory.read");
 
   const q = (query ?? "").trim();
   const takeQty = Math.min(Math.max(take ?? DEFAULT_TAKE, MIN_TAKE), MAX_TAKE);

@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
 
 export async function completeSalesOrderAction(id: string) {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const order = await prisma.salesOrder.findUnique({
     where: { id },

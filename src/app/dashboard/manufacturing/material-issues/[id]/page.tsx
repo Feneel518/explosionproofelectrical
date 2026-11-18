@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import MaterialIssueDetailView from "@/components/dashboard/manufacturing/material-issue/MaterialIssueDetailView";
 import { getMaterialIssueByIdAction } from "@/lib/actions/dashboard/manufacturing/material-issue/getMaterialIssueByIdAction";
 
@@ -8,6 +9,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("inventory.read");
   const { id } = await params;
   const res = await getMaterialIssueByIdAction(id);
 

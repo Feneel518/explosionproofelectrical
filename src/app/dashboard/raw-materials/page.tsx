@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { FC } from "react";
 
 import RawMaterialsTable from "@/components/dashboard/raw-material/RawMaterialsTable";
@@ -20,6 +21,7 @@ function formatNumber(value: number) {
 }
 
 const Page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("master.read");
   const sp = rawMaterialsSearchParamsCache.parse(await searchParams);
 
   const page = Math.max(1, sp.page);

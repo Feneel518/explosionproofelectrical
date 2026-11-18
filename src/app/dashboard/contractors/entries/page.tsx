@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import DailyEntriesManager from "@/components/dashboard/contractors/DailyEntriesManager";
 import EntriesFilters from "@/components/dashboard/contractors/EntriesFilters";
 import {
@@ -15,6 +16,7 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requirePermission("production.read");
   const raw = await searchParams;
   const sp = workEntriesSearchParamsCache.parse(raw);
   const currentMonth = new Date().toISOString().slice(0, 7);

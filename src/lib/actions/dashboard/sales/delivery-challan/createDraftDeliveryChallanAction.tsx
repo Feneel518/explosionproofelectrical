@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import {
   formatPrefixedFinancialDocumentNumber,
   getFinancialYearLabel,
@@ -45,7 +45,7 @@ export type DeliveryChallanDraftData = {
 };
 
 export const createDraftDeliveryChallanAction = async () => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const fy = getFinancialYearLabel(new Date());
 

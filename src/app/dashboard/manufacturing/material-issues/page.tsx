@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { FC } from "react";
 
 import MaterialIssueTable from "@/components/dashboard/manufacturing/material-issue/MaterialIssueTable";
@@ -16,6 +17,7 @@ interface PageProps {
 }
 
 const Page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("inventory.read");
   const sp = materialIssueSearchParamsCache.parse(await searchParams);
   const page = Math.max(1, sp.page);
   const pageSize = Math.min(50, Math.max(5, sp.pageSize));

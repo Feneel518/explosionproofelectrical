@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { addDays } from "date-fns";
 
 export const createDraftQuotationAction = async () => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const fy = getFinancialYearLabel(new Date());
 

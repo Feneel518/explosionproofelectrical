@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -13,7 +13,7 @@ import { Prisma } from "@prisma/client";
 export const saveContractorRateAction = async (
   values: ContractorRateSchemaRequest,
 ) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
   const parsed = ContractorRateSchema.safeParse(values);
 
   if (!parsed.success) return fail("Enter the fields properly.");
@@ -66,7 +66,7 @@ export const toggleContractorRateArchiveAction = async (
   id: string,
   archived: boolean,
 ) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
   if (!id) return fail("Missing rate id.");
 
   try {

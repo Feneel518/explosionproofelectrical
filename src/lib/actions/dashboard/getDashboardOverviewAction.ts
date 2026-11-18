@@ -1,4 +1,5 @@
 "use server";
+import { requirePermission } from "@/lib/check/permissions";
 
 import { prisma } from "@/lib/prisma/db";
 import { getPaymentReminderState } from "@/lib/helpers/globalHelpers/invoicePaymentReminder";
@@ -107,6 +108,7 @@ export type DashboardOverviewData = {
 };
 
 export async function getDashboardOverviewAction(): Promise<DashboardOverviewData> {
+  await requirePermission("analytics.read");
   const startOfMonth = getStartOfMonth();
   const now = new Date();
   const currentFinancialYear = getFinancialYearLabel(now);

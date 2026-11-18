@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 // app/dashboard/sales/orders/[id]/page.tsx
 
 import SalesOrderDetailsPage from "@/components/dashboard/sales/order/SalesOrderDetailsPage";
@@ -12,6 +13,7 @@ interface PageProps {
 }
 
 const page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("sales.read");
   const { id } = await params;
 
   const res = await getSalesOrderByIdAction(id);

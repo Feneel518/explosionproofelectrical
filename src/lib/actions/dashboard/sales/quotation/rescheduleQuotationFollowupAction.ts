@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
 
@@ -9,7 +9,7 @@ export async function rescheduleQuotationFollowupAction(input: {
   scheduledAt: Date;
   note?: string | null;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const followup = await prisma.quotationFollowup.findUnique({
     where: { id: input.followupId },

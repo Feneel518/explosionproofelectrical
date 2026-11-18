@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 export const getDeliveryChallanByIdAction = async (id: string) => {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   const deliveryChallan = await prisma.deliveryChallan.findUnique({
     where: { id },

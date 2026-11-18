@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { MaterialIssueDraftData } from "./createDraftMaterialIssueAction";
 
 export async function getMaterialIssueDraftAction(id: string) {
-  await requireAuth();
+  await requirePermission("inventory.read");
 
   const issue = await prisma.materialIssue.findUnique({
     where: { id },

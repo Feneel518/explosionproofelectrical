@@ -1,4 +1,4 @@
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export type SupplierSelectItem = {
@@ -11,7 +11,7 @@ export type SupplierSelectItem = {
   companyEmail: string | null;
 };
 export const listSuppliersForSelect = async () => {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const suppliers = await prisma.supplier.findMany({
     where: {

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import {
   VariantBomSchema,
@@ -10,7 +10,7 @@ import {
 } from "@/lib/validators/dashboard/manufacturing/bom/BomValidator";
 
 export async function upsertVariantBomAction(values: VariantBomSchemaRequest) {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const parsed = VariantBomSchema.safeParse(values);
   if (!parsed.success) {

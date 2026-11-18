@@ -1,6 +1,8 @@
 "use server";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
+import { quotationStatusAfterOrderUnlink } from "@/lib/quotations/recordDelivery";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { SalesOrderDraftData } from "@/lib/types/SalesOrderTypes";
 import { Prisma } from "@prisma/client";
@@ -14,7 +16,7 @@ export const saveSalesOrderDraftSnapshotAction = async ({
   draft: SalesOrderDraftData;
   clientVersion: number;
 }) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const normalizeId = (value?: string | null) => {
     const normalized = value?.trim();
@@ -89,11 +91,16 @@ export const saveSalesOrderDraftSnapshotAction = async ({
     linkedQuotationId && linkedQuotationId !== nextQuotationId,
   );
 
-  const updated = await prisma.$transaction(async (tx) => {
+  return saveVersionedDraft(
+    () => prisma.$transaction(async (tx) => {
+    // Claim the version before changing any linked quotation.
+    const updated = await tx.salesOrder.update({
+      where: { id: salesOrderId, status: "DRAFT", draftVersion: clientVersion },
+      data: { draftData: nextDraft as unknown as Prisma.InputJsonValue, draftVersion: { increment: 1 }, quotationId: nextQuotationId, sourceType: nextSourceType, isConvertedFromQuotation: nextIsConvertedFromQuotation, updatedById: session.user.id },
+      select: { draftVersion: true, updatedAt: true },
+    });
     if (shouldRevertLinkedQuotation && order.quotation) {
-      const revertQuotationStatus = order.quotation.nextFollowupAt
-        ? "FOLLOWUP"
-        : "SENT";
+      const revertQuotationStatus = await quotationStatusAfterOrderUnlink(tx, order.quotation.id, order.quotation.nextFollowupAt);
 
       await tx.quotation.update({
         where: { id: order.quotation.id },
@@ -105,26 +112,8 @@ export const saveSalesOrderDraftSnapshotAction = async ({
       });
     }
 
-    return tx.salesOrder.update({
-      where: { id: salesOrderId },
-      data: {
-        draftData: nextDraft as unknown as Prisma.InputJsonValue,
-        draftVersion: { increment: 1 },
-        quotationId: nextQuotationId,
-        sourceType: nextSourceType,
-        isConvertedFromQuotation: nextIsConvertedFromQuotation,
-        updatedById: session.user.id,
-      },
-      select: {
-        draftVersion: true,
-        updatedAt: true,
-      },
-    });
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+    return updated;
+    }),
+    () => prisma.salesOrder.findUnique({ where: { id: salesOrderId }, select: { draftVersion: true } }),
+  );
 };

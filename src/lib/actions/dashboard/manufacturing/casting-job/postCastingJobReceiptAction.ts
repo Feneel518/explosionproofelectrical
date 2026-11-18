@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
+import { assertPayrollPeriodOpen } from "@/lib/contractors/periodLock";
+import { withSerializableRetry } from "@/lib/prisma/withSerializableRetry";
 import { prisma } from "@/lib/prisma/db";
 
 function toInt(value: unknown, fallback = 0) {
@@ -50,7 +52,7 @@ export async function postCastingJobReceiptAction({
     ratePerKg: number;
   }>;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const job = await prisma.castingJob.findUnique({
     where: { id: castingJobId },
@@ -171,7 +173,14 @@ export async function postCastingJobReceiptAction({
   const referenceNo = formatFinancialDocumentNumber(job.jobFy, job.jobNo);
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await withSerializableRetry(async (tx) => {
+      const lock = `casting-job:${castingJobId}`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lock}, 0))`;
+      const latestJob = await tx.castingJob.findUnique({ where: { id: castingJobId }, include: { items: true } });
+      if (!latestJob || !["IN_PROGRESS", "PARTIAL_RECEIVED"].includes(latestJob.status)) throw new Error("This casting job is no longer open for receipts.");
+      const jobItemsById = new Map(latestJob.items.map(item => [item.id, item]));
+      if (new Set(resolvedItems.map(item => item.castingJobItemId)).size !== resolvedItems.length) throw new Error("A casting job item may only appear once per receipt.");
+      await assertPayrollPeriodOpen(tx, job.workerId!, receiptDate);
       const latestReceipt = await tx.castingJobReceipt.findFirst({
         where: { castingJobId: job.id },
         orderBy: { receiptNo: "desc" },
@@ -202,6 +211,8 @@ export async function postCastingJobReceiptAction({
         const pendingWeight = Number(
           Math.max(Number(jobItem.issuedWeightKg || 0) - nextWeight, 0).toFixed(3),
         );
+
+        if (!jobItem || nextWeight > Number(jobItem.issuedWeightKg)) throw new Error("Received weight exceeds the remaining issued weight. Reload the job.");
 
         await tx.castingJobReceiptItem.create({
           data: {

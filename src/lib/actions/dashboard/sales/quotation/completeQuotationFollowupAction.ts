@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { FollowupOutcome } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -10,7 +10,7 @@ export async function completeQuotationFollowupAction(input: {
   outcome?: FollowupOutcome | "APPROVED" | "REJECTED" | null;
   note?: string | null;
 }) {
-  await requireAuth();
+  await requirePermission("sales.write");
 
   const followup = await prisma.quotationFollowup.findUnique({
     where: { id: input.followupId },

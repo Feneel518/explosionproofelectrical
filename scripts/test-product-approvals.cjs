@@ -15,6 +15,7 @@ function load(relative, mocks, cache = new Map()) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
   }).outputText;
   const localRequire = id => {
+    if (id === "server-only") return {};
     if (id in mocks) return mocks[id];
     if (id.startsWith('@/')) return load('src/' + id.slice(2), mocks, cache);
     if (id.startsWith('.')) return load(path.resolve(path.dirname(filename), id), mocks, cache);

@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PurchaseOrderStatus } from "@prisma/client";
@@ -18,6 +19,7 @@ export default async function PurchaseOrdersPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requirePermission("purchase.read");
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
   const status = typeof params.status === "string" ? params.status : "";

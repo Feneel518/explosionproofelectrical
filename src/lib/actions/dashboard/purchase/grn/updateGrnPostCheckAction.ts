@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import {
   GrnDiscrepancyAction,
@@ -28,7 +28,7 @@ export async function updateGrnPostCheckAction({
   discrepancyAction?: GrnDiscrepancyAction | null;
   checkNotes?: string | null;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.write");
 
   const grn = await prisma.goodsReceiptNote.findUnique({
     where: { id: grnId },

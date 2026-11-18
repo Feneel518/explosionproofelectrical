@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { notFound } from "next/navigation";
 
 import PrintSerialLabelsButton from "@/components/dashboard/serial/PrintSerialLabelsButton";
@@ -6,6 +7,7 @@ import { prisma } from "@/lib/prisma/db";
 export const dynamic = "force-dynamic";
 
 export default async function PrintSerialBatchPage({ params }: { params: Promise<{ batchId: string }> }) {
+  await requirePermission("master.read");
   const { batchId } = await params;
   const serials = await prisma.productSerial.findMany({
     where: { batchId },

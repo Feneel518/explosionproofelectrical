@@ -1,7 +1,7 @@
 "use server";
 
 import { Prisma, ProductMediaKind } from "@prisma/client";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import type { InvoiceDraftData } from "@/lib/types/Invoicetable";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
@@ -37,7 +37,7 @@ export type MediaItem = {
 };
 
 export async function getInvoiceEditDataAction(invoiceId: string) {
-  await requireAuth();
+  await requirePermission("accounts.read");
 
   try {
     const invoice = await prisma.invoice.findUnique({
@@ -47,6 +47,9 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
         invoiceNo: true,
         invoiceFy: true,
         status: true,
+        draftVersion: true,
+        customerSnapshot: true,
+        gstMode: true,
         invoiceDate: true,
         poNumber: true,
         poDate: true,
@@ -83,6 +86,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
           select: {
             id: true,
             orderNo: true,
+            gst: true,
             orderFy: true,
             poNumber: true,
             customerId: true,
@@ -187,6 +191,7 @@ export async function getInvoiceEditDataAction(invoiceId: string) {
       ok: true as const,
       invoice: serializeForClient({
         ...invoice,
+        gstMode: invoice.salesOrder?.gst ?? invoice.gstMode,
         clientNameSnapshot:
           invoice.clientNameSnapshot ||
           linkedCustomerSnapshot?.clientNameSnapshot ||

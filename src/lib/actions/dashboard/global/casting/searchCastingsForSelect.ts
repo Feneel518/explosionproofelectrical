@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { CastingSearchItem } from "@/lib/types/CastingSearchItem";
 
@@ -18,7 +18,7 @@ export const searchCastingsForSelectAction = async ({
   items: CastingSearchItem[];
   nextCursor: string | null;
 }> => {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const q = (query ?? "").trim();
   const takeQty = Math.min(Math.max(take ?? 20, 5), 50);

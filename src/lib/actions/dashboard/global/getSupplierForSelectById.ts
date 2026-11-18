@@ -1,13 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma/db";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import type { SupplierSearchItem } from "./searchSuppliersForSelect";
 
 export async function getSupplierForSelectById(
   id: string,
 ): Promise<SupplierSearchItem | null> {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const c = await prisma.supplier.findFirst({
     where: { id, deletedAt: null },

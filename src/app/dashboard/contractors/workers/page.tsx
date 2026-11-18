@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import WorkersTable from "@/components/dashboard/contractors/WorkersTable";
 import {
   buildWorkerOrderBy,
@@ -15,6 +16,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ searchParams }) => {
+  await requirePermission("accounts.read");
   const sp = workersSearchParamsCache.parse(await searchParams);
   const pageParams = Math.max(1, sp.page);
   const pageSizeParams = Math.min(50, Math.max(5, sp.pageSize));

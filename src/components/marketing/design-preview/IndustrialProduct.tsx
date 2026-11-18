@@ -21,7 +21,7 @@ export function IndustrialProduct({ product, related }: { product: CatalogProduc
   const title = `${product.name}${variant ? ` — ${variant.variant}` : ""} | ExEC`;
   const specs = [
     ["Type number", variant?.typeNumber || product.flpType], ["SKU", variant?.sku],
-    ["Protection", product.protection], ["Gas group", product.gasGroup],
+    ["Certification marking", product.certificationMarking], ["Protection", product.protection], ["Gas group", product.gasGroup],
     ["Material", product.material], ["Finish", product.finish], ["Hardware", product.hardware],
     ["Zones", product.zones.join(" / ")], ["HSN code", product.hsnCode],
   ].filter((row): row is [string, string] => Boolean(row[1]));

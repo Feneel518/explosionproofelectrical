@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { readInvoiceCustomerSnapshot } from "@/lib/invoices/customerSnapshot";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { Prisma, TransportationPayment } from "@prisma/client";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
@@ -71,7 +72,7 @@ function normalizeInvoiceDraftData(
 }
 
 export async function getInvoiceByIdAction(invoiceId: string) {
-  await requireAuth();
+  await requirePermission("accounts.read");
 
   try {
     const invoice = await prisma.invoice.findUnique({
@@ -81,6 +82,9 @@ export async function getInvoiceByIdAction(invoiceId: string) {
         invoiceNo: true,
         invoiceFy: true,
         status: true,
+        draftVersion: true,
+        customerSnapshot: true,
+        gstMode: true,
 
         invoiceDate: true,
         dispatchDate: true,
@@ -111,6 +115,8 @@ export async function getInvoiceByIdAction(invoiceId: string) {
         transportationAmount: true,
 
         subtotal: true,
+        discountTotal: true,
+        taxableTotal: true,
         gstTotal: true,
         grandTotal: true,
 
@@ -149,6 +155,7 @@ export async function getInvoiceByIdAction(invoiceId: string) {
             poDate: true,
             poNumber: true,
             paymentTerms: true,
+            gst: true,
             customerId: true,
             clientNameSnapshot: true,
             citySnapshot: true,
@@ -312,6 +319,17 @@ export async function getInvoiceByIdAction(invoiceId: string) {
         })),
     }));
 
+    const snapshot = readInvoiceCustomerSnapshot(invoice.customerSnapshot);
+    if (snapshot) {
+      const frozen = { id: invoice.customer?.id ?? invoice.salesOrder?.customer?.id ?? "", companyName: snapshot.companyNameSnapshot ?? "", city: snapshot.citySnapshot ?? "", state: snapshot.stateSnapshot ?? "", gstin: snapshot.gstinSnapshot, addressLine1: snapshot.addressLine1 ?? "", addressLine2: snapshot.addressLine2, country: snapshot.countrySnapshot ?? "", pincode: snapshot.pincodeSnapshot ?? "", companyPhone: snapshot.contactPhoneSnapshot, companyEmail: snapshot.contactEmailSnapshot };
+      invoice.customer = frozen;
+      if (invoice.salesOrder) {
+        invoice.salesOrder.customer = frozen;
+        invoice.salesOrder.receivedFromName = snapshot.contactNameSnapshot;
+        invoice.salesOrder.receivedFromPhone = snapshot.contactPhoneSnapshot;
+        invoice.salesOrder.receivedFromEmail = snapshot.contactEmailSnapshot;
+      }
+    }
     const draftData = normalizeInvoiceDraftData(invoice.draftData);
 
     const packages = invoice.packages.map((pkg) => ({
@@ -344,6 +362,8 @@ export async function getInvoiceByIdAction(invoiceId: string) {
       invoice: serializeForClient({
         ...invoice,
         subtotal: Number(invoice.subtotal ?? 0),
+        discountTotal: Number(invoice.discountTotal ?? 0),
+        taxableTotal: Number(invoice.taxableTotal ?? 0),
         gstTotal: Number(invoice.gstTotal ?? 0),
         grandTotal: Number(invoice.grandTotal ?? 0),
         transportationAmount:

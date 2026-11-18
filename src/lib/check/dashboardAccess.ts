@@ -1,5 +1,4 @@
-import { headers } from "next/headers";
-import { auth } from "../auth/auth";
+import { getAuthSession } from "../auth/session";
 
 const FALLBACK_ALLOWED_DASHBOARD_EMAILS = ["feneelp@gmail.com"];
 
@@ -14,7 +13,7 @@ const parseAllowedDashboardEmails = () => {
   const values =
     envList.length > 0 ? envList : FALLBACK_ALLOWED_DASHBOARD_EMAILS;
 
-  return new Set([...FALLBACK_ALLOWED_DASHBOARD_EMAILS, ...values].map(normalizeEmail));
+  return new Set(values.map(normalizeEmail));
 };
 
 export const isDashboardEmailAllowed = (email?: string | null) => {
@@ -24,8 +23,9 @@ export const isDashboardEmailAllowed = (email?: string | null) => {
 };
 
 export const canCurrentUserAccessDashboard = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
+  const session = await getAuthSession().catch((error) => {
+    console.error("Dashboard access lookup failed", error);
+    return null;
   });
 
   return isDashboardEmailAllowed(session?.user.email);

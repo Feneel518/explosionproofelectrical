@@ -1,4 +1,5 @@
-﻿import { FC } from "react";
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
+import { FC } from "react";
 
 import RawMaterialForm from "@/components/dashboard/raw-material/RawMaterialForm";
 import { prisma } from "@/lib/prisma/db";
@@ -8,6 +9,7 @@ interface PageProps {
 }
 
 const Page: FC<PageProps> = async ({ params }) => {
+  await requirePermission("master.write");
   const { id } = await params;
 
   const rawMaterial = await prisma.rawMaterial.findUnique({

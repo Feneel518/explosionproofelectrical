@@ -1,4 +1,5 @@
-"use server";
+import "server-only";
+import { lockStockEntity } from "@/lib/helpers/inventory/lockStockEntity";
 
 import { Prisma } from "@prisma/client";
 
@@ -99,6 +100,10 @@ export async function rollbackInvoiceEffects(
       if (row.productVariantId) touchedVariantIds.add(row.productVariantId);
       if (row.castingMasterId) touchedCastingIds.add(row.castingMasterId);
     }
+
+    for (const rawMaterialId of [...touchedRawMaterialIds].sort()) await lockStockEntity(tx, { rawMaterialId });
+    for (const productVariantId of [...touchedVariantIds].sort()) await lockStockEntity(tx, { productVariantId });
+    for (const castingMasterId of [...touchedCastingIds].sort()) await lockStockEntity(tx, { castingMasterId });
 
     await tx.stockLedger.deleteMany({
       where: {

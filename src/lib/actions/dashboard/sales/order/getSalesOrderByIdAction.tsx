@@ -1,12 +1,12 @@
 // lib/actions/dashboard/sales/orders/getSalesOrderByIdAction.ts
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
 
 export const getSalesOrderByIdAction = async (id: string) => {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   const order = await prisma.salesOrder.findUnique({
     where: { id },

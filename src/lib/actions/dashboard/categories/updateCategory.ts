@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import {
   CategorySchema,
@@ -14,7 +14,7 @@ import { fail } from "assert";
 import { revalidatePath } from "next/cache";
 
 export const updateCategoryAction = async (values: CategorySchemaRequest) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   const parsed = CategorySchema.safeParse(values);
 

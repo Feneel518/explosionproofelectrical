@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
@@ -15,7 +15,7 @@ export const closeDeliveryChallanAction = async (
   }[],
   closureRemarks?: string,
 ) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const challan = await prisma.deliveryChallan.findUnique({
     where: { id: challanId },

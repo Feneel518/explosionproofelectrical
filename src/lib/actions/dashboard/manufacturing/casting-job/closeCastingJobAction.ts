@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export async function closeCastingJobAction(castingJobId: string) {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const job = await prisma.castingJob.findUnique({
     where: { id: castingJobId },

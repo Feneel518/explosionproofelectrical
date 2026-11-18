@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { GrnDraftData } from "./createDraftGrnAction";
 
 export async function getGrnDraftAction(id: string) {
-  await requireAuth();
+  await requirePermission("inventory.read");
 
   const grn = await prisma.goodsReceiptNote.findUnique({
     where: { id },

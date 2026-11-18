@@ -1,4 +1,5 @@
-﻿import StockAdjustmentDetailView from "@/components/dashboard/inventory/stock-adjustment/StockAdjustmentDetailView";
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
+import StockAdjustmentDetailView from "@/components/dashboard/inventory/stock-adjustment/StockAdjustmentDetailView";
 import { getStockAdjustmentByIdAction } from "@/lib/actions/dashboard/inventory/stock-adjustment/getStockAdjustmentByIdAction";
 
 export const dynamic = "force-dynamic";
@@ -8,6 +9,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("inventory.read");
   const { id } = await params;
   const res = await getStockAdjustmentByIdAction(id);
 

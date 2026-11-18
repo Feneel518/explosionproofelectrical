@@ -1,6 +1,7 @@
 "use server";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { DeliveryChallanDraftData } from "./createDraftDeliveryChallanAction";
 
@@ -13,7 +14,7 @@ export const saveDeliveryChallanDraftSnapshotAction = async ({
   draft: DeliveryChallanDraftData;
   clientVersion: number;
 }) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   const challan = await prisma.deliveryChallan.findUnique({
     where: { id: deliveryChallanId },
@@ -36,19 +37,17 @@ export const saveDeliveryChallanDraftSnapshotAction = async ({
     };
   }
 
-  const updated = await prisma.deliveryChallan.update({
-    where: { id: deliveryChallanId },
+
+  return saveVersionedDraft(
+    () => prisma.deliveryChallan.update({
+    where: { id: deliveryChallanId, status: "DRAFT", draftVersion: clientVersion },
     data: {
       draftData: draft,
       draftVersion: { increment: 1 },
       updatedById: session.user.id,
     },
     select: { draftVersion: true, updatedAt: true },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.deliveryChallan.findUnique({ where: { id: deliveryChallanId }, select: { draftVersion: true } }),
+  );
 };

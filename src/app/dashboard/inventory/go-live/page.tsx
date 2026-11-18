@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import InventoryGoLiveManager from "@/components/dashboard/inventory/go-live/InventoryGoLiveManager";
 import { requireAuth } from "@/lib/check/requireAuth";
 import { prisma } from "@/lib/prisma/db";
@@ -9,6 +10,7 @@ function dateInput(value?: Date | null) {
 }
 
 export default async function Page() {
+  await requirePermission("inventory.read");
   await requireAuth();
   const [settings, rows] = await Promise.all([
     prisma.inventorySetting.findUnique({ where: { id: "default" } }),

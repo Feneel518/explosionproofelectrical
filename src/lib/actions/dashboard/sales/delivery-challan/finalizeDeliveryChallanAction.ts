@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
 import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
@@ -21,7 +21,7 @@ function toNumber(value: unknown, fallback = 0) {
 }
 
 export const finalizeDeliveryChallanAction = async (id: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   try {
     const challan = await prisma.deliveryChallan.findUnique({
@@ -30,6 +30,7 @@ export const finalizeDeliveryChallanAction = async (id: string) => {
         id: true,
         status: true,
         draftData: true,
+      draftVersion: true,
         challanNo: true,
         challanFy: true,
         challanCode: true,
@@ -212,6 +213,7 @@ export const finalizeDeliveryChallanAction = async (id: string) => {
 
     await prisma.$transaction(
       async (tx) => {
+      await tx.deliveryChallan.update({ where: { id: challan.id, status: "DRAFT", draftVersion: challan.draftVersion }, data: { draftVersion: { increment: 1 } } });
         await tx.deliveryChallan.update({
           where: { id },
           data: challanUpdateData,

@@ -1,6 +1,8 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
+import { issuePurchaseOrderShare } from "@/lib/purchase/sharing";
+import { z } from "zod";
 import transporter from "@/lib/email/nodemailer";
 import { escapeEmailHtml, renderThemedEmailLayout } from "@/lib/email/themeTemplate";
 import { getFinancialYearLabel, formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
@@ -46,12 +48,12 @@ async function validate(draft: PurchaseOrderDraft) {
 }
 
 export async function savePurchaseOrderAction(input: { id?: string; draft: PurchaseOrderDraft; finalize?: boolean }) {
-  const session = await requireAuth();
+  const session = await requirePermission("purchase.write");
   try {
     const supplier = await validate(input.draft);
     const totals = calculate(input.draft);
     const snapshot = [supplier.addressLine1, supplier.addressLine2, supplier.city, supplier.state, supplier.pincode, supplier.country].filter(Boolean).join(", ");
-    const common = {
+    const common = { shareTokenHash: null, shareExpiresAt: null,
       orderDate: date(input.draft.orderDate) ?? new Date(), expectedDate: date(input.draft.expectedDate), supplierId: supplier.id,
       supplierName: supplier.companyName, supplierEmail: supplier.companyEmail, supplierPhone: supplier.companyPhone, supplierAddress: snapshot, supplierGstin: supplier.gstin,
       paymentTerms: input.draft.paymentTerms?.trim() || null, deliveryTerms: input.draft.deliveryTerms?.trim() || null, shippingAddress: input.draft.shippingAddress?.trim() || null,
@@ -77,39 +79,45 @@ export async function savePurchaseOrderAction(input: { id?: string; draft: Purch
 }
 
 export async function cancelPurchaseOrderAction(id: string) {
-  await requireAuth();
+  await requirePermission("purchase.write");
   const order = await prisma.purchaseOrder.findUnique({ where: { id }, select: { status: true } });
   if (!order) return { ok: false as const, message: "Purchase order not found." };
   if (order.status === "CANCELLED") return { ok: false as const, message: "Purchase order is already cancelled." };
-  await prisma.purchaseOrder.update({ where: { id }, data: { status: "CANCELLED", cancelledAt: new Date() } });
+  await prisma.purchaseOrder.update({ where: { id }, data: { status: "CANCELLED", cancelledAt: new Date(), shareTokenHash: null, shareExpiresAt: null } });
   revalidatePath("/dashboard/purchase/orders"); revalidatePath(`/dashboard/purchase/orders/${id}`);
   return { ok: true as const };
 }
 
 export async function sendPurchaseOrderAction(id: string, recipient: string, message?: string) {
-  await requireAuth();
+  await requirePermission("purchase.write");
   try {
     const email = recipient.trim();
-    if (!/^\S+@\S+\.\S+$/.test(email)) return { ok: false as const, message: "Enter a valid recipient email." };
+    if (!z.email().safeParse(email).success || /[\r\n]/.test(email)) return { ok: false as const, message: "Enter a valid recipient email." };
     const order = await prisma.purchaseOrder.findUnique({ where: { id }, include: { items: { orderBy: { sortOrder: "asc" } } } });
     if (!order) return { ok: false as const, message: "Purchase order not found." };
     if (order.status === "DRAFT" || order.status === "CANCELLED") return { ok: false as const, message: "Finalize the purchase order before sending it." };
     const poNumber = formatFinancialDocumentNumber(order.poFy, order.poNo);
     const money = (value: unknown) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(number(value));
     const rows = order.items.map((item, i) => `<tr><td style="padding:8px;border:1px solid #d7e0ea">${i + 1}</td><td style="padding:8px;border:1px solid #d7e0ea">${escapeEmailHtml(item.title)}</td><td style="padding:8px;border:1px solid #d7e0ea;text-align:right">${number(item.qty)} ${escapeEmailHtml(item.unit)}</td><td style="padding:8px;border:1px solid #d7e0ea;text-align:right">${money(item.unitPrice)}</td><td style="padding:8px;border:1px solid #d7e0ea;text-align:right">${money(item.lineTotal)}</td></tr>`).join("");
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "";
-    const copyUrl = `${baseUrl}/purchase-orders/${id}`;
+    const baseUrl = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) throw new Error("The application URL must be configured before sharing a purchase order.");
+    const url = new URL(`/purchase-orders/${id}`, baseUrl);
+    if (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname))) throw new Error("Purchase-order sharing requires HTTPS.");
+    const share = issuePurchaseOrderShare();
+    url.searchParams.set("token", share.token);
+    const copyUrl = url.toString();
+    await prisma.purchaseOrder.update({ where: { id, status: { in: ["FINALIZED", "SENT"] }, updatedAt: order.updatedAt }, data: { shareTokenHash: share.hash, shareExpiresAt: share.expiresAt } });
     const subject = `Purchase Order ${poNumber} - Explosion Proof Electrical Control`;
     const html = renderThemedEmailLayout({ title: `Purchase Order ${poNumber}`, preheader: `Purchase order for ${order.supplierName}`, bodyHtml: `<p>Dear ${escapeEmailHtml(order.supplierName)},</p><p>${escapeEmailHtml(message?.trim() || "Please find our purchase order details below. Kindly confirm acceptance and the expected delivery date.")}</p><table style="width:100%;border-collapse:collapse;margin:18px 0"><thead><tr style="background:#f0f5f9"><th style="padding:8px;border:1px solid #d7e0ea">#</th><th style="padding:8px;border:1px solid #d7e0ea">Material</th><th style="padding:8px;border:1px solid #d7e0ea">Qty</th><th style="padding:8px;border:1px solid #d7e0ea">Rate</th><th style="padding:8px;border:1px solid #d7e0ea">Amount</th></tr></thead><tbody>${rows}</tbody></table><p style="text-align:right;font-size:18px"><strong>Total: ${money(order.grandTotal)}</strong></p>${baseUrl ? `<p><a href="${escapeEmailHtml(copyUrl)}" style="display:inline-block;padding:11px 16px;background:#164d78;color:white;text-decoration:none;border-radius:6px">View / Print Purchase Order</a></p>` : ""}<p>Regards,<br/>Explosion Proof Electrical Control</p>` });
     await transporter.sendMail({ from: process.env.SMTP_FROM || process.env.SMTP_USER || process.env.EMAIL_USER, to: email, subject, html });
-    await prisma.purchaseOrder.update({ where: { id }, data: { status: "SENT", sentAt: new Date(), sentTo: email, emailSubject: subject } });
+    await prisma.purchaseOrder.updateMany({ where: { id, shareTokenHash: share.hash, status: { in: ["FINALIZED", "SENT"] } }, data: { status: "SENT", sentAt: new Date(), sentTo: email, emailSubject: subject } });
     revalidatePath(`/dashboard/purchase/orders/${id}`); revalidatePath("/dashboard/purchase/orders");
     return { ok: true as const };
   } catch (error) { return { ok: false as const, message: error instanceof Error ? error.message : "Could not send purchase order." }; }
 }
 
 export async function createGrnFromPurchaseOrderAction(id: string) {
-  const session = await requireAuth();
+  const session = await requirePermission("purchase.write");
   try {
     const order = await prisma.purchaseOrder.findUnique({ where: { id }, include: { items: { orderBy: { sortOrder: "asc" } } } });
     if (!order || order.status === "DRAFT" || order.status === "CANCELLED") return { ok: false as const, message: "Only active finalized purchase orders can be received." };
@@ -121,4 +129,11 @@ export async function createGrnFromPurchaseOrderAction(id: string) {
     });
     return { ok: true as const, id: created.id };
   } catch (error) { return { ok: false as const, message: error instanceof Error ? error.message : "Could not create GRN." }; }
+}
+
+export async function revokePurchaseOrderShareAction(id: string) {
+  await requirePermission("purchase.write");
+  await prisma.purchaseOrder.update({ where: { id: z.uuid().parse(id) }, data: { shareTokenHash: null, shareExpiresAt: null } });
+  revalidatePath(`/dashboard/purchase/orders/${id}`);
+  return { ok: true as const };
 }

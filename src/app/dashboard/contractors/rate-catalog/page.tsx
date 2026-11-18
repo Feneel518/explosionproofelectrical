@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import ContractorCatalogManager from "@/components/dashboard/contractors/ContractorCatalogManager";
 import RateCatalogFilters from "@/components/dashboard/contractors/RateCatalogFilters";
 import { prisma } from "@/lib/prisma/db";
@@ -17,6 +18,7 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requirePermission("master.read");
   const raw = await searchParams;
   const sp = rateCatalogSearchParamsCache.parse(raw);
   const pageSize = Math.min(100, Math.max(10, sp.pageSize));

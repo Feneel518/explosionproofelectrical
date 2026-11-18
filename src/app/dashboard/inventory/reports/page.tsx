@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { requireAuth } from "@/lib/check/requireAuth";
@@ -10,6 +11,7 @@ function quantity(value: number) {
 }
 
 export default async function Page() {
+  await requirePermission("inventory.read");
   await requireAuth();
   const monthStart = new Date();
   monthStart.setDate(1);

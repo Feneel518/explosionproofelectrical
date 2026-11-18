@@ -1,13 +1,13 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { CastingSearchItem } from "@/lib/types/CastingSearchItem";
 
 export async function getCastingForSelectById(
   id: string,
 ): Promise<CastingSearchItem | null> {
-  await requireAuth();
+  await requirePermission("master.read");
 
   if (!id) return null;
 

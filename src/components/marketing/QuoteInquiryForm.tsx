@@ -89,7 +89,7 @@ export function QuoteInquiryForm({
       setStatus({
         kind: "success",
         message: result.message,
-        warning: result.emailWarning,
+        warning: undefined,
       });
     });
   };

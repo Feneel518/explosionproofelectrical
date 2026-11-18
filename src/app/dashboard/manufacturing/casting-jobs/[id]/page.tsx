@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import CastingJobDetailView from "@/components/dashboard/manufacturing/casting-job/CastingJobDetailView";
 import { getCastingJobByIdAction } from "@/lib/actions/dashboard/manufacturing/casting-job/getCastingJobByIdAction";
 
@@ -8,6 +9,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("production.read");
   const { id } = await params;
   const res = await getCastingJobByIdAction(id);
 

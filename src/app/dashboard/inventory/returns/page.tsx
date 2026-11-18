@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { prisma } from "@/lib/prisma/db";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await requirePermission("inventory.read");
   await requireAuth();
   const returns = await prisma.materialReturn.findMany({
     orderBy: [{ returnDate: "desc" }, { createdAt: "desc" }],

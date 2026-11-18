@@ -1,4 +1,5 @@
 "use server";
+import { requirePermission } from "@/lib/check/permissions";
 
 import { prisma } from "@/lib/prisma/db";
 import { getSourceLabel } from "@/lib/helpers/server/websiteVisitorAnalytics";
@@ -99,6 +100,7 @@ function toTopRows(
 export async function getWebsiteVisitorAnalyticsAction(
   days = 30,
 ): Promise<WebsiteVisitorAnalytics> {
+  await requirePermission("analytics.read");
   const rangeDays = Math.max(7, Math.min(90, days));
   const { now, from, days: dayRange } = getLastNDays(rangeDays);
 

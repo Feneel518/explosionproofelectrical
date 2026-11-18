@@ -47,7 +47,7 @@ export default function AuthLayout({
           <div className={styles.storyContent}>
             <div className={styles.eyebrow}>
               <span className={styles.liveDot} />
-              Operator portal online
+              Operator portal
             </div>
             <p className={styles.statement}>
               The control room

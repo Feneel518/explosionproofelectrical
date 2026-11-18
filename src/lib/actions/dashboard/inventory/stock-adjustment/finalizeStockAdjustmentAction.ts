@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
@@ -47,6 +47,7 @@ export async function finalizeStockAdjustmentAction(id: string) {
       adjustNo: true,
       adjustFy: true,
       draftData: true,
+      draftVersion: true,
     },
   });
 
@@ -185,6 +186,7 @@ export async function finalizeStockAdjustmentAction(id: string) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      await tx.stockAdjustment.update({ where: { id: adjustment.id, status: "DRAFT", draftVersion: adjustment.draftVersion }, data: { draftVersion: { increment: 1 } } });
       await tx.stockAdjustment.update({
         where: { id: adjustment.id },
         data: {

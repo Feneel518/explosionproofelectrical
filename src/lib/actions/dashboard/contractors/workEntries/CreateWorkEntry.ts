@@ -1,6 +1,8 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { withSerializableRetry } from "@/lib/prisma/withSerializableRetry";
+import { assertPayrollPeriodOpen } from "@/lib/contractors/periodLock";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -13,7 +15,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 
 export const createWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const parsed = WorkEntrySchema.safeParse(values);
   if (!parsed.success) return { ok: false, message: "Enter the fields properly." };
@@ -35,7 +37,9 @@ export const createWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
     });
     if (!rateRow) return fail("Selected rate row not found.");
 
-    const created = await prisma.workEntry.create({
+    const created = await withSerializableRetry(async tx => {
+      await assertPayrollPeriodOpen(tx, data.workerId, entryDate);
+      return tx.workEntry.create({
       data: {
         date: entryDate,
         workerId: data.workerId,
@@ -54,6 +58,7 @@ export const createWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
       },
       select: { id: true },
     });
+    });
 
     revalidatePath("/dashboard/contractors/entries");
     revalidatePath(`/dashboard/contractors/workers/${data.workerId}`);
@@ -66,7 +71,7 @@ export const createWorkEntryAction = async (values: WorkEntrySchemaRequest) => {
 export const createWorkEntryBatchAction = async (
   values: WorkEntryBatchSchemaRequest,
 ) => {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
   const parsed = WorkEntryBatchSchema.safeParse(values);
 
   if (!parsed.success) return fail("Enter the fields properly.");
@@ -98,7 +103,9 @@ export const createWorkEntryBatchAction = async (
       return fail("One or more selected rate rows are no longer active.");
     }
 
-    await prisma.workEntry.createMany({
+    await withSerializableRetry(async tx => {
+      await assertPayrollPeriodOpen(tx, data.workerId, entryDate);
+      return tx.workEntry.createMany({
       data: data.rows.map((row) => {
         const rateRow = rateMap.get(row.contractorRateId)!;
         const rate = Number(rateRow.defaultRate);
@@ -117,6 +124,7 @@ export const createWorkEntryBatchAction = async (
           createdById: session.user.id,
         };
       }),
+    });
     });
 
     revalidatePath("/dashboard/contractors/entries");

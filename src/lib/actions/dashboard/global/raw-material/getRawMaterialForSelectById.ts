@@ -1,13 +1,13 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { RawMaterialSearchItem } from "@/lib/types/RawMaterialSearchItem";
 
 export async function getRawMaterialForSelectById(
   id: string,
 ): Promise<RawMaterialSearchItem | null> {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const item = await prisma.rawMaterial.findUnique({
     where: { id },

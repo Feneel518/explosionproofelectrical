@@ -1,10 +1,10 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export const getQuotationDraftAction = async (id: string) => {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   const q = await prisma.quotation.findUnique({
     where: {

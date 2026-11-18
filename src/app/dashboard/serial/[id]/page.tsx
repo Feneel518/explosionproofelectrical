@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ArrowLeft, FileText, Printer } from "lucide-react";
@@ -21,6 +22,7 @@ function Value({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default async function SerialDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePermission("master.read");
   const { id } = await params;
   const serial = await prisma.productSerial.findUnique({
     where: { id },

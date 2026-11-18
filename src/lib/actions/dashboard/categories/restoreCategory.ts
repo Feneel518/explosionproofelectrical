@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
 
 export const restoreCategoryyAction = async (id: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   if (!id) {
     return {

@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import DeliveryChallanDetailView from "@/components/dashboard/sales/delivery-challan/DeliveryChallanDetailView";
 import { getDeliveryChallanByIdAction } from "@/lib/actions/dashboard/sales/delivery-challan/getDeliveryChallanByIdAction";
 
@@ -6,6 +7,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("sales.read");
   const { id } = await params;
   const res = await getDeliveryChallanByIdAction(id);
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { postStockMovement } from "@/lib/helpers/inventory/postStockMovement";
 import { prisma } from "@/lib/prisma/db";
@@ -34,7 +34,7 @@ function trimOrNull(value?: string | null) {
 }
 
 export async function finalizeCastingJobAction(id: string) {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const job = await prisma.castingJob.findUnique({
     where: { id },
@@ -44,6 +44,7 @@ export async function finalizeCastingJobAction(id: string) {
       jobNo: true,
       jobFy: true,
       draftData: true,
+      draftVersion: true,
     },
   });
 
@@ -195,6 +196,7 @@ export async function finalizeCastingJobAction(id: string) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      await tx.castingJob.update({ where: { id: job.id, status: "DRAFT", draftVersion: job.draftVersion }, data: { draftVersion: { increment: 1 } } });
       await tx.castingJob.update({
         where: { id: job.id },
         data: {

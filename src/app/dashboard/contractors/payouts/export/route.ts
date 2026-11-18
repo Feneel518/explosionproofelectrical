@@ -1,7 +1,9 @@
+import { requirePermission } from "@/lib/check/permissions";
 import { NextRequest } from "next/server";
 
 import { buildContractorRateLabel, formatMonthYearLabel } from "@/lib/helpers/globalHelpers/contractorLabels";
 import { prisma } from "@/lib/prisma/db";
+import { payrollMonthBounds } from "@/lib/contractors/payoutAmounts";
 
 function csvEscape(value: string | number | null | undefined) {
   const stringValue = value == null ? "" : String(value);
@@ -9,16 +11,15 @@ function csvEscape(value: string | number | null | undefined) {
 }
 
 export async function GET(request: NextRequest) {
+  await requirePermission("accounts.read");
   const workerId = request.nextUrl.searchParams.get("workerId");
   const monthYear = request.nextUrl.searchParams.get("monthYear");
 
-  if (!workerId || !monthYear || !/^\d{4}-\d{2}$/.test(monthYear)) {
+  if (!workerId || !monthYear || !/^(20\d{2})-(0[1-9]|1[0-2])$/.test(monthYear)) {
     return new Response("Missing or invalid workerId/monthYear", { status: 400 });
   }
 
-  const [year, month] = monthYear.split("-").map(Number);
-  const start = new Date(year, month - 1, 1);
-  const end = new Date(year, month, 1);
+  const { start, end } = payrollMonthBounds(monthYear);
 
   const [worker, entries, ledger] = await Promise.all([
     prisma.worker.findUnique({

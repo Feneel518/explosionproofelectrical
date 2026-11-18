@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { redirect } from "next/navigation";
 
 import { createDraftCastingJobAction } from "@/lib/actions/dashboard/manufacturing/casting-job/createDraftCastingJobAction";
@@ -9,6 +10,7 @@ interface PageProps {
 }
 
 export default async function Page({ searchParams }: PageProps) {
+  await requirePermission("production.write");
   const { workerId } = await searchParams;
   const res = await createDraftCastingJobAction(workerId);
   if (!res.ok) redirect("/dashboard/manufacturing/casting-jobs");

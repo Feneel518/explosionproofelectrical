@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { redirect } from "next/navigation";
 import { FC } from "react";
 
@@ -13,6 +14,7 @@ interface PageProps {
 }
 
 const page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("accounts.write");
   const sp = await searchParams;
   const orderId = sp.orderId?.trim();
   const offline = sp.offline?.trim() === "1";

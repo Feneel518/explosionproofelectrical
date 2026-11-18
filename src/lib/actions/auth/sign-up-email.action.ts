@@ -1,11 +1,16 @@
 "use server";
 
+import { consumeSubmissionLimit, SubmissionLimitError } from "@/lib/security/submissionLimit";
+import { headers } from "next/headers";
 import { auth, ErrorCode } from "@/lib/auth/auth";
 import { RegisterValidatorSchema } from "@/lib/validators/registerValidator";
 import { APIError } from "better-auth/api";
 
 export async function signUpEmailAction(data: RegisterValidatorSchema) {
   try {
+    const requestHeaders = await headers();
+    await consumeSubmissionLimit("signup-ip", requestHeaders.get("x-vercel-forwarded-for") || requestHeaders.get("x-real-ip") || requestHeaders.get("x-forwarded-for")?.split(",")[0] || "unknown", 5, 3600);
+    await consumeSubmissionLimit("signup-email", String(data?.email || ""), 3, 3600);
     await auth.api.signUpEmail({
       body: {
         email: data.email,
@@ -16,6 +21,7 @@ export async function signUpEmailAction(data: RegisterValidatorSchema) {
 
     return { success: true, error: null };
   } catch (error) {
+    if (error instanceof SubmissionLimitError) return { error: error.message };
     if (error instanceof APIError) {
       const errCode = error.body ? (error.body.code as ErrorCode) : "UNKNOWN";
 

@@ -22,6 +22,7 @@ export type CatalogProductDetail = CatalogProductCard & {
   flpType?: string | null;
   protection?: string | null;
   gasGroup?: string | null;
+  certificationMarking?: string | null;
   material?: string | null;
   finish?: string | null;
   hardware?: string | null;
@@ -53,6 +54,9 @@ type CatalogProductRow = {
   flpType: string | null;
   protection: string | null;
   gasGroup: string | null;
+  certificationMarking?: string | null;
+  certificationReference?: string | null;
+  certificationVerifiedAt?: Date | null;
   material?: string | null;
   finish?: string | null;
   hardware?: string | null;
@@ -191,6 +195,9 @@ function catalogProductSelect() {
     flpType: true,
     protection: true,
     gasGroup: true,
+    certificationMarking: true,
+    certificationReference: true,
+    certificationVerifiedAt: true,
     material: true,
     finish: true,
     hardware: true,
@@ -246,7 +253,7 @@ function toCatalogProductCard(
     cat: product.category.name,
     image,
     ip: formatProtectionLabel(product.protection) || "",
-    group: formatGasGroupLabel(product.gasGroup) || "",
+    group: product.certificationVerifiedAt && product.certificationReference ? product.certificationMarking || "" : "",
     type: variant?.typeNumber?.trim() || product.flpType?.trim() || "EXEC",
     filter: product.category.slug,
     description: product.shortDesc?.trim() || `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
@@ -268,12 +275,13 @@ export function toCatalogProductDetail(
     longDescription: product.longDesc,
     flpType: product.flpType,
     protection: product.protection,
-    gasGroup: product.gasGroup,
+    gasGroup: product.certificationVerifiedAt && product.certificationReference ? product.gasGroup : null,
+    certificationMarking: product.certificationVerifiedAt && product.certificationReference ? product.certificationMarking : null,
     material: product.material,
     finish: product.finish,
     hardware: product.hardware,
     hsnCode: product.hsnCode,
-    zones: product.zones ?? [],
+    zones: product.certificationVerifiedAt && product.certificationReference && product.certificationMarking ? product.zones ?? [] : [],
     variants: product.variants.map((variant) => ({
       id: variant.id, variant: variant.variant, typeNumber: variant.typeNumber,
       sku: variant.sku, images: variant.images, drawings: variant.drawings,
@@ -294,5 +302,5 @@ export function formatGasGroupLabel(gasGroup?: string | null) {
     .map((group) => group.toUpperCase())
     .join("/");
 
-  return gasGroups ? `Ex d ${gasGroups}` : undefined;
+  return gasGroups || undefined;
 }

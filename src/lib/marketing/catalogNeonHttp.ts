@@ -25,7 +25,7 @@ export async function readCatalogOverNeonHttp(): Promise<CatalogProductDetail[]>
   const response = await postJson(`https://${database.hostname}/sql`,
     { "Content-Type": "application/json", "Neon-Connection-String": database.href, "Neon-Raw-Text-Output": "false", "Neon-Array-Mode": "false" },
     JSON.stringify({ query: `
-      SELECT p.name, p.slug, p."flpType", p.protection, p."gasGroup", p.material,
+      SELECT p.name, p.slug, p."flpType", p.protection, p."gasGroup", p.material, p."certificationMarking", p."certificationReference", p."certificationVerifiedAt",
         p.finish, p.hardware, p."hsnCode", p.zones, p."shortDesc", p."longDesc", p."categoryId",
         json_build_object('id', c.id, 'name', c.name, 'slug', c.slug) AS category,
         COALESCE((SELECT json_agg(vdata ORDER BY vdata."createdAt") FROM (

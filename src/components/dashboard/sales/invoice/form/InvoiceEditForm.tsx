@@ -1,4 +1,7 @@
-﻿"use client";
+"use client";
+import { calculateInvoiceAmounts } from "@/lib/invoices/amounts";
+import type { GST } from "@prisma/client";
+﻿
 
 import * as React from "react";
 import { format } from "date-fns";
@@ -91,6 +94,8 @@ type PendingItem = {
 type InvoiceEditData = {
   id: string;
   invoiceNo: number;
+  draftVersion: number;
+  gstMode: GST;
   invoiceFy: string;
   status: string;
   invoiceDate: string | Date;
@@ -118,6 +123,8 @@ type InvoiceEditData = {
   grandTotal: number;
   draftData?: {
     header?: {
+      discountType?: "PERCENTAGE" | "AMOUNT";
+      discountValue?: number;
       customerId?: string | null;
       clientNameSnapshot?: string | null;
       citySnapshot?: string | null;
@@ -234,6 +241,8 @@ const packageSchema = z.object({
 const formSchema = z
   .object({
     header: z.object({
+      discountType: z.enum(["PERCENTAGE", "AMOUNT"]).default("AMOUNT"),
+      discountValue: z.coerce.number().min(0).default(0),
       customerId: z.string().nullable().optional(),
       invoiceNo: z.coerce.number().int().min(1, "Invoice number is required"),
       invoiceDate: z.date("Invoice date is required"),
@@ -260,6 +269,8 @@ const formSchema = z
     packages: z.array(packageSchema).default([]),
   })
   .superRefine((data, ctx) => {
+    const gross = data.items.filter(item => item.selected).reduce((sum, item) => sum + Math.max(0, Number(item.qty || 0)) * Math.max(0, Number(item.unitPrice || 0)), 0);
+    if ((data.header.discountType === "PERCENTAGE" && data.header.discountValue > 100) || (data.header.discountType === "AMOUNT" && data.header.discountValue > gross)) ctx.addIssue({ code: "custom", path: ["header", "discountValue"], message: "Discount exceeds the amount available." });
     data.items.forEach((item, index) => {
       if (!item.selected) return;
 
@@ -503,6 +514,8 @@ function buildDefaultValues(invoice: InvoiceEditData): FormValues {
 
   return {
     header: {
+      discountType: draftHeader.discountType ?? "AMOUNT",
+      discountValue: draftHeader.discountValue ?? 0,
       customerId: draftHeader.customerId ?? invoice.customerId ?? null,
       invoiceNo: Number(draftHeader.invoiceNo ?? invoice.invoiceNo ?? 1),
       invoiceDate:
@@ -716,7 +729,7 @@ function buildDefaultValues(invoice: InvoiceEditData): FormValues {
   };
 }
 
-function buildInvoiceDraftPayload(values: FormValues) {
+function buildInvoiceDraftPayload(values: FormValues, gstMode: GST) {
   const selected = values.items
     .filter((item) => item.selected)
     .map((item) => {
@@ -745,26 +758,9 @@ function buildInvoiceDraftPayload(values: FormValues) {
     })
     .filter((item) => item.qty > 0);
 
-  const subtotal = round2(
-    selected.reduce((acc, item) => acc + Number(item.lineSubtotal || 0), 0),
-  );
-
-  const taxableTotal = round2(Math.max(0, subtotal));
-  const gstTotal = round2((taxableTotal * 18) / 100);
-  const grandTotal = round2(taxableTotal + gstTotal);
-
-  const finalItems = selected.map((item) => {
-    const itemTaxable = round2(Number(item.lineSubtotal));
-    const itemGst = round2((itemTaxable * 18) / 100);
-    const itemGrand = round2(itemTaxable + itemGst);
-
-    return {
-      ...item,
-      lineTaxableTotal: itemTaxable,
-      lineGstTotal: itemGst,
-      lineGrandTotal: itemGrand,
-    };
-  });
+  const amounts = calculateInvoiceAmounts(selected, gstMode, { type: values.header.discountType, value: values.header.discountValue });
+  const { subtotal, taxableTotal, gstTotal, grandTotal } = amounts;
+  const finalItems = amounts.items;
 
   const selectedQtyByItemId = new Map(
     finalItems.map((item) => [item.salesOrderItemId, Number(item.qty || 0)]),
@@ -841,6 +837,7 @@ function buildInvoiceDraftPayload(values: FormValues) {
 }
 
 export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
+  const draftVersionRef = React.useRef(invoice.draftVersion);
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [isFinalizing, setIsFinalizing] = React.useState(false);
@@ -885,6 +882,8 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
   const defaultValues: FormValues = {
     header: {
+      discountType: draftHeader.discountType ?? "AMOUNT",
+      discountValue: draftHeader.discountValue ?? 0,
       customerId: draftHeader.customerId ?? invoice.customerId ?? null,
       invoiceNo: Number(draftHeader.invoiceNo ?? invoice.invoiceNo ?? 1),
       invoiceDate:
@@ -1550,6 +1549,11 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     return acc + safeQty * Number(item.unitPrice || 0);
   }, 0);
 
+  const previewDiscountType = form.watch("header.discountType");
+  const previewDiscountValue = Number(form.watch("header.discountValue") || 0);
+  const previewDiscount = { type: previewDiscountType, value: Math.max(0, Math.min(Number.isFinite(previewDiscountValue) ? previewDiscountValue : 0, previewDiscountType === "PERCENTAGE" ? 100 : subtotal)) };
+  const displayAmounts = calculateInvoiceAmounts(selectedItems.map(item => ({ qty: Math.max(0, Math.min(Number(item.qty || 0), getMaxQty(item))), unitPrice: Math.max(0, Number.isFinite(Number(item.unitPrice)) ? Number(item.unitPrice) : 0) })), invoice.gstMode, previewDiscount);
+
   const allocatedPackageCount = (packages ?? []).filter((pkg) =>
     (pkg.items ?? []).some((item) => Number(item.qty || 0) > 0),
   ).length;
@@ -1558,37 +1562,35 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     try {
       setIsSaving(true);
 
-      const payload = buildInvoiceDraftPayload(values);
+      const payload = buildInvoiceDraftPayload(values, invoice.gstMode);
 
-      const res = await updateInvoiceDraftAction(invoice.id, payload);
+      const res = await updateInvoiceDraftAction(invoice.id, payload, draftVersionRef.current);
 
       if (!res.ok) {
         toast.error(res.message ?? "Failed to save invoice draft");
         return;
       }
 
+      draftVersionRef.current = res.serverVersion;
       toast.success("Invoice draft saved");
     } finally {
       setIsSaving(false);
     }
   }
 
-  async function onFinalize() {
+  async function onFinalize(values: FormValues) {
     try {
       setIsFinalizing(true);
 
-      const valid = await form.trigger(undefined, { shouldFocus: true });
-      if (!valid) return;
+      const payload = buildInvoiceDraftPayload(values, invoice.gstMode);
 
-      const values = form.getValues();
-      const payload = buildInvoiceDraftPayload(values);
-
-      const saveRes = await updateInvoiceDraftAction(invoice.id, payload);
+      const saveRes = await updateInvoiceDraftAction(invoice.id, payload, draftVersionRef.current);
       if (!saveRes.ok) {
         toast.error(saveRes.message ?? "Failed to save invoice draft");
         return;
       }
 
+      draftVersionRef.current = saveRes.serverVersion;
       const finalizeRes = await finalizeInvoiceAction(invoice.id);
 
       if (!finalizeRes.ok) {
@@ -1615,6 +1617,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       const res = await attachSalesOrderToInvoiceDraftAction(
         invoice.id,
         selectedSalesOrderId,
+        draftVersionRef.current,
       );
 
       if (!res.ok) {
@@ -1623,6 +1626,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       }
 
       if (res.invoice) {
+        draftVersionRef.current = res.invoice.draftVersion;
         form.reset(buildDefaultValues(res.invoice));
         setCurrentSalesOrderId(
           res.invoice.salesOrderId ?? selectedSalesOrderId,
@@ -1639,15 +1643,15 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
     }
   }
 
-  async function detachSalesOrderFromDraft() {
+  async function detachSalesOrderFromDraft(values: FormValues) {
     try {
       setIsSwitchingToOffline(true);
 
-      const values = form.getValues();
-      const payload = buildInvoiceDraftPayload(values);
+      const payload = buildInvoiceDraftPayload(values, invoice.gstMode);
       const res = await detachSalesOrderFromInvoiceDraftAction(
         invoice.id,
         payload,
+        draftVersionRef.current,
       );
 
       if (!res.ok) {
@@ -1656,6 +1660,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
       }
 
       if (res.invoice) {
+        draftVersionRef.current = res.invoice.draftVersion;
         form.reset(buildDefaultValues(res.invoice));
         setCurrentSalesOrderId(null);
         setSelectedSalesOrderId(null);
@@ -1696,7 +1701,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
 
             <Button
               type="button"
-              onClick={onFinalize}
+              onClick={form.handleSubmit(onFinalize)}
               disabled={isSaving || isFinalizing}>
               {isFinalizing ? "Finalizing..." : "Finalize"}
             </Button>
@@ -1772,7 +1777,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                         type="button"
                         className="my-auto"
                         variant="outline"
-                        onClick={detachSalesOrderFromDraft}
+                        onClick={form.handleSubmit(detachSalesOrderFromDraft)}
                         disabled={
                           isSaving ||
                           isFinalizing ||
@@ -3057,21 +3062,25 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
 
+                <FormField control={form.control} name="header.discountType" render={({ field }) => <FormItem><FormLabel>Discount type</FormLabel><Select value={field.value} onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="AMOUNT">Amount (INR)</SelectItem><SelectItem value="PERCENTAGE">Percentage</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
+                <FormField control={form.control} name="header.discountValue" render={({ field }) => <FormItem><FormLabel>Discount</FormLabel><FormControl><Input type="number" min="0" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>} />
+                <div className="flex items-center justify-between"><span>Discount amount</span><span>{formatCurrency(displayAmounts.discountTotal)}</span></div>
+                <div className="flex items-center justify-between"><span>Taxable total</span><span>{formatCurrency(displayAmounts.taxableTotal)}</span></div>
                 <div className="flex items-center justify-between">
                   <span>GST</span>
-                  <span>{formatCurrency(subtotal * 0.18)}</span>
+                  <span>{formatCurrency(displayAmounts.gstTotal)}</span>
                 </div>
 
                 <div className="flex items-center justify-between font-semibold">
                   <span>Grand Total</span>
-                  <span>{formatCurrency(subtotal * 1.18)}</span>
+                  <span>{formatCurrency(displayAmounts.grandTotal)}</span>
                 </div>
               </CardContent>
 
               <CardFooter className="justify-end border-t pt-6">
                 <Button
                   type="button"
-                  onClick={onFinalize}
+                  onClick={form.handleSubmit(onFinalize)}
                   disabled={isSaving || isFinalizing}>
                   {isFinalizing ? "Finalizing..." : "Finalize Invoice"}
                 </Button>

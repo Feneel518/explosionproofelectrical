@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 
 export const softDeleteCastingMasterAction = async (castingMasterId: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   if (!castingMasterId) {
     return {

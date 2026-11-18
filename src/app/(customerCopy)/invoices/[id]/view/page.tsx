@@ -1,3 +1,4 @@
+import { readInvoiceCustomerSnapshot } from "@/lib/invoices/customerSnapshot";
 ﻿import InvoiceCustomerCopy from "@/components/customerCopy/invoice/InvoiceCustomerCopy";
 import { getInvoiceByIdAction } from "@/lib/actions/dashboard/sales/invoice/getInvoiceById";
 import { requireAuth } from "@/lib/check/requireAuth";
@@ -26,6 +27,7 @@ const page: FC<PageProps> = async ({ params }) => {
   }
 
   const invoice = invoiceData.invoice;
+  const snapshot = readInvoiceCustomerSnapshot(invoice.customerSnapshot);
   const copyInvoice = {
     ...invoice,
     companyNameSnapshot: invoice.salesOrder?.customer?.companyName || "—",
@@ -63,6 +65,7 @@ const page: FC<PageProps> = async ({ params }) => {
       invoice.salesOrder?.receivedFromEmail ||
       invoice.salesOrder?.customer?.companyEmail ||
       null,
+    ...snapshot,
     poNumber: invoice.poNumber || invoice.salesOrder?.poNumber || null,
     poDate: invoice.poDate || invoice.salesOrder?.poDate || null,
   };

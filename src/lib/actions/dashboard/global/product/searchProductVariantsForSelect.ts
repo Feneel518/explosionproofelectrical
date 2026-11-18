@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
 import type { Prisma } from "@prisma/client";
@@ -18,7 +18,7 @@ export const searchProductVariantsForSelectAction = async ({
   items: ProductVariantSearchItem[];
   nextCursor: string | null;
 }> => {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const q = (query ?? "").trim();
   const takeQty = Math.min(Math.max(take ?? 50, 5), 50);

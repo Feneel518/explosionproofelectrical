@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import transporter from "@/lib/email/nodemailer";
 import {

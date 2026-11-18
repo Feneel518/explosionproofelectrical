@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { sanitizeBlogContent } from "@/lib/editor/sanitizeBlogContent";
 import { prisma } from "@/lib/prisma/db";
 import { BlogPostInput, BlogPostSchema } from "@/lib/validators/dashboard/blog/BlogPostValidator";
@@ -23,7 +23,7 @@ function databaseMessage(error: unknown) {
 }
 
 export async function saveBlogPostAction(id: string | null, input: BlogPostInput): Promise<BlogActionResult> {
-  await requireAuth();
+  await requirePermission("content.write");
   const parsed = BlogPostSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, message: "Please correct the highlighted article details.", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> };
@@ -57,7 +57,7 @@ export async function saveBlogPostAction(id: string | null, input: BlogPostInput
 }
 
 export async function deleteBlogPostAction(id: string) {
-  await requireAuth();
+  await requirePermission("content.write");
   const post = await prisma.blogPost.delete({ where: { id }, select: { slug: true } });
   revalidatePath("/");
   revalidatePath("/blog");

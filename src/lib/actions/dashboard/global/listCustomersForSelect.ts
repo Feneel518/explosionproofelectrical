@@ -1,4 +1,4 @@
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export type CustomerSelectItem = {
@@ -16,7 +16,7 @@ export type CustomerSelectItem = {
   defaultQuotationDeliveryDate: string | null;
 };
 export const listCustomersForSelect = async () => {
-  await requireAuth();
+  await requirePermission("master.read");
 
   const customers = await prisma.customer.findMany({
     where: {

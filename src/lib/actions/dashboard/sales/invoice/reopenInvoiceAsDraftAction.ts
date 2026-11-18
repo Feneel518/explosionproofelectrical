@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
 import { INVOICE_TRANSACTION_OPTIONS } from "./transactionOptions";
@@ -10,13 +10,14 @@ import {
 } from "./invoiceSettlement";
 
 export async function reopenInvoiceAsDraftAction(invoiceId: string) {
-  const session = await requireAuth();
+  const session = await requirePermission("accounts.write");
 
   try {
     const result = await prisma.$transaction(
       async (tx) => {
-        const invoice = await tx.invoice.findUnique({
-          where: { id: invoiceId },
+        const invoice = await tx.invoice.update({
+          where: { id: invoiceId, status: "FINALIZED" },
+          data: { draftVersion: { increment: 1 } },
           select: {
             id: true,
             status: true,
@@ -66,7 +67,7 @@ export async function reopenInvoiceAsDraftAction(invoiceId: string) {
         await tx.invoiceItem.deleteMany({ where: { invoiceId } });
 
         await tx.invoice.update({
-          where: { id: invoiceId },
+          where: { id: invoiceId, status: "FINALIZED" },
           data: {
             status: "DRAFT",
           },

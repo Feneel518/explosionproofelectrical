@@ -590,8 +590,7 @@ const QuotationFormNew: FC<QuotationFormNewProps> = ({
           <div className="space-y-1">
             <div className="text-xl font-semibold">New Quotation</div>
             <div className="text-sm text-muted-foreground">
-              Draft autosaves automatically. Finalize to lock items & generate
-              quote number.
+              Draft autosaves automatically. Finalize to prepare the customer copy. The status changes to Sent after a successful email.
             </div>
           </div>
 

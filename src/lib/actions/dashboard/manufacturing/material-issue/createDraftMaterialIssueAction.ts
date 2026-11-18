@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { getFinancialYearLabel } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 
@@ -33,7 +33,7 @@ export type MaterialIssueDraftData = {
 };
 
 export async function createDraftMaterialIssueAction() {
-  const session = await requireAuth();
+  const session = await requirePermission("inventory.write");
   const fy = getFinancialYearLabel(new Date());
 
   const counter = await prisma.fiscalCounter.upsert({

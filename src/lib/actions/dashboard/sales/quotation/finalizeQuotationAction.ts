@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { QuotationDraftData } from "@/lib/types/QuotationType";
@@ -18,7 +18,7 @@ function toNumber(value: unknown, fallback = 0) {
 }
 
 export const finalizeQuotationAction = async (id: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   try {
     const q = await prisma.quotation.findUnique({
@@ -27,6 +27,7 @@ export const finalizeQuotationAction = async (id: string) => {
         id: true,
         status: true,
         draftData: true,
+      draftVersion: true,
         quoteNo: true,
         quoteFy: true,
         createdById: true,
@@ -78,7 +79,7 @@ export const finalizeQuotationAction = async (id: string) => {
 
     // Prepare quotation update data OUTSIDE transaction
     const quotationUpdateData = {
-      status: "SENT" as const,
+      status: "READY" as const,
       quoteNo: q.quoteNo,
       quoteFy: q.quoteFy,
 
@@ -159,6 +160,7 @@ export const finalizeQuotationAction = async (id: string) => {
 
     await prisma.$transaction(
       async (tx) => {
+      await tx.quotation.update({ where: { id: q.id, status: "DRAFT", draftVersion: q.draftVersion }, data: { draftVersion: { increment: 1 } } });
         // 1) update quotation
         await tx.quotation.update({
           where: { id },

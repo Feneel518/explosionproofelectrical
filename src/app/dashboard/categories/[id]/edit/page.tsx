@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import CategoryForm from "@/components/dashboard/category/CategoryForm";
 import { prisma } from "@/lib/prisma/db";
 import { redirect } from "next/navigation";
@@ -10,6 +11,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ params }) => {
+  await requirePermission("master.write");
   const { id } = await params;
   if (!id) {
     redirect("/dashboard/categories");

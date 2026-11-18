@@ -2,6 +2,7 @@
 
 import { signInEmailAction } from "@/lib/actions/auth/sign-in-email.action";
 import { signIn } from "@/lib/auth/authClient";
+import { AUTH_UNAVAILABLE_MESSAGE } from "@/lib/auth/service-availability";
 import {
   loginValidator,
   type LoginValidatorSchema,
@@ -35,34 +36,43 @@ export default function SigninForm() {
 
   const onSubmit = async (data: LoginValidatorSchema) => {
     setIsPending(true);
-    const response = await signInEmailAction(data);
-
-    if (response?.error) {
-      toast.error(response.error);
+    try {
+      const response = await signInEmailAction(data);
+      if (response?.error) {
+        toast.error(response.error);
+        return;
+      }
+      toast.success("Logged in successfully!");
+      router.push("/dashboard");
+    } catch {
+      toast.error(AUTH_UNAVAILABLE_MESSAGE);
+    } finally {
       setIsPending(false);
-      return;
     }
-
-    toast.success("Logged in successfully!");
-    router.push("/");
   };
 
   const handleGoogleSignIn = async () => {
-    await signIn.social({
-      provider: "google",
-      callbackURL: "/",
-      errorCallbackURL: "/auth/error",
-      fetchOptions: {
-        onRequest: () => setIsPending(true),
-        onResponse: () => setIsPending(false),
-        onError: (context) => {
-          setIsPending(false);
-          toast.error(
-            context.error.message || "Something went wrong with Google sign-in",
-          );
+    setIsPending(true);
+    try {
+      await signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+        errorCallbackURL: "/auth/error",
+        fetchOptions: {
+          onError: (context) => {
+            toast.error(
+              context.error.status >= 500
+                ? AUTH_UNAVAILABLE_MESSAGE
+                : context.error.message || "Google sign-in failed. Please try again.",
+            );
+          },
         },
-      },
-    });
+      });
+    } catch {
+      toast.error(AUTH_UNAVAILABLE_MESSAGE);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

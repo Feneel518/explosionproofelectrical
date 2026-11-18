@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export type CustomerLastVariantPrice = {
@@ -26,7 +26,7 @@ export async function getCustomerLastVariantPricesAction({
   customerId: string;
   variantIds: string[];
 }) {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   if (!customerId) {
     return {

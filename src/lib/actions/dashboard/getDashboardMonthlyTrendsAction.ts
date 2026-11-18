@@ -1,4 +1,5 @@
 "use server";
+import { requirePermission } from "@/lib/check/permissions";
 
 import { prisma } from "@/lib/prisma/db";
 
@@ -45,6 +46,7 @@ function getCurrentMonthDaysUntilToday() {
 }
 
 export async function getDashboardMonthlyTrendsAction(): Promise<DashboardMonthlyTrends> {
+  await requirePermission("analytics.read");
   const days = getCurrentMonthDaysUntilToday();
   const fromDate = days[0];
 

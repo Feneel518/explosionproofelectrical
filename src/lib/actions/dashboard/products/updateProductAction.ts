@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import { getProductApprovalSettings, toApprovalPayload } from "@/lib/products/approval";
@@ -12,7 +12,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 export const updateProductAction = async (values: ProductSchemaRequest) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
   const parsed = ProductSchema.safeParse(values);
   if (!parsed.success) return fail("Enter the fields properly.");
 

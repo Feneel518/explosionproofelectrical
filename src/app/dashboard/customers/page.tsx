@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import CustomersTable from "@/components/dashboard/customer/CustomersTable";
 import {
   buildCustomersOrderBy,
@@ -13,6 +14,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ searchParams }) => {
+  await requirePermission("master.read");
   const sp = customersSearchParamsCache.parse(await searchParams);
 
   const pageParams = Math.max(1, sp.page);

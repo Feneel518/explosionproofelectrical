@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAuth } from "@/lib/check/requireAuth";
 import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
+import { hasPermission } from "@/lib/check/permissionPolicy";
 import { getDashboardOverviewAction } from "@/lib/actions/dashboard/getDashboardOverviewAction";
 import { getDashboardMonthlyTrendsAction } from "@/lib/actions/dashboard/getDashboardMonthlyTrendsAction";
 import { getWebsiteVisitorAnalyticsAction } from "@/lib/actions/dashboard/getWebsiteVisitorAnalyticsAction";
@@ -22,7 +23,12 @@ import { FC } from "react";
 import MonthlySalesOverviewCharts from "@/components/dashboard/overview/MonthlySalesOverviewCharts";
 
 const page: FC = async () => {
-  await requireAuth();
+  const { user } = await requireAuth();
+  if (!hasPermission(user, "analytics.read")) {
+    const destinations = [["sales.read", "/dashboard/enquiries", "Sales enquiries"], ["accounts.read", "/dashboard/sales/invoices", "Invoices"], ["purchase.read", "/dashboard/purchase/orders", "Purchasing"], ["inventory.read", "/dashboard/inventory/stock", "Inventory"], ["production.read", "/dashboard/manufacturing/planning", "Production"]] as const;
+    const available = destinations.filter(([permission]) => hasPermission(user, permission));
+    return <div className="space-y-4"><h1 className="text-2xl font-semibold">Welcome, {user.name || "operator"}</h1>{available.length ? <nav className="flex flex-wrap gap-4" aria-label="Your workspaces">{available.map(([, href, label]) => <Link className="underline underline-offset-4" key={href} href={href}>{label}</Link>)}</nav> : <p className="text-muted-foreground">Your account is signed in. Ask the owner to assign a department before accessing business records.</p>}</div>;
+  }
   const [overview, monthlyTrends, websiteAnalytics] = await Promise.all([
     getDashboardOverviewAction(),
     getDashboardMonthlyTrendsAction(),

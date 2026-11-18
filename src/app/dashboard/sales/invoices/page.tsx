@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { FC } from "react";
 import { invoiceSearchParamsCache } from "@/lib/searchParams/dashboard/sales/invoice/InvoiceSearchParams";
@@ -14,6 +15,7 @@ interface PageProps {
 }
 
 const page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("accounts.read");
   const sp = invoiceSearchParamsCache.parse(await searchParams);
 
   const pageParams = Math.max(1, sp.page);

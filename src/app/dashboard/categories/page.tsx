@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import CategoriesTable from "@/components/dashboard/category/CategoryTable";
 import {
   buildCategoriesOrderBy,
@@ -16,6 +17,7 @@ interface pageProps {
 }
 
 const page: FC<pageProps> = async ({ searchParams }) => {
+  await requirePermission("master.read");
   const sp = catgeorySearchParamsCache.parse(await searchParams);
   const pageParams = Math.max(1, sp.page);
   const pageSizeParams = Math.min(50, Math.max(5, sp.pageSize));

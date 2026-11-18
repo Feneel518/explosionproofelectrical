@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 
 export async function getStockAdjustmentBalancesAction({
@@ -10,7 +10,7 @@ export async function getStockAdjustmentBalancesAction({
   rawMaterialIds: string[];
   productVariantIds: string[];
 }) {
-  await requireAuth();
+  await requirePermission("inventory.read");
 
   const uniqueRawMaterialIds = Array.from(
     new Set((rawMaterialIds ?? []).filter(Boolean)),

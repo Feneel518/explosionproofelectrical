@@ -151,6 +151,9 @@ export type InvoiceCreateSalesOrder = Prisma.SalesOrderGetPayload<{
 
 export type InvoiceDraftData = {
   header: {
+    gstMode?: import("@prisma/client").GST;
+    discountType?: "PERCENTAGE" | "AMOUNT";
+    discountValue?: number;
     salesOrderId: string | null;
     customerId: string | null;
 

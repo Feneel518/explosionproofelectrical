@@ -1,6 +1,7 @@
 "use server";
+import { saveVersionedDraft } from "@/lib/prisma/saveVersionedDraft";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { CastingJobDraftData } from "./createDraftCastingJobAction";
 
@@ -13,7 +14,7 @@ export async function saveCastingJobDraftSnapshotAction({
   draft: CastingJobDraftData;
   clientVersion: number;
 }) {
-  const session = await requireAuth();
+  const session = await requirePermission("production.write");
 
   const job = await prisma.castingJob.findUnique({
     where: { id: castingJobId },
@@ -39,19 +40,17 @@ export async function saveCastingJobDraftSnapshotAction({
     };
   }
 
-  const updated = await prisma.castingJob.update({
-    where: { id: castingJobId },
+
+  return saveVersionedDraft(
+    () => prisma.castingJob.update({
+    where: { id: castingJobId, status: "DRAFT", draftVersion: clientVersion },
     data: {
       draftData: draft,
       draftVersion: { increment: 1 },
       updatedById: session.user.id,
     },
     select: { draftVersion: true, updatedAt: true },
-  });
-
-  return {
-    ok: true as const,
-    serverVersion: updated.draftVersion,
-    savedAt: updated.updatedAt.toISOString(),
-  };
+  }),
+    () => prisma.castingJob.findUnique({ where: { id: castingJobId }, select: { draftVersion: true } }),
+  );
 }

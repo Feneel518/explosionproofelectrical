@@ -47,3 +47,6 @@ next-env.d.ts
 
 #prisma
 /lib/generated
+
+# Local diagnostic output and disposable-schema browser credentials
+/tmp/

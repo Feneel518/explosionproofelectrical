@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import DeliveryChallanTable from "@/components/dashboard/sales/delivery-challan/DeliveryChallanTable";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ interface PageProps {
 }
 
 const page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("sales.read");
   const sp = deliveryChallanSearchParamsCache.parse(await searchParams);
 
   const pageParams = Math.max(1, sp.page);

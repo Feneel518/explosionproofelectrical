@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { fail } from "assert";
 import { revalidatePath } from "next/cache";
 
 export const restoreCustomerAction = async (customerId: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   if (!customerId) {
     return {

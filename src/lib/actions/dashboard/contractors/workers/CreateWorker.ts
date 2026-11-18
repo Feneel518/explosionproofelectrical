@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { fail, isUniqueConstraintError } from "@/lib/helpers/actionHelpers/ActionResult";
 import { prisma } from "@/lib/prisma/db";
 import {
@@ -10,7 +10,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 export const createWorkerAction = async (values: WorkerSchemaRequest) => {
-  const session = await requireAuth();
+  const session = await requirePermission("master.write");
 
   const parsed = WorkerSchema.safeParse(values);
   if (!parsed.success) {

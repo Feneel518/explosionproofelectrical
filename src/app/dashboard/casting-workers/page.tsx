@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { prisma } from "@/lib/prisma/db";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await requirePermission("production.read");
   const workers = await prisma.worker.findMany({
     where: { kind: "CASTING", deletedAt: null },
     orderBy: [{ status: "asc" }, { name: "asc" }],

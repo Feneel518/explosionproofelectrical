@@ -60,6 +60,8 @@ type Summary = {
   amountPaid: number;
   applyAdvances: boolean;
   notes: string;
+  availableBeforeAdvances: number;
+  unpaidWagesBroughtForward: number;
 };
 
 type LedgerRow = {
@@ -429,13 +431,14 @@ export default function MonthlyPayoutsManager({
 
       {summary ? (
         <>
+          <p className="text-sm text-muted-foreground">Unpaid wages brought forward: {money(summary.unpaidWagesBroughtForward)}. The payable preview includes this balance and all outstanding advances.</p>
           <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
             <Card>
               <CardHeader><CardTitle className="text-sm">Earnings</CardTitle></CardHeader>
               <CardContent className="text-xl font-semibold">{money(summary.earnings)}</CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-sm">Advances</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">Outstanding advances</CardTitle></CardHeader>
               <CardContent className="text-xl font-semibold">{money(summary.advances)}</CardContent>
             </Card>
             <Card>
@@ -448,7 +451,7 @@ export default function MonthlyPayoutsManager({
             </Card>
             <Card>
               <CardHeader><CardTitle className="text-sm">Net Payable</CardTitle></CardHeader>
-              <CardContent className="text-xl font-semibold">{money(summary.netPayable)}</CardContent>
+              <CardContent className="text-xl font-semibold">{money(summary.availableBeforeAdvances - (settlementForm.applyAdvances ? Math.min(summary.advances, summary.availableBeforeAdvances) : 0))}</CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle className="text-sm">Amount Paid</CardTitle></CardHeader>

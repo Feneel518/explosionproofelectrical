@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { DeliveryChallanDashboardAnalytics } from "@/lib/types/deliveryChallanAnalytics";
 
@@ -16,7 +16,7 @@ function daysBetween(from: Date, to: Date) {
 }
 
 export async function getDeliveryChallanDashboardAnalytics(): Promise<DeliveryChallanDashboardAnalytics> {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   const today = new Date();
 

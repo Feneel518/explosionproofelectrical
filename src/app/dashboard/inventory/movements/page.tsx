@@ -1,4 +1,5 @@
-﻿import { Badge } from "@/components/ui/badge";
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import StockMovementToolbar from "@/components/dashboard/inventory/movement/StockMovementToolbar";
 import {
@@ -63,6 +64,7 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requirePermission("inventory.read");
   const sp = stockMovementSearchParamsCache.parse(await searchParams);
 
   const q = sp.q.trim();

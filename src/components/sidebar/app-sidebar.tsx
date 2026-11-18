@@ -73,6 +73,14 @@ const data = {
       icon: Bot,
       items: [
         {
+          title: "Website enquiries",
+          url: "/dashboard/enquiries",
+        },
+        {
+          title: "Gmail Inbox Alerts",
+          url: "/dashboard/inbox",
+        },
+        {
           title: "Quotation",
           url: "/dashboard/sales/quotations",
         },
@@ -217,11 +225,22 @@ const data = {
 };
 
 export function AppSidebar({
-  user,
+  user, permissions = [],
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user: AppSidebarUser;
+  permissions?: string[];
 }) {
+  const allowed = (url: string) => {
+    const area = url.includes("/sales/invoices") || url.includes("/contractors/payouts") || url.includes("/contractors/workers") ? "accounts"
+      : url.includes("/purchase/grn") || url.includes("/material-issues") || url.includes("/inventory/") ? "inventory"
+      : url.includes("/sales/") || url.includes("/inbox") || url.includes("/enquiries") ? "sales"
+      : url.includes("/purchase/") ? "purchase"
+      : url.includes("/manufacturing/") || url.includes("/casting-workers") || url.includes("/contractors/entries") || url.includes("/serial") ? "production"
+      : url.includes("/website-analytics") ? "analytics" : url.includes("/blog") ? "content" : "master";
+    return permissions.includes(`${area}.read`);
+  };
+  const navigation = data.navMain.map(group => ({ ...group, items: group.items.filter(item => allowed(item.url)) })).filter(group => group.items.length);
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="border-b">
@@ -237,7 +256,7 @@ export function AppSidebar({
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navigation} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

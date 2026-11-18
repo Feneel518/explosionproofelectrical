@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { requireInventoryAccess } from "@/lib/check/inventoryAccess";
 import { prisma } from "@/lib/prisma/db";
 import { revalidatePath } from "next/cache";
@@ -63,7 +63,7 @@ export async function setInventoryEmployeeStatusAction(
 }
 
 export async function getActiveInventoryEmployeesAction() {
-  await requireAuth();
+  await requirePermission("inventory.write");
   const employees = await prisma.inventoryEmployee.findMany({
     where: { status: "ACTIVE" },
     orderBy: [{ name: "asc" }, { employeeCode: "asc" }],

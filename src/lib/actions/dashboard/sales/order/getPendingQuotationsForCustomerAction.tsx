@@ -1,7 +1,7 @@
 // lib/actions/dashboard/sales/orders/getPendingQuotationsForCustomerAction.ts
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
 import { QuotationStatus } from "@prisma/client";
@@ -9,7 +9,7 @@ import { QuotationStatus } from "@prisma/client";
 export const getPendingQuotationsForCustomerAction = async (
   customerId: string,
 ) => {
-  await requireAuth();
+  await requirePermission("sales.read");
 
   if (!customerId) {
     return {
@@ -18,7 +18,7 @@ export const getPendingQuotationsForCustomerAction = async (
     };
   }
 
-  const allowedStatuses: QuotationStatus[] = ["SENT", "FOLLOWUP"];
+  const allowedStatuses: QuotationStatus[] = ["READY", "SENT", "FOLLOWUP"];
 
   const quotations = await prisma.quotation.findMany({
     where: {

@@ -1,3 +1,4 @@
+import { requirePermission } from "@/lib/check/permissions";
 import { NextRequest } from "next/server";
 import { utils, write } from "xlsx";
 
@@ -22,6 +23,7 @@ function formatCurrencyValue(value?: number | null) {
 }
 
 export async function GET(request: NextRequest) {
+  await requirePermission("sales.read");
   await requireAuth();
 
   const month = request.nextUrl.searchParams.get("month");

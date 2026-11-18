@@ -15,6 +15,7 @@ import PdfPreviewCard from "../../global/PDFPreviewCard";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 import { Loader2 } from "lucide-react";
+import SendQuotationEmailDialog from "./SendQuotationEmailDialog";
 
 type Props = {
   quotation: GetQuotationByIdData;
@@ -149,6 +150,17 @@ export default function QuotationDetailView({ quotation }: Props) {
           <Badge variant={statusVariant(quotation.status) as any}>
             {quotation.status}
           </Badge>
+
+          {!quotation.deletedAt && quotation.status !== "DRAFT" && quotation.status !== "CANCELLED" && (
+            <SendQuotationEmailDialog
+              quotationId={quotation.id}
+              quotationNumber={formatFinancialDocumentNumber(quotation.quoteFy, quotation.quoteNo)}
+              updatedAt={new Date(quotation.updatedAt).toISOString()}
+              defaultEmail={quotation.receivedFromEmail || quotation.customer?.companyEmail || ""}
+              customerName={quotation.receivedFromName || quotation.clientName || clientName}
+              canScheduleFollowup={["READY", "SENT", "FOLLOWUP"].includes(quotation.status)}
+            />
+          )}
 
           <Button
             type="button"

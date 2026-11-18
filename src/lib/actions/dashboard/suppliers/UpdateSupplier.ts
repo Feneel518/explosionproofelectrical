@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import {
   SupplierSchema,
@@ -10,7 +10,7 @@ import { fail } from "assert";
 import { revalidatePath } from "next/cache";
 
 export const updateSupplierAction = async (values: SupplierSchemaRequest) => {
-  await requireAuth();
+  await requirePermission("master.write");
 
   const parsed = SupplierSchema.safeParse(values);
 

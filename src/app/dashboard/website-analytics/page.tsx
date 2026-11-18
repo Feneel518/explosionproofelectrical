@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import WebsiteTrafficAreaChart from "@/components/dashboard/overview/WebsiteTrafficAreaChart";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import { getWebsiteVisitorAnalyticsAction } from "@/lib/actions/dashboard/getWeb
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await requirePermission("analytics.read");
   await requireAuth();
   const analytics = await getWebsiteVisitorAnalyticsAction(30);
 

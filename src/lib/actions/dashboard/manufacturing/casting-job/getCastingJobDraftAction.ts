@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { CastingJobDraftData } from "./createDraftCastingJobAction";
 
@@ -41,7 +41,7 @@ function normalizeDraftData(rawDraft: unknown): CastingJobDraftData {
 }
 
 export async function getCastingJobDraftAction(id: string) {
-  await requireAuth();
+  await requirePermission("production.read");
 
   const job = await prisma.castingJob.findUnique({
     where: { id },

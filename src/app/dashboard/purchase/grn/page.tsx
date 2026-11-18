@@ -1,3 +1,4 @@
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import { FC } from "react";
 
 import GrnTable from "@/components/dashboard/purchase/grn/GrnTable";
@@ -13,6 +14,7 @@ interface PageProps {
 }
 
 const Page: FC<PageProps> = async ({ searchParams }) => {
+  await requirePermission("inventory.read");
   const sp = grnSearchParamsCache.parse(await searchParams);
   const page = Math.max(1, sp.page);
   const pageSize = Math.min(50, Math.max(5, sp.pageSize));

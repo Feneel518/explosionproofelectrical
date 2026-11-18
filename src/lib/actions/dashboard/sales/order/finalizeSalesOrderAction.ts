@@ -1,6 +1,8 @@
 "use server";
+import { quotationStatusAfterOrderUnlink } from "@/lib/quotations/recordDelivery";
+import { inheritQuotationConversations } from "@/lib/gmail/salesConversation";
 
-import { requireAuth } from "@/lib/check/requireAuth";
+import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { FINALIZE_TRANSACTION_OPTIONS } from "@/lib/prisma/transactionOptions";
 import { SalesOrderDraftData } from "@/lib/types/SalesOrderTypes";
@@ -24,7 +26,7 @@ function normalizeString(value?: string | null) {
 }
 
 export const finalizeSalesOrderAction = async (id: string) => {
-  const session = await requireAuth();
+  const session = await requirePermission("sales.write");
 
   try {
     const order = await prisma.salesOrder.findUnique({
@@ -33,6 +35,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
         id: true,
         status: true,
         draftData: true,
+      draftVersion: true,
         orderNo: true,
         orderFy: true,
       },
@@ -211,6 +214,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
       normalizeString(draft.header?.gstinSnapshot);
 
     await prisma.$transaction(async (tx) => {
+      await tx.salesOrder.update({ where: { id: order.id, status: "DRAFT", draftVersion: order.draftVersion }, data: { draftVersion: { increment: 1 } } });
       await tx.salesOrder.update({
         where: { id },
         data: {
@@ -265,9 +269,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
       });
 
       if (quotationToUnlink) {
-        const revertQuotationStatus = quotationToUnlink.nextFollowupAt
-          ? "FOLLOWUP"
-          : "SENT";
+        const revertQuotationStatus = await quotationStatusAfterOrderUnlink(tx, quotationToUnlink.id, quotationToUnlink.nextFollowupAt);
 
         await tx.quotation.update({
           where: { id: quotationToUnlink.id },
@@ -280,6 +282,7 @@ export const finalizeSalesOrderAction = async (id: string) => {
       }
 
       if (quotationId) {
+        await inheritQuotationConversations(tx, session.user.id, quotationId, id);
         await tx.quotation.update({
           where: { id: quotationId },
           data: {

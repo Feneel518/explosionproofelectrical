@@ -1,4 +1,5 @@
-﻿import { redirect } from "next/navigation";
+import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
+import { redirect } from "next/navigation";
 
 import StockAdjustmentForm from "@/components/dashboard/inventory/stock-adjustment/StockAdjustmentForm";
 import { getStockAdjustmentDraftAction } from "@/lib/actions/dashboard/inventory/stock-adjustment/getStockAdjustmentDraftAction";
@@ -11,6 +12,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
+  await requirePermission("inventory.write");
   const { id } = await params;
   const res = await getStockAdjustmentDraftAction(id);
 

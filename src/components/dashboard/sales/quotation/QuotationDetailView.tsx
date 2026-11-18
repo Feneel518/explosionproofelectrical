@@ -158,6 +158,7 @@ export default function QuotationDetailView({ quotation }: Props) {
               updatedAt={new Date(quotation.updatedAt).toISOString()}
               defaultEmail={quotation.receivedFromEmail || quotation.customer?.companyEmail || ""}
               customerName={quotation.receivedFromName || quotation.clientName || clientName}
+              canScheduleFollowup={["READY", "SENT", "FOLLOWUP"].includes(quotation.status)}
             />
           )}
 

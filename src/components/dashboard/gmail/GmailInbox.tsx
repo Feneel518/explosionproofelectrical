@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { listGmailMessagesAction, type InboxFilters, type InboxPageData } from "@/lib/actions/dashboard/gmail/messageActions";
 import { useGmailNotifications } from "./GmailNotificationsProvider";
+import { GmailNeedsAttention } from "./GmailNeedsAttention";
 import { GmailInboxSettings } from "./GmailInboxSettings";
 import { GmailConversationPane } from "./GmailConversationPane";
 import { InboxSelect } from "./GmailInboxControls";
@@ -21,6 +22,7 @@ const shortDate = (value: string) => new Intl.DateTimeFormat("en-IN", { day: "nu
 
 export function GmailInbox({ outcome, initialMessage }: { outcome?: string; initialMessage?: string }) {
   const { data, loading: connectionLoading, error: syncError, refresh } = useGmailNotifications();
+  const [view, setView] = useState(initialMessage ? "MAIL" : "ATTENTION");
   const [filters, setFilters] = useState<InboxFilters>(initialFilters);
   const [page, setPage] = useState<InboxPageData | null>(null);
   const [selected, setSelected] = useState<string | null>(initialMessage || null);
@@ -33,6 +35,7 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
   const reload = useCallback(() => { setRevision(value => value + 1); void refresh(); }, [refresh]);
 
   useEffect(() => {
+    if (view !== "MAIL") return;
     let active = true;
     setLoading(true);
     const timer = window.setTimeout(async () => {
@@ -44,7 +47,7 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
       finally { if (active) setLoading(false); }
     }, 250);
     return () => { window.clearTimeout(timer); active = false; };
-  }, [filters, revision, data?.connection?.lastSyncedAt, data?.connection?.lastSyncAttemptAt]);
+  }, [view, filters, revision, data?.connection?.lastSyncedAt, data?.connection?.lastSyncAttemptAt]);
 
   const totalPages = Math.max(1, Math.ceil((page?.total || 0) / (page?.pageSize || 30)));
   const currentPage = filters.page || 1;
@@ -58,6 +61,8 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
     {outcome === "failed" && <p role="alert" className="text-sm text-destructive">Gmail could not be connected. Check Google access and try again in mailbox settings.</p>}
     {syncError && <p role="alert" className="text-sm text-destructive">{syncError}</p>}
     <GmailInboxSettings />
+    <Tabs value={view} onValueChange={setView}><TabsList><TabsTrigger value="ATTENTION">Needs Attention</TabsTrigger><TabsTrigger value="MAIL">All Mail</TabsTrigger></TabsList></Tabs>
+    {view === "ATTENTION" ? <GmailNeedsAttention revision={revision} syncedAt={data?.connection?.lastSyncedAt || data?.connection?.lastSyncAttemptAt || null} onOpenConversation={(id) => { setSelected(id); setView("MAIL"); }} onShowNewMessages={() => { setFilters({ ...initialFilters, status: "NEW" }); setSelected(null); setView("MAIL"); }} /> : <>
     <div className="flex flex-col gap-3">
       <div className="flex gap-2"><div className="relative min-w-0 flex-1"><Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" /><Input aria-label="Search emails" maxLength={250} placeholder="Search subject, sender, message or notes…" className="pl-9" value={filters.search || ""} onChange={event => change({ search: event.target.value })} /></div><Button variant="outline" aria-expanded={advanced} aria-controls="inbox-filters" onClick={() => setAdvanced(value => !value)}><SlidersHorizontal data-icon="inline-start" />Filters</Button></div>
       {advanced && <div id="inbox-filters" className="rounded-lg border bg-muted/20 p-4">
@@ -90,5 +95,6 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
         {selected ? <GmailConversationPane key={selected} id={selected} onBack={() => setSelected(null)} onChanged={reload} /> : <div className="flex h-full min-h-80 flex-col items-center justify-center gap-3 p-8 text-center"><Inbox className="size-9 text-muted-foreground" aria-hidden="true" /><h2 className="text-lg font-medium">A conversation, with everything together</h2><p className="max-w-sm text-sm leading-6 text-muted-foreground">Open an email to read the messages, view its files, and connect the conversation to a quotation or sales order.</p></div>}
       </section>
     </div>
+    </>}
   </div>;
 }

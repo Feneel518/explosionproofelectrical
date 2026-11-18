@@ -14,6 +14,7 @@ import { defaultQuotationMessage, quotationMessageHtml } from "@/lib/quotations/
 import { getQuotationReplyOptionsAction, getQuotationReplyContextAction, type QuotationReplyOption } from "@/lib/actions/dashboard/sales/quotation/getQuotationReplyOptionsAction";
 import { useGmailNotifications } from "@/components/dashboard/gmail/GmailNotificationsProvider";
 import { sendQuotationEmailAction } from "@/lib/actions/dashboard/sales/quotation/sendQuotationEmailAction";
+import { istDateInput, sendFollowupDate, type FollowupChoice } from "@/lib/quotations/followupDate";
 
 type Props = {
   quotationId: string;
@@ -22,9 +23,10 @@ type Props = {
   defaultEmail: string;
   customerName: string;
   disabled?: boolean;
+  canScheduleFollowup?: boolean;
 };
 
-export default function SendQuotationEmailDialog({ quotationId, quotationNumber, updatedAt, defaultEmail, disabled }: Props) {
+export default function SendQuotationEmailDialog({ quotationId, quotationNumber, updatedAt, defaultEmail, disabled, canScheduleFollowup = true }: Props) {
   const router = useRouter();
   const { data, loading } = useGmailNotifications();
   const id = useId();
@@ -32,6 +34,8 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
   const [recipient, setRecipient] = useState(defaultEmail);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [followupChoice, setFollowupChoice] = useState<FollowupChoice>("3");
+  const [customFollowupDate, setCustomFollowupDate] = useState("");
   const [requestId, setRequestId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [attempted, setAttempted] = useState(false);
@@ -73,6 +77,7 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
       setRecipient(defaultEmail);
       setSubject(`Quotation ${quotationNumber} - Explosion Proof Electrical Control`);
       setMessage(defaultQuotationMessage(quotationNumber));
+      setFollowupChoice(canScheduleFollowup ? "3" : "none"); setCustomFollowupDate("");
       setRequestId(crypto.randomUUID());
       setError(null);
       setAttempted(false);
@@ -104,13 +109,16 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
       <form className="flex flex-col gap-4" onSubmit={(event) => {
         event.preventDefault();
         if (!canSend || busy.current || attempted || replyLoading || !replyReady) return;
+        let followupAt: string | null;
+        try { followupAt = sendFollowupDate(followupChoice, customFollowupDate); }
+        catch (error) { setError(error instanceof Error ? error.message : "Choose a future follow-up date."); return; }
         busy.current = true;
         setError(null);
         setAttempted(true);
         startTransition(async () => {
           try {
             const result = await sendQuotationEmailAction({ quotationId, expectedUpdatedAt: updatedAt, requestId,
-              recipient: recipient.trim(), subject: subject.trim(), message: message.trim(), replyNotificationId: replyId === "new" ? null : replyId });
+              recipient: recipient.trim(), subject: subject.trim(), message: message.trim(), replyNotificationId: replyId === "new" ? null : replyId, followupAt });
             if (!result.ok) { setError(result.message); return; }
             toast.success(result.message);
             setOpen(false);
@@ -150,6 +158,25 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
             <FieldLabel htmlFor={`${id}-message`}>Message</FieldLabel>
             <Textarea id={`${id}-message`} required maxLength={10000} rows={10} value={message} disabled={pending || attempted} onChange={(event) => setMessage(event.target.value)} />
           </Field>
+          {canScheduleFollowup && <Field>
+            <FieldLabel htmlFor={`${id}-followup`}>Remind me to follow up</FieldLabel>
+            <Select value={followupChoice} onValueChange={(value) => setFollowupChoice(value as FollowupChoice)} disabled={pending || attempted}>
+              <SelectTrigger id={`${id}-followup`}><SelectValue /></SelectTrigger>
+              <SelectContent><SelectGroup>
+                <SelectItem value="1">Tomorrow at 10:00 AM IST</SelectItem>
+                <SelectItem value="3">In 3 days at 10:00 AM IST</SelectItem>
+                <SelectItem value="7">In a week at 10:00 AM IST</SelectItem>
+                <SelectItem value="custom">Choose a date</SelectItem>
+                <SelectItem value="none">No new reminder</SelectItem>
+              </SelectGroup></SelectContent>
+            </Select>
+            <FieldDescription>Scheduled only after a successful send. Earlier pending follow-ups stay in place.</FieldDescription>
+          </Field>}
+          {followupChoice === "custom" && <Field>
+            <FieldLabel htmlFor={`${id}-followup-date`}>Follow-up date</FieldLabel>
+            <Input id={`${id}-followup-date`} type="date" required min={istDateInput()} value={customFollowupDate} disabled={pending || attempted} onChange={(event) => setCustomFollowupDate(event.target.value)} />
+            <FieldDescription>Your reminder will be set for 10:00 AM IST.</FieldDescription>
+          </Field>}
         </FieldGroup>
         <details className="rounded-md border p-3">
           <summary className="cursor-pointer text-sm font-medium">Preview message and signature</summary>
@@ -167,7 +194,7 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
         <DialogFooter>
           <Button type="button" variant="outline" disabled={pending} onClick={() => changeOpen(false)}>Close</Button>
           <Button type="submit" disabled={!canSend || pending || attempted || replyLoading || !replyReady}>
-            {pending ? <><Loader2 data-icon="inline-start" className="animate-spin" />Sending…</> : <><Mail data-icon="inline-start" />{replyId === "new" ? "Send with PDF" : "Reply with PDF"}</>}
+            {pending ? <><Loader2 data-icon="inline-start" className="animate-spin" />Sending…</> : <><Mail data-icon="inline-start" />{followupChoice !== "none" ? replyId === "new" ? "Send & schedule follow-up" : "Reply & schedule follow-up" : replyId === "new" ? "Send with PDF" : "Reply with PDF"}</>}
           </Button>
         </DialogFooter>
       </form>

@@ -48,3 +48,15 @@ Finalizing/saving the customer copy now sets READY. The quotation remains viewab
 READY is included in the quotation status filter and pending sales pipeline but excluded from Sent totals. Reopening or unlinking an order preserves a Ready/Draft quotation and does not invent a Sent status without a confirmed delivery record. Existing historical statuses are not relabelled by the additive enum migration.
 
 Migration: 20261118090000_quotation_ready_status. The rolled-back sales integration test checks rejected, unknown and successful deliveries, receipt validation, newer edits and resending Won quotations.
+
+## Send and schedule a follow-up
+
+The send/reply dialog defaults to a reminder in three days at 10:00 AM India time. Choose tomorrow, a week, a custom future date, or No new reminder. This schedules a dashboard task; it does not send a later email automatically.
+
+The reminder is recorded in the same transaction as the confirmed Gmail receipt and only for the unchanged active quotation. Failed, unknown or stale sends do not schedule it. Earlier pending follow-ups remain in place, with the earliest shown as the next follow-up. Won/cancelled quotations do not gain new reminders from a resend.
+
+## Needs Attention
+
+Sales Inbox opens on Needs Attention, with All Mail available beside it. It shows the signed-in user's new messages, their own or conversation-linked ready quotations, overdue sent-quotation follow-ups, and draft orders to review. Each category has its own count and direct action; lists show up to ten items per category with links to the full lists when needed.
+
+Reading a message alone does not clear it. Mark it Working/Done or send a quotation reply successfully to move that conversation out of New. Order review remains manual. No new migration is required for these controls.

@@ -12,6 +12,7 @@ export const quotationEmailSchema = z.object({
   subject: z.string().trim().min(1).max(998).refine((value) => !/[\r\n\x00-\x1f]/.test(value)),
   message: z.string().trim().min(1).max(10_000),
   replyNotificationId: z.string().uuid().nullable().optional(),
+  followupAt: z.iso.datetime().nullable().optional().refine((value) => !value || new Date(value).getTime() > Date.now(), "Choose a future follow-up date."),
 });
 
 export class GmailSendUncertainError extends Error {

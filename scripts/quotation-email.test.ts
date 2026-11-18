@@ -10,9 +10,22 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { quotationReplyFromMessage, getQuotationReply } from "../src/lib/gmail/quotationReply";
 import { defaultQuotationMessage, quotationMessageHtml } from "../src/lib/quotations/emailMessage";
+import { istDateInput, sendFollowupDate } from "../src/lib/quotations/followupDate";
 
 const originalFetch = globalThis.fetch;
 after(() => { globalThis.fetch = originalFetch; });
+
+test("send follow-up dates use Indian calendar days and reject past or invalid dates", () => {
+  const now = new Date("2026-11-18T19:00:00.000Z"); // 19 November, 00:30 IST.
+  assert.equal(istDateInput(now), "2026-11-19");
+  assert.equal(sendFollowupDate("3", "", now), "2026-11-22T04:30:00.000Z");
+  assert.equal(sendFollowupDate("1", "", now), "2026-11-20T04:30:00.000Z");
+  assert.equal(sendFollowupDate("none", "", now), null);
+  assert.equal(sendFollowupDate("custom", "2026-12-01", now), "2026-12-01T04:30:00.000Z");
+  assert.throws(() => sendFollowupDate("custom", "2026-02-30", now), /future/);
+  assert.throws(() => sendFollowupDate("custom", "2026-11-18", now), /future/);
+  assert.throws(() => sendFollowupDate("custom", "", now), /Choose/);
+});
 
 test("replies preserve Gmail thread, subject, Reply-To and RFC reply references", async () => {
   const original = { id: "original-message", threadId: "customer-thread", internalDate: "1794900000000", payload: { headers: [

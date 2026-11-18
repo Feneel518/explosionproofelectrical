@@ -18,7 +18,7 @@ import { revalidatePath } from "next/cache";
 export async function sendQuotationEmailAction(input: unknown): Promise<DeliveryResult> {
   const { user } = await requireAuth();
   const parsed = quotationEmailSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, message: "Enter a valid recipient, subject and message, then try again." };
+  if (!parsed.success) return { ok: false, message: parsed.error.issues.some((issue) => issue.path[0] === "followupAt") ? "Choose a future follow-up date." : "Enter a valid recipient, subject and message, then try again." };
   const data = parsed.data;
   try {
     const [result, connection] = await Promise.all([
@@ -45,6 +45,7 @@ export async function sendQuotationEmailAction(input: unknown): Promise<Delivery
       }
     }
     let sentThreadId = reply?.threadId;
+    let followupScheduled = false;
     const deliveryResult = await deliverQuotation({
       claim: async () => {
         const created = await prisma.quotationEmailDelivery.createMany({ data: [{
@@ -84,18 +85,21 @@ export async function sendQuotationEmailAction(input: unknown): Promise<Delivery
       },
       record: async (status, messageId) => {
         await prisma.$transaction(async (tx) => {
-          await recordQuotationDelivery(tx, { requestId: data.requestId, quotationId: quotation.id, userId: user.id,
-            expectedUpdatedAt: quotation.updatedAt, status, messageId });
+          const recorded = await recordQuotationDelivery(tx, { requestId: data.requestId, quotationId: quotation.id, userId: user.id,
+            expectedUpdatedAt: quotation.updatedAt, status, messageId, followupAt: data.followupAt ? new Date(data.followupAt) : null });
           if (status === "SENT" && sentThreadId) await linkSalesConversation(tx, user.id, sentThreadId, "QUOTATION", quotation.id);
-        });
+          if (status === "SENT" && sentThreadId) await tx.gmailNotification.updateMany({ where: { userId: user.id, threadId: sentThreadId, status: "NEW" }, data: { status: "IN_PROGRESS" } });
+          return recorded;
+        }).then((recorded) => { followupScheduled = recorded.followupScheduled; });
       },
     });
     if (deliveryResult.ok) {
       revalidatePath("/dashboard/sales/quotations");
       revalidatePath(`/dashboard/sales/quotations/${quotation.id}`);
       revalidatePath("/dashboard/sales/quotations/analytics");
+      revalidatePath("/dashboard/inbox");
     }
-    return deliveryResult;
+    return deliveryResult.ok && followupScheduled ? { ...deliveryResult, message: "Quotation sent with the PDF attached. Your follow-up reminder is scheduled." } : deliveryResult;
   } catch {
     return { ok: false, uncertain: true, message: "The email result could not be checked. Check Gmail Sent before starting another send." };
   }

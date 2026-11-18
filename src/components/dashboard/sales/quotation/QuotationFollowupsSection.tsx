@@ -70,7 +70,7 @@ export default function QuotationFollowupsSection({
   const completed = followups.filter((f) => !!f.doneAt);
 
   return (
-    <div className="space-y-6">
+    <div id="quotation-followups" className="space-y-6 scroll-mt-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>

@@ -5,7 +5,12 @@ export const GMAIL_SCOPE = `${GMAIL_READ_SCOPE} ${GMAIL_SEND_SCOPE}`;
 export function gmailCanSend(scope: string) {
   return scope.split(/\s+/).includes(GMAIL_SEND_SCOPE);
 }
-export const DEFAULT_GMAIL_QUERY = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';
+export const LEGACY_DEFAULT_GMAIL_QUERY = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';
+export const DEFAULT_GMAIL_QUERY = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:"purchase doc" subject:"purchase document" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';
+
+export function upgradeDefaultGmailQuery(query: string) {
+  return query === LEGACY_DEFAULT_GMAIL_QUERY ? DEFAULT_GMAIL_QUERY : query;
+}
 export const GMAIL_STATE_COOKIE = "gmail-oauth-state";
 
 export function gmailConfiguration() {

@@ -1,11 +1,21 @@
 import { prisma } from "@/lib/prisma/db";
 import { decryptGmailSecret } from "./crypto";
-import { buildGmailSearch, exchangeGmailToken } from "./google";
+import { buildGmailSearch, exchangeGmailToken, upgradeDefaultGmailQuery } from "./google";
 import { getMatchingGmailMessages } from "./messages";
 
 export async function syncGmail(userId: string, { rescan = false }: { rescan?: boolean } = {}) {
-  const connection = await prisma.gmailConnection.findUnique({ where: { userId } });
+  let connection = await prisma.gmailConnection.findUnique({ where: { userId } });
   if (!connection) return;
+  const searchQuery = upgradeDefaultGmailQuery(connection.searchQuery);
+  if (searchQuery !== connection.searchQuery) {
+    // Upgrade only the exact shipped default; never overwrite a user's custom query.
+    const upgraded = await prisma.gmailConnection.updateMany({
+      where: { userId, connectedAt: connection.connectedAt, searchQuery: connection.searchQuery },
+      data: { searchQuery, lastSyncedAt: null, syncLeaseUntil: null },
+    });
+    if (!upgraded.count) return;
+    connection = { ...connection, searchQuery, lastSyncedAt: null, syncLeaseUntil: null };
+  }
   const now = new Date();
   if (!rescan && connection.lastSyncedAt && now.getTime() - connection.lastSyncedAt.getTime() < 55_000) return;
   const syncLeaseUntil = new Date(now.getTime() + 5 * 60_000);

@@ -75,7 +75,7 @@ export function GmailInbox({ outcome }: { outcome?: string }) {
             <FieldGroup><Field>
               <FieldLabel htmlFor="gmail-filter">Which emails should trigger alerts?</FieldLabel>
               <Input id="gmail-filter" value={query ?? connection.searchQuery} onChange={(event) => setQuery(event.target.value)} maxLength={1000} required disabled={pending} />
-              <FieldDescription>Uses Gmail search. The default checks order, inquiry, enquiry, RFQ and quotation subjects in Inbox. Archived emails need a query without in:inbox. Saving or refreshing rechecks the last 30 days unless your query specifies dates. Earlier saved alerts remain in your history.</FieldDescription>
+              <FieldDescription>Uses Gmail search. The default checks purchase documents, order, inquiry, enquiry, RFQ and quotation subjects in Inbox. Archived emails need a query without in:inbox. Saving or refreshing rechecks the last 30 days unless your query specifies dates. Earlier saved alerts remain in your history.</FieldDescription>
             </Field></FieldGroup>
             <div className="flex flex-wrap gap-2"><Button type="submit" size="sm" disabled={pending}>Save filter</Button><Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => setQuery(data?.defaultQuery ?? "")}>Use default</Button></div>
           </form>

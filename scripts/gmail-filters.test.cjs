@@ -2,6 +2,35 @@ const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { load } = require('./test-loader.cjs');
 
+test('an existing default filter is upgraded and rescanned for Purchase Doc emails', async () => {
+  const { DEFAULT_GMAIL_QUERY, buildGmailSearch } = load('src/lib/gmail/google');
+  const oldQuery = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';
+  const now = new Date();
+  const current = { userId: 'fixture-owner', searchQuery: oldQuery, connectedAt: now, lastSyncedAt: now, syncLeaseUntil: null, encryptedRefreshToken: 'fixture' };
+  const imported = [], searched = [];
+  const updates = async ({ where, data }) => {
+    if (where.searchQuery && where.searchQuery !== current.searchQuery) return { count: 0 };
+    Object.assign(current, data); return { count: 1 };
+  };
+  const { syncGmail } = load('src/lib/gmail/sync', {
+    '@/lib/prisma/db': { prisma: {
+      gmailConnection: { findUnique: async () => ({ ...current }), updateMany: updates },
+      $transaction: async work => work({ gmailConnection: { updateMany: updates }, gmailNotification: { createMany: async ({ data }) => imported.push(...data) } }),
+    } },
+    './crypto': { decryptGmailSecret: () => 'fixture-refresh' },
+    './google': { ...load('src/lib/gmail/google'), exchangeGmailToken: async () => ({ access_token: 'fixture-access' }) },
+    './messages': { getMatchingGmailMessages: async (_token, query) => {
+      searched.push(query);
+      return query.includes('subject:"purchase doc"') ? [{ messageId: 'fixture-harman', threadId: 'fixture-thread', subject: 'Harman Finochem Purchase Doc 4830002545 / 2100', sender: 'Purchase department <buyer@example.invalid>', receivedAt: new Date() }] : [];
+    } },
+  });
+  await syncGmail('fixture-owner');
+  assert.equal(imported.length, 1, 'A recent checkpoint must not hide earlier Purchase Doc mail after the default changes');
+  assert.equal(current.searchQuery, DEFAULT_GMAIL_QUERY);
+  assert.match(current.searchQuery, /subject:"purchase doc"/);
+  assert.equal(searched[0], buildGmailSearch(DEFAULT_GMAIL_QUERY, null, new Date(current.lastSyncedAt)));
+});
+
 test('imported mail beyond the first 100 alerts remains reachable on the next page', async () => {
   const rows = Array.from({ length: 101 }, (_, index) => ({
     id: `alert-${index}`, userId: 'fixture-owner', subject: `Enquiry ${index}`, sender: 'buyer@example.invalid',
@@ -41,7 +70,7 @@ test('forced refresh rechecks the saved query even immediately after an incremen
   const { syncGmail } = load('src/lib/gmail/sync', {
     '@/lib/prisma/db': { prisma: { gmailConnection: { findUnique: async () => connection, updateMany: updates }, $transaction: async work => work({ gmailConnection: { updateMany: updates } }) } },
     './crypto': { decryptGmailSecret: () => 'fixture-refresh-token' },
-    './google': { buildGmailSearch, exchangeGmailToken: async () => ({ access_token: 'fixture-access' }) },
+    './google': { ...load('src/lib/gmail/google'), buildGmailSearch, exchangeGmailToken: async () => ({ access_token: 'fixture-access' }) },
     './messages': { getMatchingGmailMessages: async (_token, query) => { queries.push(query); return []; } },
   });
   await syncGmail('fixture-owner');
@@ -50,6 +79,23 @@ test('forced refresh rechecks the saved query even immediately after an incremen
   assert.deepEqual(queries, [`(${connection.searchQuery})`]);
   assert.equal(claims[0].where.searchQuery, connection.searchQuery);
   assert.equal(claims[0].where.lastSyncedAt, now);
+});
+
+test('custom Gmail queries are preserved and a concurrent edit cancels the default upgrade', async () => {
+  const google = load('src/lib/gmail/google');
+  const custom = 'in:inbox from:buyer@example.invalid subject:invoice';
+  assert.equal(google.upgradeDefaultGmailQuery(custom), custom);
+  let networkCalls = 0, updates = 0;
+  const { syncGmail } = load('src/lib/gmail/sync', {
+    '@/lib/prisma/db': { prisma: { gmailConnection: {
+      findUnique: async () => ({ connectedAt: new Date(), searchQuery: google.LEGACY_DEFAULT_GMAIL_QUERY, lastSyncedAt: new Date(), encryptedRefreshToken: 'fixture' }),
+      updateMany: async ({ where, data }) => { updates++; assert.equal(where.searchQuery, google.LEGACY_DEFAULT_GMAIL_QUERY); assert.equal(data.lastSyncedAt, null); return { count: 0 }; },
+    } } },
+    './google': { ...google, exchangeGmailToken: async () => { networkCalls++; } },
+    './crypto': {}, './messages': {},
+  });
+  await syncGmail('fixture-owner');
+  assert.equal(updates, 1); assert.equal(networkCalls, 0);
 });
 
 test('history search reaches older subject/sender matches and always stays scoped to the signed-in user', async () => {

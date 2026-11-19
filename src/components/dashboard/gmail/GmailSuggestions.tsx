@@ -25,7 +25,7 @@ function mergeSalesSuggestions(first: Suggestions["suggestions"], second: Sugges
   return [...merged.values()].sort((a, b) => b.score - a.score).slice(0, 15);
 }
 
-function SuggestionsReview({ notificationId, initialMode }: { notificationId: string; initialMode: Mode }) {
+function SuggestionsReview({ notificationId, initialMode, onLinked }: { notificationId: string; initialMode: Mode; onLinked?: () => void }) {
   const id = useId();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [data, setData] = useState<Suggestions | null>(null);
@@ -95,6 +95,7 @@ function SuggestionsReview({ notificationId, initialMode }: { notificationId: st
               const markLinked = (items: Suggestions["suggestions"]) => items.map(item => item.kind === row.kind && item.id === row.id ? { ...item, linked: true } : item);
               setData(previous => previous ? { ...previous, suggestions: markLinked(previous.suggestions) } : previous);
               setSearchResult(previous => previous ? { ...previous, suggestions: markLinked(previous.suggestions) } : previous);
+              onLinked?.();
               toast.success("Mail linked to the sales record.");
             })}>{row.linked ? <><Check aria-hidden="true" />Linked</> : "Link mail"}</Button>
           </li>)}</ul>}
@@ -126,11 +127,11 @@ function SuggestionsReview({ notificationId, initialMode }: { notificationId: st
   </div>;
 }
 
-export function GmailSuggestions({ notificationId, subject }: { notificationId: string; subject: string }) {
+export function GmailSuggestions({ notificationId, subject, onLinked }: { notificationId: string; subject: string; onLinked?: () => void }) {
   const [mode, setMode] = useState<Mode | null>(null);
   return <>
-    <Button size="sm" variant="outline" onClick={() => setMode("links")}><Link2 aria-hidden="true" />Link mail</Button>
-    <Button size="sm" variant="outline" onClick={() => setMode("products")}><PackageSearch aria-hidden="true" />Extract products</Button>
-    <Dialog open={mode !== null} onOpenChange={open => { if (!open) setMode(null); }}><DialogContent className="sm:max-w-3xl"><DialogHeader><DialogTitle>Mail suggestions</DialogTitle><DialogDescription className="break-words pr-4">{subject}</DialogDescription></DialogHeader>{mode && <SuggestionsReview notificationId={notificationId} initialMode={mode} />}</DialogContent></Dialog>
+    <Button size="sm" variant="outline" onClick={() => setMode("links")}><Link2 data-icon="inline-start" />Link mail</Button>
+    <Button size="sm" variant="outline" onClick={() => setMode("products")}><PackageSearch data-icon="inline-start" />Find products</Button>
+    <Dialog open={mode !== null} onOpenChange={open => { if (!open) setMode(null); }}><DialogContent className="sm:max-w-3xl"><DialogHeader><DialogTitle>{mode === "links" ? "Link mail to a quotation or order" : "Find products from this email"}</DialogTitle><DialogDescription className="break-words pr-4">{subject}</DialogDescription></DialogHeader>{mode && <SuggestionsReview notificationId={notificationId} initialMode={mode} onLinked={onLinked} />}</DialogContent></Dialog>
   </>;
 }

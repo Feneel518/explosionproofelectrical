@@ -2,15 +2,18 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
-  Bot,
-  ChartColumnIncreasing,
-  Command,
-  GalleryVerticalEnd,
-  SquareTerminal,
+  BookOpen,
+  Factory,
+  Globe,
+  HardHat,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+  X,
 } from "lucide-react";
 
-import { NavMain } from "@/components/sidebar/nav-main";
+import { NavMain, type NavigationGroup } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import {
   Sidebar,
@@ -18,7 +21,9 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -29,13 +34,151 @@ export type AppSidebarUser = {
   role?: string | null;
 };
 
-const data = {
+const data: { navMain: NavigationGroup[] } = {
   navMain: [
     {
-      title: "Master",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
+      title: "Sales",
+      section: "Operations",
+      icon: TrendingUp,
+      items: [
+        {
+          title: "Website enquiries",
+          url: "/dashboard/enquiries",
+        },
+        {
+          title: "Gmail inbox",
+          url: "/dashboard/inbox",
+        },
+        {
+          title: "Quotations",
+          url: "/dashboard/sales/quotations",
+        },
+        {
+          title: "Sales orders",
+          url: "/dashboard/sales/orders",
+        },
+        {
+          title: "Pending orders",
+          url: "/dashboard/sales/pending",
+        },
+        {
+          title: "Delivery challans",
+          url: "/dashboard/sales/delivery-challans",
+        },
+        {
+          title: "Invoices",
+          url: "/dashboard/sales/invoices",
+        },
+      ],
+    },
+    {
+      title: "Purchasing",
+      section: "Operations",
+      icon: ShoppingCart,
+      items: [
+        {
+          title: "Purchase orders",
+          url: "/dashboard/purchase/orders",
+        },
+        {
+          title: "Goods received (GRN)",
+          url: "/dashboard/purchase/grn",
+        },
+      ],
+    },
+    {
+      title: "Manufacturing",
+      section: "Operations",
+      icon: Factory,
+      items: [
+        {
+          title: "Production planning",
+          url: "/dashboard/manufacturing/planning",
+        },
+        {
+          title: "Material issues",
+          url: "/dashboard/manufacturing/material-issues",
+        },
+        {
+          title: "Bill of materials (BOM)",
+          url: "/dashboard/manufacturing/bom",
+        },
+        {
+          title: "Serial numbers",
+          url: "/dashboard/serial",
+        },
+      ],
+    },
+    {
+      title: "Inventory",
+      section: "Operations",
+      icon: Package,
+      items: [
+        {
+          title: "Stock summary",
+          url: "/dashboard/inventory/stock",
+        },
+        {
+          title: "Stock movements",
+          url: "/dashboard/inventory/movements",
+        },
+        {
+          title: "Material returns",
+          url: "/dashboard/inventory/returns",
+        },
+        {
+          title: "Stock adjustments",
+          url: "/dashboard/inventory/adjustments",
+        },
+        {
+          title: "Inventory reports",
+          url: "/dashboard/inventory/reports",
+        },
+        {
+          title: "Go-live setup",
+          url: "/dashboard/inventory/go-live",
+        },
+      ],
+    },
+    {
+      title: "Casting workers",
+      section: "People & payroll",
+      icon: HardHat,
+      items: [
+        { title: "Workers", url: "/dashboard/casting-workers" },
+        { title: "Casting masters", url: "/dashboard/casting-masters" },
+        { title: "Casting jobs (IN / OUT)", url: "/dashboard/manufacturing/casting-jobs" },
+        { title: "Material ledger", url: "/dashboard/manufacturing/worker-ledger" },
+        { title: "Monthly payroll", url: "/dashboard/contractors/payouts?workforce=casting" },
+      ],
+    },
+    {
+      title: "Contractors",
+      section: "People & payroll",
+      icon: Users,
+      items: [
+        {
+          title: "Workers",
+          url: "/dashboard/contractors/workers",
+        },
+        {
+          title: "Rate catalog",
+          url: "/dashboard/contractors/rate-catalog",
+        },
+        {
+          title: "Daily entries",
+          url: "/dashboard/contractors/entries",
+        },
+        {
+          title: "Monthly payouts",
+          url: "/dashboard/contractors/payouts",
+        },
+      ],
+    },
+    {
+      title: "Records & catalog",
+      section: "Manage",
+      icon: BookOpen,
       items: [
         {
           title: "Customers",
@@ -54,169 +197,26 @@ const data = {
           url: "/dashboard/products",
         },
         {
-          title: "Raw Materials",
+          title: "Raw materials",
           url: "/dashboard/raw-materials",
         },
         {
-          title: "Inventory Employees",
+          title: "Inventory employees",
           url: "/dashboard/inventory/employees",
-        },
-        {
-          title: "Casting Masters",
-          url: "/dashboard/casting-masters",
-        },
-      ],
-    },
-    {
-      title: "Sales",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Website enquiries",
-          url: "/dashboard/enquiries",
-        },
-        {
-          title: "Gmail Sales Inbox",
-          url: "/dashboard/inbox",
-        },
-        {
-          title: "Quotation",
-          url: "/dashboard/sales/quotations",
-        },
-        {
-          title: "Delivery Challan",
-          url: "/dashboard/sales/delivery-challans",
-        },
-        {
-          title: "Sales Orders",
-          url: "/dashboard/sales/orders",
-        },
-        {
-          title: "Pending Orders",
-          url: "/dashboard/sales/pending",
-        },
-        {
-          title: "Invoicing",
-          url: "/dashboard/sales/invoices",
-        },
-      ],
-    },
-    {
-      title: "Purchase",
-      url: "#",
-      icon: GalleryVerticalEnd,
-      items: [
-        {
-          title: "Purchase Orders",
-          url: "/dashboard/purchase/orders",
-        },
-        {
-          title: "GRN",
-          url: "/dashboard/purchase/grn",
-        },
-      ],
-    },
-    {
-      title: "Manufacturing",
-      url: "#",
-      icon: AudioWaveform,
-      items: [
-        {
-          title: "Material Issues",
-          url: "/dashboard/manufacturing/material-issues",
-        },
-        {
-          title: "BOM",
-          url: "/dashboard/manufacturing/bom",
-        },
-        {
-          title: "Serial Numbers",
-          url: "/dashboard/serial",
-        },
-        {
-          title: "Production Planning",
-          url: "/dashboard/manufacturing/planning",
-        },
-      ],
-    },
-    {
-      title: "Casting Workers",
-      url: "#",
-      icon: AudioWaveform,
-      items: [
-        { title: "Workers", url: "/dashboard/casting-workers" },
-        { title: "Casting Masters", url: "/dashboard/casting-masters" },
-        { title: "Post IN / OUT", url: "/dashboard/manufacturing/casting-jobs" },
-        { title: "Material Ledger", url: "/dashboard/manufacturing/worker-ledger" },
-        { title: "Monthly Payroll", url: "/dashboard/contractors/payouts?workforce=casting" },
-      ],
-    },
-    {
-      title: "Contractors",
-      url: "#",
-      icon: AudioWaveform,
-      items: [
-        {
-          title: "Workers",
-          url: "/dashboard/contractors/workers",
-        },
-        {
-          title: "Rate Catalog",
-          url: "/dashboard/contractors/rate-catalog",
-        },
-        {
-          title: "Daily Entries",
-          url: "/dashboard/contractors/entries",
-        },
-        {
-          title: "Monthly Payouts",
-          url: "/dashboard/contractors/payouts",
-        },
-      ],
-    },
-    {
-      title: "Inventory",
-      url: "#",
-      icon: Command,
-      items: [
-        {
-          title: "Go-Live Setup",
-          url: "/dashboard/inventory/go-live",
-        },
-        {
-          title: "Stock Summary",
-          url: "/dashboard/inventory/stock",
-        },
-        {
-          title: "Stock Movements",
-          url: "/dashboard/inventory/movements",
-        },
-        {
-          title: "Material Returns",
-          url: "/dashboard/inventory/returns",
-        },
-        {
-          title: "Stock Adjustments",
-          url: "/dashboard/inventory/adjustments",
-        },
-        {
-          title: "Inventory Reports",
-          url: "/dashboard/inventory/reports",
         },
       ],
     },
     {
       title: "Website",
-      url: "#",
-      icon: ChartColumnIncreasing,
+      section: "Manage",
+      icon: Globe,
       items: [
         {
-          title: "Visitor Analytics",
+          title: "Visitor analytics",
           url: "/dashboard/website-analytics",
         },
         {
-          title: "Blog Articles",
+          title: "Blog articles",
           url: "/dashboard/blog",
         },
       ],
@@ -225,12 +225,14 @@ const data = {
 };
 
 export function AppSidebar({
-  user, permissions = [],
+  user,
+  permissions = [],
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user: AppSidebarUser;
   permissions?: string[];
 }) {
+  const { isMobile, setOpenMobile } = useSidebar();
   const allowed = (url: string) => {
     const area = url.includes("/sales/invoices") || url.includes("/contractors/payouts") || url.includes("/contractors/workers") ? "accounts"
       : url.includes("/purchase/grn") || url.includes("/material-issues") || url.includes("/inventory/") ? "inventory"
@@ -240,25 +242,28 @@ export function AppSidebar({
       : url.includes("/website-analytics") ? "analytics" : url.includes("/blog") ? "content" : "master";
     return permissions.includes(`${area}.read`);
   };
-  const navigation = data.navMain.map(group => ({ ...group, items: group.items.filter(item => allowed(item.url)) })).filter(group => group.items.length);
+  const navigation = data.navMain
+    .map((group) => ({ ...group, items: group.items.filter((item) => allowed(item.url)) }))
+    .filter((group) => group.items.length);
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b">
-        <Link href={"/dashboard"}>
-          {/* <TeamSwitcher teams={data.teams} /> */}
-          <div className="relative h-20">
-            <Image
-              src={"/asset/fullLogo.png"}
-              alt="Explosion Proof Electrical Control Logo"
-              fill
-              className="object-contain"></Image>
+      <SidebarHeader className="relative border-b border-sidebar-border">
+        <Link href="/dashboard" aria-label="Explosion Proof Electrical Control dashboard" onClick={() => setOpenMobile(false)}>
+          <div className="relative h-20 group-data-[collapsible=icon]:h-12">
+            <Image src="/asset/fullLogo.png" alt="Explosion Proof Electrical Control" fill className="object-contain group-data-[collapsible=icon]:hidden" />
+            <Image src="/asset/shortLogo.png" alt="" fill className="hidden object-contain group-data-[collapsible=icon]:block" />
           </div>
         </Link>
+        {isMobile && (
+          <Button variant="ghost" size="icon" className="absolute top-1 right-1 size-8" onClick={() => setOpenMobile(false)} aria-label="Close navigation">
+            <X aria-hidden="true" />
+          </Button>
+        )}
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="dashboard-sidebar-content">
         <NavMain items={navigation} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />

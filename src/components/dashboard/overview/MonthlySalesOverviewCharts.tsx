@@ -1,319 +1,84 @@
 "use client";
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import type {
-  DashboardMonthlyCountPoint,
-  DashboardMonthlyValuePoint,
-} from "@/lib/actions/dashboard/getDashboardMonthlyTrendsAction";
+import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
+import { ChartNoAxesCombined } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { DashboardMonthlyCountPoint, DashboardMonthlyValuePoint } from "@/lib/actions/dashboard/getDashboardMonthlyTrendsAction";
 import { formatCurrencyINR } from "@/lib/helpers/globalHelpers/formatCurrency";
 
-type Props = {
-  counts: DashboardMonthlyCountPoint[];
-  values: DashboardMonthlyValuePoint[];
-};
-
-const countConfig = {
-  quotations: {
-    label: "Quotations",
-    color: "#fb923c",
-  },
-  orders: {
-    label: "Orders",
-    color: "#f97316",
-  },
-  invoices: {
-    label: "Invoices",
-    color: "#ea580c",
-  },
-} satisfies ChartConfig;
-
+type Props = { counts: DashboardMonthlyCountPoint[]; values: DashboardMonthlyValuePoint[]; monthLabel?: string };
 const valueConfig = {
-  orderValue: {
-    label: "Order Value",
-    color: "#f59e0b",
-  },
-  invoiceValue: {
-    label: "Invoice Value",
-    color: "#ea580c",
-  },
+  orderValue: { label: "Order value", color: "var(--overview-chart-orders, #fb923c)" },
+  invoiceValue: { label: "Invoice value", color: "var(--overview-chart-invoices, #5eead4)" },
 } satisfies ChartConfig;
+const countConfig = {
+  quotations: { label: "Quotations", color: "var(--overview-chart-quotes, #93c5fd)" },
+  orders: { label: "Orders", color: "var(--overview-chart-orders, #fb923c)" },
+  invoices: { label: "Invoices", color: "var(--overview-chart-invoices, #5eead4)" },
+} satisfies ChartConfig;
+const count = (value: number) => new Intl.NumberFormat("en-IN").format(value);
+const compact = (value: number) => new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(value);
 
-export default function MonthlySalesOverviewCharts({ counts, values }: Props) {
-  const hasCountData = counts.some(
-    (item) => item.quotations > 0 || item.orders > 0 || item.invoices > 0,
-  );
-  const hasValueData = values.some(
-    (item) => item.orderValue > 0 || item.invoiceValue > 0,
-  );
-
-  const totalQuotations = counts.reduce((sum, row) => sum + row.quotations, 0);
-  const totalOrders = counts.reduce((sum, row) => sum + row.orders, 0);
-  const totalInvoices = counts.reduce((sum, row) => sum + row.invoices, 0);
-
-  const totalOrderValue = values.reduce((sum, row) => sum + row.orderValue, 0);
-  const totalInvoiceValue = values.reduce(
-    (sum, row) => sum + row.invoiceValue,
-    0,
-  );
-
+export default function MonthlySalesOverviewCharts({ counts, values, monthLabel = "Current month" }: Props) {
+  const totals = {
+    quotations: counts.reduce((sum, d) => sum + d.quotations, 0),
+    orders: counts.reduce((sum, d) => sum + d.orders, 0),
+    invoices: counts.reduce((sum, d) => sum + d.invoices, 0),
+    orderValue: values.reduce((sum, d) => sum + d.orderValue, 0),
+    invoiceValue: values.reduce((sum, d) => sum + d.invoiceValue, 0),
+  };
+  const hasValues = values.some(d => d.orderValue !== 0 || d.invoiceValue !== 0);
+  const hasCounts = counts.some(d => d.quotations > 0 || d.orders > 0 || d.invoices > 0);
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
-      <Card className=" py-4">
-        <CardHeader className="px-4">
-          <CardTitle className="text-base">
-            Current Month: Daily Documentskhe
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-4">
-          <div className="mb-3 grid grid-cols-3 gap-2 text-xs">
-            <div className="rounded-md border  px-2 py-1">
-              Quotations:{" "}
-              <span className="font-semibold">{totalQuotations}</span>
-            </div>
-            <div className="rounded-md border  px-2 py-1">
-              Orders: <span className="font-semibold">{totalOrders}</span>
-            </div>
-            <div className="rounded-md border  px-2 py-1">
-              Invoices: <span className="font-semibold">{totalInvoices}</span>
-            </div>
+    <Card className="overview-panel min-w-0 gap-0 py-0 sm:gap-0 sm:py-0">
+      <Tabs defaultValue="value" className="gap-0">
+        <CardHeader className="gap-4 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div><CardTitle><h2>Sales performance</h2></CardTitle><CardDescription className="mt-2">{monthLabel} · daily activity to date</CardDescription></div>
+            <TabsList aria-label="Sales performance view"><TabsTrigger value="value">Value</TabsTrigger><TabsTrigger value="documents">Documents</TabsTrigger></TabsList>
           </div>
-
-          {hasCountData ? (
-            <ChartContainer config={countConfig} className="h-80 w-full">
-              <AreaChart data={counts} margin={{ left: 8, right: 8, top: 8 }}>
-                <defs>
-                  <linearGradient
-                    id="fillQuotations"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-quotations)"
-                      stopOpacity={0.45}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-quotations)"
-                      stopOpacity={0.04}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillOrders" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-orders)"
-                      stopOpacity={0.4}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-orders)"
-                      stopOpacity={0.03}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillInvoices" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-invoices)"
-                      stopOpacity={0.42}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-invoices)"
-                      stopOpacity={0.03}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} strokeDasharray="4 4" />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} width={28} />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      indicator="dot"
-                      formatter={(value, key) => (
-                        <div className="flex min-w-[140px] items-center justify-between gap-4">
-                          <span className="text-muted-foreground">
-                            {String(key)}
-                          </span>
-                          <span className="font-medium">{Number(value)}</span>
-                        </div>
-                      )}
-                    />
-                  }
-                />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent className="flex-wrap gap-3 text-xs" />
-                  }
-                />
-                <Area
-                  type="natural"
-                  dataKey="quotations"
-                  fill="url(#fillQuotations)"
-                  stroke="var(--color-quotations)"
-                  strokeWidth={2.2}
-                  fillOpacity={1}
-                  activeDot={{ r: 4 }}
-                />
-                <Area
-                  type="natural"
-                  dataKey="orders"
-                  fill="url(#fillOrders)"
-                  stroke="var(--color-orders)"
-                  strokeWidth={2.2}
-                  fillOpacity={1}
-                  activeDot={{ r: 4 }}
-                />
-                <Area
-                  type="natural"
-                  dataKey="invoices"
-                  fill="url(#fillInvoices)"
-                  stroke="var(--color-invoices)"
-                  strokeWidth={2.2}
-                  fillOpacity={1}
-                  activeDot={{ r: 4 }}
-                />
-              </AreaChart>
-            </ChartContainer>
-          ) : (
-            <div className="flex h-80 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
-              No quotation/order/invoice entries in current month yet.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="py-4">
-        <CardHeader className="px-4">
-          <CardTitle className="text-base">
-            Current Month: Daily Value (INR)
-          </CardTitle>
         </CardHeader>
-        <CardContent className="px-4">
-          <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-md border  px-2 py-1">
-              Order Value:{" "}
-              <span className="font-semibold">
-                {formatCurrencyINR(totalOrderValue)}
-              </span>
-            </div>
-            <div className="rounded-md border  px-2 py-1">
-              Invoice Value:{" "}
-              <span className="font-semibold">
-                {formatCurrencyINR(totalInvoiceValue)}
-              </span>
-            </div>
-          </div>
-
-          {hasValueData ? (
-            <ChartContainer config={valueConfig} className="h-80 w-full">
-              <AreaChart data={values} margin={{ left: 8, right: 8, top: 8 }}>
-                <defs>
-                  <linearGradient
-                    id="fillOrderValue"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-orderValue)"
-                      stopOpacity={0.5}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-orderValue)"
-                      stopOpacity={0.05}
-                    />
-                  </linearGradient>
-                  <linearGradient
-                    id="fillInvoiceValue"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-invoiceValue)"
-                      stopOpacity={0.45}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-invoiceValue)"
-                      stopOpacity={0.04}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} strokeDasharray="4 4" />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                <YAxis
-                  width={52}
-                  tickFormatter={(value) =>
-                    new Intl.NumberFormat("en-IN", {
-                      notation: "compact",
-                      maximumFractionDigits: 1,
-                    }).format(Number(value))
-                  }
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      indicator="dot"
-                      formatter={(value, key) => (
-                        <div className="flex min-w-[180px] items-center justify-between gap-4">
-                          <span className="text-muted-foreground">
-                            {String(key)}
-                          </span>
-                          <span className="font-medium">
-                            {formatCurrencyINR(Number(value))}
-                          </span>
-                        </div>
-                      )}
-                    />
-                  }
-                />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent className="flex-wrap gap-3 text-xs" />
-                  }
-                />
-                <Area
-                  type="natural"
-                  dataKey="orderValue"
-                  fill="url(#fillOrderValue)"
-                  stroke="var(--color-orderValue)"
-                  strokeWidth={2.2}
-                  fillOpacity={1}
-                  activeDot={{ r: 4 }}
-                />
-                <Area
-                  type="natural"
-                  dataKey="invoiceValue"
-                  fill="url(#fillInvoiceValue)"
-                  stroke="var(--color-invoiceValue)"
-                  strokeWidth={2.2}
-                  fillOpacity={1}
-                  activeDot={{ r: 4 }}
-                />
-              </AreaChart>
-            </ChartContainer>
-          ) : (
-            <div className="flex h-80 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
-              No order/invoice value entries in current month yet.
-            </div>
-          )}
+        <CardContent className="min-w-0 px-3 pb-5 sm:px-5">
+          <TabsContent value="value" className="flex flex-col gap-5">
+            <dl className="overview-chart-totals grid grid-cols-2 gap-4"><div><dt className="text-xs text-muted-foreground">Orders this month</dt><dd className="mt-1 text-lg font-semibold tabular-nums">{formatCurrencyINR(totals.orderValue)}</dd></div><div><dt className="text-xs text-muted-foreground">Invoices this month</dt><dd className="mt-1 text-lg font-semibold tabular-nums">{formatCurrencyINR(totals.invoiceValue)}</dd></div></dl>
+            {hasValues ? <ChartContainer config={valueConfig} className="h-64 w-full min-w-0 aspect-auto sm:h-72" aria-label="Daily order and invoice values in INR">
+              <ComposedChart accessibilityLayer data={values} margin={{ left: 0, right: 12, top: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 5" />
+                <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={10} minTickGap={20} />
+                <YAxis tickLine={false} axisLine={false} tickFormatter={compact} width={46} domain={[0, "auto"]} />
+                <ChartTooltip content={<ChartTooltipContent labelFormatter={label => "Day " + label} formatter={(value, key) => <div className="flex min-w-40 justify-between gap-4"><span className="text-muted-foreground">{valueConfig[key as keyof typeof valueConfig]?.label || String(key)}</span><span className="font-medium tabular-nums">{formatCurrencyINR(Number(value))}</span></div>} />} />
+                <ChartLegend content={<ChartLegendContent className="flex-wrap gap-4 pt-5" />} />
+                <Bar dataKey="orderValue" fill="var(--color-orderValue)" fillOpacity={0.85} maxBarSize={18} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                <Line type="linear" dataKey="invoiceValue" stroke="var(--color-invoiceValue)" strokeWidth={2.5} dot={{ r: 2.5 }} activeDot={{ r: 5 }} isAnimationActive={false} />
+              </ComposedChart>
+            </ChartContainer> : <EmptyChart text="No order or invoice values this month yet." />}
+            <p className="text-xs leading-relaxed text-muted-foreground">Daily document values, not cash collections. Invoice values include drafts; cancelled orders and invoices are excluded.</p>
+            <details className="overview-chart-data"><summary>View daily values</summary><div className="overflow-x-auto"><table><caption className="sr-only">Daily values in INR for {monthLabel}</caption><thead><tr><th scope="col">Day</th><th scope="col">Order value</th><th scope="col">Invoice value</th></tr></thead><tbody>{values.map(d => <tr key={d.day}><th scope="row">{d.day}</th><td>{formatCurrencyINR(d.orderValue)}</td><td>{formatCurrencyINR(d.invoiceValue)}</td></tr>)}</tbody></table></div></details>
+          </TabsContent>
+          <TabsContent value="documents" className="flex flex-col gap-5">
+            <dl className="overview-chart-totals grid grid-cols-3 gap-3">{[["Quotations", totals.quotations], ["Orders", totals.orders], ["Invoices", totals.invoices]].map(([label, value]) => <div key={label}><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 text-lg font-semibold tabular-nums">{count(Number(value))}</dd></div>)}</dl>
+            {hasCounts ? <ChartContainer config={countConfig} className="h-64 w-full min-w-0 aspect-auto sm:h-72" aria-label="Daily quotation, order, and invoice counts">
+              <ComposedChart accessibilityLayer data={counts} margin={{ left: 0, right: 12, top: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 5" />
+                <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={10} minTickGap={20} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+                <ChartTooltip content={<ChartTooltipContent labelFormatter={label => "Day " + label} />} />
+                <ChartLegend content={<ChartLegendContent className="flex-wrap gap-4 pt-5" />} />
+                <Bar dataKey="quotations" fill="var(--color-quotations)" maxBarSize={12} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="orders" fill="var(--color-orders)" maxBarSize={12} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="invoices" fill="var(--color-invoices)" maxBarSize={12} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+              </ComposedChart>
+            </ChartContainer> : <EmptyChart text="No quotations, orders, or invoices this month yet." />}
+            <p className="text-xs leading-relaxed text-muted-foreground">Quotations and orders use their creation date. Invoices use their invoice date. Cancelled orders and invoices are excluded.</p>
+            <details className="overview-chart-data"><summary>View daily document counts</summary><div className="overflow-x-auto"><table><caption className="sr-only">Daily document counts for {monthLabel}</caption><thead><tr><th scope="col">Day</th><th scope="col">Quotations</th><th scope="col">Orders</th><th scope="col">Invoices</th></tr></thead><tbody>{counts.map(d => <tr key={d.day}><th scope="row">{d.day}</th><td>{count(d.quotations)}</td><td>{count(d.orders)}</td><td>{count(d.invoices)}</td></tr>)}</tbody></table></div></details>
+          </TabsContent>
         </CardContent>
-      </Card>
-    </div>
+      </Tabs>
+    </Card>
   );
+}
+function EmptyChart({ text }: { text: string }) {
+  return <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-lg bg-muted/40 px-6 text-center sm:h-72"><ChartNoAxesCombined className="size-8 text-muted-foreground" aria-hidden="true" /><p className="text-sm font-medium">{text}</p><p className="max-w-72 text-xs leading-relaxed text-muted-foreground">Activity will appear here as documents are recorded.</p></div>;
 }

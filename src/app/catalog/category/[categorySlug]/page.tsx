@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { CatalogCard } from "@/components/marketing/design-preview/CatalogCard";
 import { getCatalogCategory } from "@/lib/marketing/catalog";
@@ -39,7 +39,7 @@ export default async function CatalogCategoryPage({ params }: Props) {
     { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") }, { "@type": "ListItem", position: 2, name: "Catalog", item: absoluteUrl("/catalog") }, { "@type": "ListItem", position: 3, name: data.category.name, item: url }] },
     { "@type": "Organization", "@id": absoluteUrl("/#organization"), name: SITE_NAME, url: absoluteUrl("/") },
   ] };
-  return <IndustrialFonts><IndustrialShell>
+  return <SiteRoot><IndustrialShell>
     <JsonLd data={schema} />
     <nav className={styles.breadcrumb} aria-label="Breadcrumb"><Link href="/catalog"><ArrowLeft size={15} /> Catalog</Link><span>/</span><span aria-current="page">{data.category.name}</span></nav>
     <section className={styles.categoryHero}><span className={styles.eyebrow}>ExEC / PRODUCT RANGE / ENGINEERED IN VAPI</span><div><h1>{data.category.name}<br /><span>manufacturer in India.</span></h1><p>{landing?.description || `Explore our ${data.category.name.toLowerCase()} range. Review product details, available configurations and technical information before requesting a project-specific quotation.`}</p></div></section>
@@ -55,5 +55,5 @@ export default async function CatalogCategoryPage({ params }: Props) {
       </nav><h3>Frequently asked questions</h3>{landing.faq.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}
     </section>}
     <div className={styles.closingBand}><span>NEED A CONFIGURATION FOR A SPECIFIC AREA CLASSIFICATION?</span><Link href="/knowledge-hub">VISIT THE KNOWLEDGE CENTRE <ArrowUpRight size={20} /></Link></div>
-  </IndustrialShell></IndustrialFonts>;
+  </IndustrialShell></SiteRoot>;
 }

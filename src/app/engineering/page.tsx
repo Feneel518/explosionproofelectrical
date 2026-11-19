@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { marketingAsset } from "@/lib/marketing/data";
 import { absoluteUrl } from "@/lib/seo/site";
@@ -53,7 +53,7 @@ const industries = [
 
 export default function EngineeringPage() {
   return (
-    <IndustrialFonts>
+    <SiteRoot>
       <IndustrialShell>
         <div className={styles.page}>
           <section className={styles.hero} aria-labelledby="engineering-title">
@@ -158,6 +158,6 @@ export default function EngineeringPage() {
           </section>
         </div>
       </IndustrialShell>
-    </IndustrialFonts>
+    </SiteRoot>
   );
 }

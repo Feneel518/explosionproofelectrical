@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { getKnowledgeArticle, knowledgeArticles } from "@/lib/marketing/knowledge";
 import { absoluteUrl, SITE_NAME } from "@/lib/seo/site";
@@ -47,7 +47,7 @@ export default async function KnowledgeArticlePage({ params }: Props) {
     ],
   };
 
-  return <IndustrialFonts><IndustrialShell>
+  return <SiteRoot><IndustrialShell>
     <article>
       <JsonLd data={schema} />
       <header className={styles.articleHero}>
@@ -68,5 +68,5 @@ export default async function KnowledgeArticlePage({ params }: Props) {
       </div>
     </article>
     <section className={styles.related}><span className={styles.kicker}>Continue learning</span><h2>Related technical guides</h2><div className={styles.relatedGrid}>{related.map((item) => <Link href={`/knowledge-hub/${item.slug}`} key={item.slug}><span className={styles.cardMeta}>{item.category}</span><strong>{item.title}</strong><ArrowUpRight size={18} /></Link>)}</div></section>
-  </IndustrialShell></IndustrialFonts>;
+  </IndustrialShell></SiteRoot>;
 }

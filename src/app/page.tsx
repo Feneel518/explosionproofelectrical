@@ -1,5 +1,5 @@
 import { IndustrialHome } from "@/components/marketing/design-preview/IndustrialHome";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { getCatalogData } from "@/lib/marketing/catalog";
 import { getPublishedBlogPosts } from "@/lib/marketing/blog";
 import { knowledgeArticles } from "@/lib/marketing/knowledge";
@@ -17,5 +17,5 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const [{ products, filters }, blogPosts] = await Promise.all([getCatalogData(), getPublishedBlogPosts(5)]);
   const guides = knowledgeArticles.map(({ slug, shortTitle, category, description, readMinutes }) => ({ slug, shortTitle, category, description, readMinutes }));
-  return <IndustrialFonts><IndustrialHome products={products} filters={filters} blogPosts={blogPosts} guides={guides} /></IndustrialFonts>;
+  return <SiteRoot><IndustrialHome products={products} filters={filters} blogPosts={blogPosts} guides={guides} /></SiteRoot>;
 }

@@ -1,9 +1,13 @@
 /*
  * ExEC public site — design tokens and base styles.
  * The existing site's navy, off-white type and one signal colour (the ExEC orange).
- * Everything public is wrapped in `.site-root` (IndustrialFonts).
+ * Everything public is wrapped in `.site-root` (SiteRoot).
+ *
+ * The tokens are scoped to pages that render the public site: `:root:has(.site-root)`
+ * puts them on <html> so portals (dialogs, toasts) inherit them, while the dashboard,
+ * which never renders `.site-root`, keeps its own shadcn tokens (--card, --accent, --muted…).
  */
-:root {
+:root:has(.site-root), .site-root {
   /* ExEC brand: the navy surface of the existing site, off-white type, ExEC orange. */
   --paper: #072436;          /* page background */
   --paper-2: #0d3048;        /* chips, subtle fills */
@@ -36,8 +40,8 @@
 }
 
 /* Legacy names used by existing modules, now pointing at the new families.
-   Declared where the font variables live (body / .site-root), not on :root. */
-body, .site-root {
+   Declared where the font variables live (body / .site-root), public pages only. */
+body:has(.site-root), .site-root {
   --font-industrial-display: var(--font-site-sans);
   --font-industrial-sans: var(--font-site-sans);
   --font-industrial-mono: var(--font-site-mono);
@@ -46,7 +50,7 @@ body, .site-root {
   --font-marketing-mono: var(--font-site-mono);
 }
 
-body:has(.site-root) { background: var(--paper); }
+body:has(.site-root) { background: #072436; }
 
 .site-root {
   font-family: var(--font-site-sans), system-ui, sans-serif;

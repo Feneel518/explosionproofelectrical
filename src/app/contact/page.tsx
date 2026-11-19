@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowDownRight } from "lucide-react";
 import { ContactForm } from "@/components/marketing/ContactForm";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { getQuoteProductOptions } from "@/lib/marketing/quoteProductOptions";
 import { marketingAsset } from "@/lib/marketing/data";
@@ -26,7 +26,7 @@ export default async function ContactPage() {
   const productOptions = await getQuoteProductOptions();
 
   return (
-    <IndustrialFonts>
+    <SiteRoot>
       <IndustrialShell>
         <div className={styles.page}>
           <section className={styles.hero} aria-labelledby="contact-title">
@@ -83,6 +83,6 @@ export default async function ContactPage() {
           </section>
         </div>
       </IndustrialShell>
-    </IndustrialFonts>
+    </SiteRoot>
   );
 }

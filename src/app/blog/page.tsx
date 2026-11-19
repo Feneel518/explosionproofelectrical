@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, Clock3 } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { BlogArchive } from "@/components/marketing/design-preview/BlogArchive";
 import { getPublishedBlogPosts } from "@/lib/marketing/blog";
@@ -20,7 +20,7 @@ export default async function BlogPage() {
   const featured = posts.find(post => post.featured) ?? posts[0];
   const previews = [...posts].sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime()).map(({ slug, cat, date, read, image, imageAlt, title, excerpt }) => ({ slug, cat, date, read, image, imageAlt, title, excerpt }));
 
-  return <IndustrialFonts><IndustrialShell><div className={styles.page}>
+  return <SiteRoot><IndustrialShell><div className={styles.page}>
     <section className={styles.journalHeader} aria-labelledby="journal-title">
       <nav className={styles.breadcrumbs} aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><span>Journal</span></nav>
       <div className={styles.journalMasthead}><div><span className={styles.eyebrow}>The ExEC engineering journal</span><h1 id="journal-title">From the workshop.<br /><span>For the field.</span></h1></div><div className={styles.journalIntro}><p>A closer look at the details that matter. Practical knowledge on flameproof equipment, hazardous areas and better engineering decisions.</p><a href="#latest-notes">Find your next read <ArrowDownRight size={19} /></a></div></div>
@@ -32,5 +32,5 @@ export default async function BlogPage() {
     </Link></section>}
     <BlogArchive posts={previews} />
     <div className={styles.journalCta}><div><span className={styles.eyebrow}>Put knowledge into practice</span><h2>Have a specification in mind?</h2><p>Talk through your application with the people who build the equipment.</p></div><Link href="/contact" className={styles.outlineLink}>Talk to our team <ArrowUpRight size={18} /></Link></div>
-  </div></IndustrialShell></IndustrialFonts>;
+  </div></IndustrialShell></SiteRoot>;
 }

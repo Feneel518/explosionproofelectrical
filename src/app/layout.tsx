@@ -51,7 +51,7 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${garamond.variable} ${siteFontVariables} antialiased font-sans no-scrollbar`}>
         <NextTopLoader
-          color="#e46414"
+          color="#1f7aec"
           height={3}
           zIndex={2147483647}
           showSpinner={false}

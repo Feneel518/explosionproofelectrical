@@ -1,0 +1,99 @@
+/*
+ * ExEC public site — design tokens and base styles.
+ * The existing site's navy, off-white type and one signal colour (the ExEC orange).
+ * Everything public is wrapped in `.site-root` (IndustrialFonts).
+ */
+:root {
+  /* ExEC brand: the navy surface of the existing site, off-white type, ExEC orange. */
+  --paper: #072436;          /* page background */
+  --paper-2: #0d3048;        /* chips, subtle fills */
+  --paper-3: #133a54;
+  --card: #0a2b40;           /* cards and panels */
+  --block: #041a2a;          /* deep feature blocks (hero, process, CTA, footer) */
+  --ink: #f0f2ed;            /* primary text; also the light "inverse" button */
+  --ink-2: #e3e9ec;
+  --ink-3: #d6e1e8;
+  --ink-soft: #cddbe4;
+  --muted: #a7bfcd;
+  --muted-2: #7f9aac;
+  --line: #ffffff26;
+  --line-soft: #ffffff16;
+  --on-ink: #f0f2ed;         /* text on deep blocks */
+  --on-ink-muted: #a7bfcd;
+  --on-ink-line: #ffffff1f;
+  --accent: #e46414;         /* ExEC orange */
+  --accent-2: #f17d1e;
+  --accent-soft: rgb(228 100 20 / .2);
+  --sky: #bfd8e4;            /* the existing site's drawing-line blue */
+  --navy: #12385c;
+  --radius-sm: 10px;
+  --radius: 18px;
+  --radius-lg: 28px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --gutter: clamp(20px, 4vw, 56px);
+  --max: 1360px;
+}
+
+/* Legacy names used by existing modules, now pointing at the new families.
+   Declared where the font variables live (body / .site-root), not on :root. */
+body, .site-root {
+  --font-industrial-display: var(--font-site-sans);
+  --font-industrial-sans: var(--font-site-sans);
+  --font-industrial-mono: var(--font-site-mono);
+  --font-marketing-display: var(--font-site-sans);
+  --font-marketing-sans: var(--font-site-sans);
+  --font-marketing-mono: var(--font-site-mono);
+}
+
+body:has(.site-root) { background: var(--paper); }
+
+.site-root {
+  font-family: var(--font-site-sans), system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.site-root ::selection { background: var(--accent); color: #fff; }
+
+/* Shared headline language: grotesk with an italic serif accent. */
+.site-root :where(h1, h2, h3) { font-weight: 500; letter-spacing: -0.035em; text-wrap: balance; }
+.site-root em.serif,
+.site-root .serif { font-family: var(--font-site-serif), Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+
+/* Lenis smooth scroll */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Product line diagrams */
+.exec-diagram { display: block; width: 100%; height: 100%; overflow: visible; color: currentColor; }
+.exec-diagram .d-main { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.exec-diagram .d-detail { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; opacity: .72; }
+.exec-diagram .d-fine { fill: none; stroke: currentColor; stroke-width: .7; stroke-linecap: round; opacity: .5; }
+.exec-diagram .d-accent { fill: none; stroke: var(--diagram-accent, var(--accent)); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.exec-diagram .d-dim { fill: none; stroke: var(--diagram-accent, var(--accent)); stroke-width: .9; stroke-linecap: round; }
+.exec-diagram .d-axis { fill: none; stroke: var(--diagram-accent, var(--accent)); stroke-width: .7; stroke-dasharray: 14 4 2 4; opacity: .55; }
+.exec-diagram .d-cad { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; }
+.exec-diagram .d-cadfine { fill: none; stroke: currentColor; stroke-width: .7; stroke-linecap: round; stroke-linejoin: round; opacity: .62; }
+.exec-diagram .d-fill { fill: currentColor; stroke: none; }
+.exec-diagram .d-bg { fill: var(--diagram-bg, var(--card)); }
+.exec-diagram .d-accent-fill { fill: var(--diagram-accent, var(--accent)); stroke: none; }
+.exec-diagram text { font-family: var(--font-site-mono), ui-monospace, monospace; font-size: 9px; letter-spacing: .06em; fill: currentColor; }
+.exec-diagram text.d-dim-text { fill: var(--diagram-accent, var(--accent)); }
+.exec-diagram text.d-callout-text { font-size: 9px; fill: currentColor; }
+
+@media (prefers-reduced-motion: reduce) {
+  .site-root *, .site-root *::before, .site-root *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Scroll reveal used by AutoReveal on content pages */
+[data-exec-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); }
+[data-exec-reveal="in"] { opacity: 1; transform: none; }
+[data-exec-delay="1"] { transition-delay: 70ms; } [data-exec-delay="2"] { transition-delay: 140ms; }
+[data-exec-delay="3"] { transition-delay: 210ms; } [data-exec-delay="4"] { transition-delay: 280ms; }

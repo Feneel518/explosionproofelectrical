@@ -10,6 +10,14 @@ import styles from "./product-stage.module.css";
 type ProductStageProps = {
   exploded: boolean; autoRotate: boolean; resetKey: number;
   drawing?: boolean; onReady?: () => void; modelUrl: string; className?: string;
+  /** Colour the shaded surfaces fade into in drawing mode — match the backdrop. */
+  paperColor?: string;
+  /** Colour of the technical drawing lines. */
+  lineColor?: string;
+  /** Keep rendering during page scroll (for scroll-driven scenes). */
+  renderWhileScrolling?: boolean;
+  /** Show the small "product visualisation" note. */
+  showNote?: boolean;
 };
 
 function disposeObject(object: THREE.Object3D) {
@@ -29,7 +37,7 @@ function disposeObject(object: THREE.Object3D) {
   textures.forEach((t) => t.dispose());
 }
 
-export default function ProductStage({ exploded, autoRotate, resetKey, drawing = false, onReady, modelUrl, className = "" }: ProductStageProps) {
+export default function ProductStage({ exploded, autoRotate, resetKey, drawing = false, onReady, modelUrl, className = "", paperColor = "#072436", lineColor = "#bfd8e4", renderWhileScrolling = false, showNote = true }: ProductStageProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef({ exploded, autoRotate, resetKey, drawing });
   const onReadyRef = useRef(onReady);
@@ -92,8 +100,8 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
     const parts: { object: THREE.Object3D; restY: number; travel: number }[] = [];
     const lines: THREE.LineSegments[] = [];
     const drawingUniform = { value: settingsRef.current.drawing ? 1 : 0 };
-    const paper = new THREE.Color("#072436");
-    const drawingMaterial = new THREE.LineBasicMaterial({ color: "#bfd8e4", transparent: true, opacity: 0.75 });
+    const paper = new THREE.Color(paperColor);
+    const drawingMaterial = new THREE.LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.75 });
 
     // Only rotation is needed. Passive pointer handlers avoid the blocking
     // wheel listener that OrbitControls installs even with zoom disabled.
@@ -140,7 +148,7 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       if (Math.abs(drawingUniform.value - drawingTarget) < 0.002) drawingUniform.value = drawingTarget;
       const drawingMoving = drawingUniform.value !== previousDrawing;
       if (drawingMoving || !ready) {
-        drawingMaterial.opacity = drawingUniform.value * 0.75;
+        drawingMaterial.opacity = drawingUniform.value * 0.92;
         lines.forEach((line) => { line.visible = drawingUniform.value > 0.001; });
         needsRender = true;
       }
@@ -220,6 +228,7 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
     const onVisibility = () => { if (document.hidden) stop(); else wake(); };
     const onMotion = () => wake();
     const onScroll = () => {
+      if (renderWhileScrolling) return;
       if (!scrolling) { scrolling = true; stop(); }
       window.clearTimeout(scrollEndTimer);
       scrollEndTimer = window.setTimeout(() => { scrolling = false; wake(); }, 150);
@@ -301,7 +310,7 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       canvas.removeEventListener("pointercancel", onPointerEnd);
       disposeObject(scene); drawingMaterial.dispose(); environmentMap.dispose(); renderer.dispose(); canvas.remove();
     };
-  }, [modelUrl]);
+  }, [modelUrl, paperColor, lineColor, renderWhileScrolling]);
 
   return <div className={`${styles.stage} ${className}`} data-stage-status={status}>
     <div ref={hostRef} className={styles.host} aria-hidden={status === "fallback"} />
@@ -309,6 +318,6 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       <Image src="/marketing/wellglass.png" alt="ExEC wellglass product photograph" width={440} height={440} className={styles.fallbackImage} />
       <span>{status === "loading" ? "Preparing the product view" : "Product photograph · 3D unavailable on this device"}</span>
     </div>}
-    {status === "ready" && <span className={styles.modelNote}>45W wellglass · product visualisation</span>}
+    {status === "ready" && showNote && <span className={styles.modelNote}>45W wellglass · product visualisation</span>}
   </div>;
 }

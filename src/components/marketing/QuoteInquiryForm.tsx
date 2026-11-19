@@ -26,10 +26,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const inputClass =
-  "w-full bg-[#061d2b] border border-white/16 text-white font-[family-name:var(--font-marketing-sans)] text-sm px-4 py-3.5 outline-none focus:border-[#E46414] transition-colors placeholder:text-white/35 disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-xl bg-white/[0.04] border border-white/12 text-white font-[family-name:var(--font-site-sans)] text-[15px] px-4 py-3.5 outline-none focus:border-[#e46414] focus:bg-white/[0.07] transition-colors placeholder:text-white/35 disabled:cursor-not-allowed disabled:opacity-60";
 
 const labelClass =
-  "mb-2.5 font-[family-name:var(--font-marketing-mono)] text-[11px] uppercase tracking-[0.12em] text-white/55";
+  "mb-2 font-[family-name:var(--font-site-mono)] text-[11px] uppercase tracking-[0.1em] text-white/50";
 
 type FieldErrors = Partial<Record<keyof QuoteInquiryRequest, string[]>>;
 
@@ -96,7 +96,7 @@ export function QuoteInquiryForm({
 
   if (status.kind === "success") {
     return (
-      <div className="border border-[#E46414]/45 bg-[#E46414]/08 p-8 text-center sm:p-10">
+      <div className="rounded-2xl border border-[#e46414]/40 bg-[#e46414]/[0.08] p-8 text-center sm:p-10">
         <Image
           src={marketingAsset("flame.png")}
           alt=""
@@ -104,21 +104,21 @@ export function QuoteInquiryForm({
           height={64}
           className="mx-auto opacity-90 drop-shadow-[0_0_26px_rgba(228,100,20,0.4)]"
         />
-        <div className="mt-5 font-[family-name:var(--font-marketing-display)] text-[42px] uppercase leading-none">
+        <div className="mt-5 font-[family-name:var(--font-site-sans)] text-[36px] font-medium tracking-[-0.04em] leading-none">
           REQUEST RECEIVED
         </div>
         <p className="mt-3 text-sm font-light leading-6 text-white/72">
           {status.message}
         </p>
         {status.warning ? (
-          <p className="mt-3 border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-xs leading-5 text-yellow-100">
+          <p className="mt-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-xs leading-5 text-yellow-100">
             {status.warning}
           </p>
         ) : null}
         <button
           type="button"
           onClick={() => setStatus({ kind: "idle" })}
-          className="mt-6 border-b border-[#E46414] pb-1 text-sm font-semibold uppercase tracking-[0.1em]">
+          className="mt-6 border-b border-[#e46414] pb-1 text-sm font-semibold">
           SEND ANOTHER -&gt;
         </button>
       </div>
@@ -211,7 +211,7 @@ export function QuoteInquiryForm({
       </div>
 
       {status.kind === "error" ? (
-        <div className="mt-5 border border-red-400/35 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+        <div className="mt-5 rounded-xl border border-red-400/35 bg-red-500/10 px-4 py-3 text-sm text-red-100">
           {status.message}
         </div>
       ) : null}
@@ -219,7 +219,7 @@ export function QuoteInquiryForm({
       <button
         type="submit"
         disabled={isPending}
-        className="mt-7 inline-block bg-[#E46414] px-9 py-4 text-sm font-bold uppercase tracking-[0.1em] shadow-[0_12px_40px_rgba(228,100,20,0.34)] disabled:cursor-not-allowed disabled:opacity-60">
+        className="mt-7 inline-flex h-auto items-center rounded-full bg-[#e46414] px-8 py-4 text-[15px] font-semibold text-white shadow-[0_12px_40px_-12px_rgba(228,100,20,0.6)] transition hover:bg-[#f17d1e] disabled:cursor-not-allowed disabled:opacity-60">
         {isPending ? "SENDING..." : "SEND REQUEST ->"}
       </button>
     </form>
@@ -257,7 +257,7 @@ function ProductInterestCombobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-[50px] w-full justify-between rounded-none border-white/16 bg-[#061d2b] px-4 py-3.5 text-left font-[family-name:var(--font-marketing-sans)] text-sm font-normal text-white shadow-none hover:bg-[#061d2b] hover:text-white focus-visible:border-[#E46414] focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60",
+            "h-[52px] w-full justify-between rounded-xl border-white/12 bg-white/[0.04] px-4 py-3.5 text-left font-[family-name:var(--font-site-sans)] text-[15px] font-normal text-white shadow-none hover:bg-white/[0.07] hover:text-white focus-visible:border-[#e46414] focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60",
           )}>
           <span className="min-w-0 flex-1 truncate text-left">
             {value || "Select a product"}
@@ -270,8 +270,8 @@ function ProductInterestCombobox({
         align="start"
         onWheel={(event) => event.stopPropagation()}
         onTouchMove={(event) => event.stopPropagation()}
-        className="w-(--radix-popover-trigger-width) rounded-none border-white/16 bg-[#061d2b] p-0 text-white shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
-        <Command className="rounded-none bg-[#061d2b] text-white [&_[data-slot=command-input-wrapper]]:h-[50px] [&_[data-slot=command-input-wrapper]]:border-white/16 [&_[data-slot=command-input-wrapper]]:bg-[#04121b] [&_[data-slot=command-input-wrapper]_svg]:text-white/45 [&_[data-slot=command-input]]:bg-transparent [&_[data-slot=command-input]]:text-white [&_[data-slot=command-input]]:placeholder:text-white/35">
+        className="w-(--radix-popover-trigger-width) overflow-hidden rounded-xl border-white/12 bg-[#0a2b40] p-0 text-white shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
+        <Command className="rounded-xl bg-[#0a2b40] text-white [&_[data-slot=command-input-wrapper]]:h-[50px] [&_[data-slot=command-input-wrapper]]:border-white/12 [&_[data-slot=command-input-wrapper]]:bg-[#072436] [&_[data-slot=command-input-wrapper]_svg]:text-white/45 [&_[data-slot=command-input]]:bg-transparent [&_[data-slot=command-input]]:text-white [&_[data-slot=command-input]]:placeholder:text-white/35">
           <CommandInput
             placeholder="Search products..."
             className="text-white placeholder:text-white/35"
@@ -289,7 +289,7 @@ function ProductInterestCombobox({
                     onChange(option);
                     setOpen(false);
                   }}
-                  className="cursor-pointer rounded-none px-3 py-3 text-sm text-white data-[selected=true]:bg-[#E46414] data-[selected=true]:text-white">
+                  className="cursor-pointer rounded-lg px-3 py-3 text-sm text-white data-[selected=true]:bg-[#e46414] data-[selected=true]:text-white">
                   <span className="min-w-0 flex-1 truncate">{option}</span>
                   {value === option ? (
                     <Check className="h-4 w-4 shrink-0 text-[#F17D1E]" />

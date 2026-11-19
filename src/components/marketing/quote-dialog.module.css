@@ -1,0 +1,14 @@
+.trigger { display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 24px; border: 0; border-radius: 999px; background: var(--accent, #e46414); color: #fff; font-family: var(--font-site-sans), system-ui, sans-serif; font-size: 15px; font-weight: 550; cursor: pointer; transition: background .25s, transform .25s cubic-bezier(.22,1,.36,1); }
+.trigger:hover { background: var(--accent-2, #f17d1e); transform: translateY(-2px); }
+
+.dialog { max-height: 92vh; overflow-y: auto; padding: 0 !important; border: 1px solid rgb(255 255 255 / .08) !important; border-radius: 28px !important; background: #04192a !important; color: #f1eee8 !important; font-family: var(--font-site-sans), system-ui, sans-serif; box-shadow: 0 40px 120px -30px rgb(0 0 0 / .7) !important; }
+@media (min-width: 640px) { .dialog { max-width: 680px !important; } }
+.dialog :global([data-slot="dialog-close"]) { top: 22px; right: 22px; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgb(255 255 255 / .08); color: #f1eee8; opacity: 1; }
+.dialog :global([data-slot="dialog-close"]):hover { background: rgb(255 255 255 / .14); }
+.head { padding: 32px 32px 24px; border-bottom: 1px solid rgb(255 255 255 / .08); background: radial-gradient(120% 140% at 100% 0%, rgb(228 100 20 / .18), transparent 55%); }
+.eyebrow { font-family: var(--font-site-mono), monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #e46414; }
+.title { margin-top: 10px; color: #f1eee8; font-size: clamp(34px, 6vw, 46px) !important; font-weight: 500 !important; line-height: 1 !important; letter-spacing: -.045em !important; }
+.title em { font-family: var(--font-site-serif), Georgia, serif; font-style: italic; font-weight: 400; color: #e46414; letter-spacing: -.01em; }
+.description { max-width: 520px; margin-top: 8px; color: rgb(241 238 232 / .62) !important; font-size: 15px !important; line-height: 1.6 !important; }
+.body { padding: 28px 32px 32px; }
+@media (max-width: 520px) { .head { padding: 26px 22px 20px; } .body { padding: 22px; } }

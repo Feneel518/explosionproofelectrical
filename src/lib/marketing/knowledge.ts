@@ -90,10 +90,10 @@ export const knowledgeArticles: KnowledgeArticle[] = [
   {
     slug: "temperature-classes-t1-to-t6",
     title: "T1 to T6 Temperature Classes Explained",
-    shortTitle: "Temperature classes T1?T6",
+    shortTitle: "Temperature classes T1–T6",
     category: "Hazardous areas",
     description: "Decode the surface-temperature limits from T1 to T6, and understand how ambient conditions affect the equipment rating.",
-    takeaways: ["The T1?T6 temperature limits","Surface temperature versus ambient","Conditions behind the rating"],
+    takeaways: ["The T1–T6 temperature limits","Surface temperature versus ambient","Conditions behind the rating"],
     answer: "A temperature class states the equipment’s maximum permitted surface temperature under its rated conditions. T1 corresponds to 450°C, T2 to 300°C, T3 to 200°C, T4 to 135°C, T5 to 100°C and T6 to 85°C.",
     readMinutes: 4,
     updatedAt: "2026-09-12",

@@ -71,7 +71,7 @@ export default function StoryPage() {
 
           <section className={styles.split} aria-labelledby="floor-title">
             <div className={`${styles.splitVisual} ${styles.product}`}>
-              <Image src={marketingAsset("HumanStatic.png")} alt="Flameproof equipment on the ExEC production floor" fill sizes="(max-width: 900px) 100vw, 50vw" />
+              <Image src="/asset/HumanStatic.png" alt="Flameproof equipment on the ExEC production floor" fill sizes="(max-width: 900px) 100vw, 50vw" />
               <span className={styles.micro}>THE WORK IS INDUSTRIAL. THE RESPONSIBILITY IS HUMAN.</span>
             </div>
             <div className={styles.splitCopy}>

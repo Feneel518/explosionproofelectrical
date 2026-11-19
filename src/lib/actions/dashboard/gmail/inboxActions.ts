@@ -61,7 +61,7 @@ export async function markAllGmailNotificationsReadAction() {
 export async function updateGmailFilterAction(query: string) {
   const { user } = await requirePermission("sales.write");
   const searchQuery = z.string().trim().min(1).max(1000).parse(query);
-  await prisma.gmailConnection.update({ where: { userId: user.id }, data: { searchQuery, lastSyncedAt: null, syncLeaseUntil: null } });
+  await prisma.gmailConnection.update({ where: { userId: user.id }, data: { searchQuery, lastSyncedAt: null, lastSyncAttemptAt: null, syncLeaseUntil: null } });
 }
 
 export async function disconnectGmailAction() {

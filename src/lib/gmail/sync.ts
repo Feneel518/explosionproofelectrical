@@ -13,10 +13,10 @@ export async function syncGmail(userId: string, { rescan = false }: { rescan?: b
     // Upgrade only the exact shipped default; never overwrite a user's custom query.
     const upgraded = await prisma.gmailConnection.updateMany({
       where: { userId, connectedAt: connection.connectedAt, searchQuery: connection.searchQuery },
-      data: { searchQuery, lastSyncedAt: null, syncLeaseUntil: null },
+      data: { searchQuery, lastSyncedAt: null, lastSyncAttemptAt: null, syncLeaseUntil: null },
     });
     if (!upgraded.count) return;
-    connection = { ...connection, searchQuery, lastSyncedAt: null, syncLeaseUntil: null };
+    connection = { ...connection, searchQuery, lastSyncedAt: null, lastSyncAttemptAt: null, syncLeaseUntil: null };
   }
   const now = new Date();
   const lastAttempt = connection.lastSyncAttemptAt || connection.lastSyncedAt;

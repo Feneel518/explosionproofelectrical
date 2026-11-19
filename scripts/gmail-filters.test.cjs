@@ -6,7 +6,7 @@ test('an existing default filter is upgraded and rescanned for Purchase Doc emai
   const { DEFAULT_GMAIL_QUERY, buildGmailSearch } = load('src/lib/gmail/google');
   const oldQuery = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';
   const now = new Date();
-  const current = { userId: 'fixture-owner', searchQuery: oldQuery, connectedAt: now, lastSyncedAt: now, syncLeaseUntil: null, encryptedRefreshToken: 'fixture' };
+  const current = { userId: 'fixture-owner', searchQuery: oldQuery, connectedAt: now, lastSyncedAt: now, lastSyncAttemptAt: now, syncLeaseUntil: null, encryptedRefreshToken: 'fixture' };
   const imported = [], searched = [];
   const updates = async ({ where, data }) => {
     if (where.searchQuery && where.searchQuery !== current.searchQuery) return { count: 0 };

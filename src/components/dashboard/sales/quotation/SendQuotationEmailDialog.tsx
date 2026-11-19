@@ -101,7 +101,7 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
     <DialogTrigger asChild>
       <Button type="button" variant="outline" disabled={disabled}><Mail data-icon="inline-start" />Send Quotation</Button>
     </DialogTrigger>
-    <DialogContent showCloseButton={!pending}>
+    <DialogContent className="max-w-3xl" showCloseButton={!pending}>
       <DialogHeader>
         <DialogTitle>Send quotation {quotationNumber}</DialogTitle>
         <DialogDescription>Your existing customer copy will be converted to PDF and attached. Review the email before sending.</DialogDescription>
@@ -130,9 +130,11 @@ export default function SendQuotationEmailDialog({ quotationId, quotationNumber,
       }}>
         {loading ? <p role="status" className="text-sm text-muted-foreground">Checking your Gmail connection…</p>
           : canSend ? <p className="break-all text-sm text-muted-foreground">From: {connection?.email}</p>
-          : <p role="status" className="text-sm text-muted-foreground">{data?.configured
-            ? "Connect or reconnect Gmail and allow sending quotations to continue."
-            : "Gmail setup must be completed on the server before you can send."}{" "}<a className="underline underline-offset-4" href="/dashboard/inbox">Open Inbox Alerts</a></p>}
+          : <p role="status" className="text-sm text-muted-foreground">{data?.configured ? <>
+            {connection ? "This mailbox needs permission to send quotations." : "Connect a Gmail mailbox to send quotations."}{" "}
+            <a className="underline underline-offset-4" href="/api/gmail/connect">{connection ? "Reconnect Gmail" : "Connect Gmail"}</a>{" "}
+            and allow sending when Google asks.
+          </> : "Gmail setup must be completed on the server before you can send."}</p>}
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor={`${id}-conversation`}>Conversation</FieldLabel>

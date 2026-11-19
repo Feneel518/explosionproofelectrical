@@ -1,4 +1,5 @@
 "use client";
+import { documentItemTitle } from "@/lib/products/catalogNames";
 
 import { Button } from "@/components/ui/button";
 import { GetQuotationByIdData } from "@/lib/types/QuotationTypes";
@@ -113,9 +114,7 @@ const WorkOrderCopy: FC<WorkOrderCopyProps> = ({ order, items }) => {
   };
   const drawingPages = useMemo(() => {
     const drawings = items.flatMap((item, itemIndex) => {
-      const productName = item.product?.name ?? "Product";
-      const variantName = item.variant?.variant ?? "";
-      const label = [productName, variantName].filter(Boolean).join(" - ");
+      const label = documentItemTitle(item);
 
       return ((item.variant?.drawings as []) ?? []).map(
         (drawing: { url: string; title: string }, drawingIndex) => ({

@@ -2409,6 +2409,7 @@ export default function InvoiceEditForm({ invoice }: InvoiceEditFormProps) {
                                     <div className="space-y-2 xl:col-span-2">
                                       <FormLabel>Product Variant</FormLabel>
                                       <ProductVariantCombobox
+                                        selectedLabel={form.watch(`items.${index}.title`)}
                                         value={
                                           form.watch(
                                             `items.${index}.variantId`,

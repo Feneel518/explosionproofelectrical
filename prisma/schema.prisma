@@ -628,6 +628,7 @@ model Product {
 
   // Identity
   name                  String // "FLP/WP Well Glass"
+  displayName           String? // Current catalog label; name remains the historical fallback.
   slug                  String  @unique
   serialPrefix          String? @unique
   serialTrackingEnabled Boolean @default(false)
@@ -668,6 +669,7 @@ model Product {
   serials         ProductSerial[]
 
   @@index([name, slug])
+  @@index([displayName])
   @@index([categoryId])
 }
 
@@ -728,6 +730,7 @@ model ProductSerial {
   year          Int
   sequence      Int
   serialNumber  String              @unique
+  productNameSnapshot String?
   batchId       String
   status        ProductSerialStatus @default(AVAILABLE)
   invoiceItemId String?
@@ -751,6 +754,7 @@ model ProductVariant {
 
   // Identity
   variant    String
+  displayName String? // Current catalog label; variant remains the historical fallback.
   sku        String? @unique
   typeNumber String?
 
@@ -797,6 +801,7 @@ model ProductVariant {
   @@unique([productId, variant])
   @@index([productId])
   @@index([variant])
+  @@index([displayName])
 }
 
 model ProductMedia {

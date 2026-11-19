@@ -66,6 +66,7 @@ function buildDemandLabel(item: {
     typeNumber: string | null;
   } | null;
 }) {
+  if (item.title.trim()) return item.title;
   if (!item.variant) {
     return item.title || "Unlinked Item";
   }

@@ -21,6 +21,7 @@ export const toApprovalPayload = (
 export function productCreateData(data: ProductSchemaRequest) {
   return {
     name: data.name,
+    displayName: data.name,
     slug: data.slug,
     certificationMarking: data.certificationMarking || null,
     certificationReference: data.certificationReference || null,
@@ -40,12 +41,17 @@ export function productCreateData(data: ProductSchemaRequest) {
   };
 }
 
-export const productUpdateData = productCreateData;
+export function productUpdateData(data: ProductSchemaRequest) {
+  const { name, ...fields } = productCreateData(data);
+  // Existing documents may still use the original linked label.
+  return { ...fields, displayName: name };
+}
 
 export function variantCreateData(data: ProductVariantSchemaRequest) {
   return {
     productId: data.productId,
     variant: data.variant,
+    displayName: data.variant,
     cableEntry: data.cableEntry,
     cutoutSize: data.cutoutSize,
     earthing: data.earthing,
@@ -99,7 +105,7 @@ export async function applyVariantUpdate(
     where: { id: data.id },
     data: {
       productId: data.productId,
-      variant: data.variant,
+      displayName: data.variant,
       sku: data.sku,
       typeNumber: data.typeNumber,
       rating: data.rating,

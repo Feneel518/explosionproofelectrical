@@ -9,6 +9,7 @@ import {
   normalizeSerialPrefix,
 } from "@/lib/helpers/serials/productSerial";
 import { prisma } from "@/lib/prisma/db";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 type GenerateProductSerialsInput = {
   productId: string;
@@ -52,6 +53,7 @@ export async function generateProductSerialsAction(
           select: {
             id: true,
             name: true,
+            displayName: true,
             serialPrefix: true,
             serialTrackingEnabled: true,
             _count: { select: { serials: true } },
@@ -71,10 +73,10 @@ export async function generateProductSerialsAction(
 
         const prefixOwner = await tx.product.findFirst({
           where: { serialPrefix: prefix, NOT: { id: productId } },
-          select: { name: true },
+          select: { name: true, displayName: true },
         });
         if (prefixOwner) {
-          throw new Error(`Code ${prefix} is already used by ${prefixOwner.name}`);
+          throw new Error(`Code ${prefix} is already used by ${catalogProductName(prefixOwner)}`);
         }
 
         await tx.product.update({
@@ -98,6 +100,7 @@ export async function generateProductSerialsAction(
             year,
             sequence,
             serialNumber: formatProductSerial(prefix, year, sequence),
+            productNameSnapshot: catalogProductName(product),
             batchId,
           };
         });
@@ -106,7 +109,7 @@ export async function generateProductSerialsAction(
 
         return {
           batchId,
-          productName: product.name,
+          productName: catalogProductName(product),
           startNumber,
           endNumber: counter.lastNumber,
           firstSerial: rows[0]!.serialNumber,

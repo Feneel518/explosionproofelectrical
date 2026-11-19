@@ -29,6 +29,7 @@ export default async function SerialDetailPage({ params }: { params: Promise<{ i
     select: {
       id: true,
       serialNumber: true,
+      productNameSnapshot: true,
       status: true,
       year: true,
       sequence: true,
@@ -141,7 +142,7 @@ export default async function SerialDetailPage({ params }: { params: Promise<{ i
         <Card>
           <CardHeader><CardTitle>Product information</CardTitle></CardHeader>
           <CardContent className="grid gap-5 sm:grid-cols-2">
-            <Value label="Product">{serial.product.name}</Value>
+            <Value label="Product">{serial.productNameSnapshot || serial.product.name}</Value>
             <Value label="Product code">{serial.product.serialPrefix ?? "—"}</Value>
             <Value label="Category">{serial.product.category.name}</Value>
             <Value label="Variant">{item?.variant?.variant ?? "—"}</Value>

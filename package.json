@@ -12,8 +12,8 @@
     "seed:blogs": "tsx scripts/seed-blog-cluster.ts",
     "postinstall": "prisma generate",
     "typecheck": "prisma generate && tsc --noEmit",
-    "test:integrity": "node --test --test-isolation=none scripts/system-integrity.test.cjs scripts/test-product-approvals.cjs scripts/gmail-filters.test.cjs",
-    "test:gmail": "node --import tsx --test scripts/gmail-integration.test.ts scripts/quotation-email.test.ts",
+    "test:integrity": "node --test --test-isolation=none scripts/system-integrity.test.cjs scripts/test-product-approvals.cjs scripts/gmail-filters.test.cjs scripts/gmail-attachments.test.cjs",
+    "test:gmail": "node --import tsx --test scripts/gmail-integration.test.ts scripts/quotation-email.test.ts scripts/gmail-suggestions.test.cjs",
     "test": "pnpm test:integrity && pnpm test:gmail",
     "test:database": "node scripts/prepare-system-integrity-schema.cjs && node -r dotenv/config scripts/system-integrity.integration.cjs"
   },
@@ -51,6 +51,7 @@
     "nodemailer": "^7.0.11",
     "nuqs": "^2.8.8",
     "pdf-lib": "^1.17.1",
+    "pdf-parse": "2.4.5",
     "pdfkit": "^0.20.2",
     "pg": "^8.18.0",
     "playwright-core": "^1.65.1",

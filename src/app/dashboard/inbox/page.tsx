@@ -3,6 +3,7 @@ import { GmailInbox } from "@/components/dashboard/gmail/GmailInbox";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gmail Inbox Alerts" };
+export const maxDuration = 120;
 
 export default async function InboxPage({ searchParams }: { searchParams: Promise<{ gmail?: string }> }) {
   await requirePermission("sales.read");

@@ -1139,6 +1139,7 @@ const DeliveryChallanItemRow: FC<DeliveryChallanItemRowProps> = ({
 
                   <ProductVariantCombobox
                     value={form.watch(`items.${index}.productId`) ?? null}
+                    selectedLabel={form.watch(`items.${index}.title`)}
                     onChange={(product) => {
                       if (!product) {
                         form.setValue(`items.${index}.productId`, null, {

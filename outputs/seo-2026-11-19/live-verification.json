@@ -1,0 +1,107 @@
+{
+  "checkedAt": "2026-11-19T06:38:47.361Z",
+  "articles": [
+    {
+      "slug": "flameproof-junction-box-selection-guide",
+      "status": 200,
+      "title": "Flameproof Junction Box Selection Guide | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-junction-box-selection-guide",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof Junction Box Selection: Terminals, Entries and Gas Groups"
+    },
+    {
+      "slug": "flameproof-led-wellglass-vs-floodlight",
+      "status": 200,
+      "title": "Flameproof LED Wellglass vs Floodlight | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-led-wellglass-vs-floodlight",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof LED Wellglass vs Floodlight: Which Fitting Fits the Job?"
+    },
+    {
+      "slug": "flameproof-control-panel-specification-checklist",
+      "status": 200,
+      "title": "Flameproof Control Panel Specification Checklist | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-control-panel-specification-checklist",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof Control Panel Specification: An RFQ Checklist for Projects"
+    },
+    {
+      "slug": "flameproof-local-control-station-selection",
+      "status": 200,
+      "title": "Flameproof Local Control Station Selection | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-local-control-station-selection",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof Local Control Stations: Specify Buttons, Contacts and Indication"
+    },
+    {
+      "slug": "flameproof-cleanroom-lighting-pharmaceutical-plants",
+      "status": 200,
+      "title": "Flameproof Cleanroom Lighting for Pharma | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-cleanroom-lighting-pharmaceutical-plants",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof Cleanroom Lighting for Pharmaceutical Plants: A Buyer Checklist"
+    },
+    {
+      "slug": "flameproof-equipment-rfq-checklist-india",
+      "status": 200,
+      "title": "Flameproof Equipment RFQ Checklist India | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-equipment-rfq-checklist-india",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof Equipment RFQ Checklist for Indian Industrial Projects"
+    },
+    {
+      "slug": "flameproof-switch-socket-selection-guide",
+      "status": 200,
+      "title": "Flameproof Switch Socket Selection Guide | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/flameproof-switch-socket-selection-guide",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Flameproof Switch Socket Selection: Ratings, Interlocks and Compatibility"
+    },
+    {
+      "slug": "single-double-compression-barrier-cable-glands",
+      "status": 200,
+      "title": "Double Compression vs Barrier Cable Glands | ExEC",
+      "canonical": "https://www.explosionproofelectrical.com/blog/single-double-compression-barrier-cable-glands",
+      "description": true,
+      "hasArticle": true,
+      "h1": "Single, Double Compression and Barrier Cable Glands: What to Specify"
+    }
+  ],
+  "discovery": [
+    {
+      "path": "/blog",
+      "status": 200,
+      "slugsFound": [
+        "flameproof-junction-box-selection-guide",
+        "flameproof-led-wellglass-vs-floodlight",
+        "flameproof-control-panel-specification-checklist",
+        "flameproof-equipment-rfq-checklist-india",
+        "flameproof-switch-socket-selection-guide",
+        "single-double-compression-barrier-cable-glands"
+      ],
+      "cache": "MISS"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "slugsFound": [
+        "flameproof-junction-box-selection-guide",
+        "flameproof-led-wellglass-vs-floodlight",
+        "flameproof-control-panel-specification-checklist",
+        "flameproof-local-control-station-selection",
+        "flameproof-cleanroom-lighting-pharmaceutical-plants",
+        "flameproof-equipment-rfq-checklist-india",
+        "flameproof-switch-socket-selection-guide",
+        "single-double-compression-barrier-cable-glands"
+      ],
+      "cache": "MISS"
+    }
+  ]
+}

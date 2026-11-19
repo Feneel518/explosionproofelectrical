@@ -28,9 +28,9 @@ export default async function Page() {
   const orders = await prisma.salesOrder.findMany({
     where: {
       deletedAt: null,
-      totalPendingQty: { gt: 0 },
+      items: { some: { pendingQty: { gt: 0 } } },
       status: {
-        notIn: [SalesOrderStatus.CANCELLED, SalesOrderStatus.COMPLETED],
+        notIn: [SalesOrderStatus.DRAFT, SalesOrderStatus.CANCELLED, SalesOrderStatus.COMPLETED],
       },
     },
     orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
@@ -83,7 +83,6 @@ export default async function Page() {
         },
       },
     },
-    take: 1000,
   });
 
   const normalized = orders.map((row) => ({
@@ -95,12 +94,9 @@ export default async function Page() {
     status: row.status,
     clientName: getClientName(row),
     clientKey: row.customerId || `client:${normalizeKey(getClientName(row))}`,
-    totalPendingQty: row.totalPendingQty,
+    totalPendingQty: row.items.reduce((sum, item) => sum + item.pendingQty, 0),
     items: row.items.map((item) => {
-      const productName =
-        item.product?.name || item.variant?.product?.name || item.title;
-      const variantLabel = item.variant?.variant || "";
-      const productLabel = variantLabel ? `${productName} - ${variantLabel}` : productName;
+      const productLabel = item.title || [item.product?.name || item.variant?.product?.name, item.variant?.variant].filter(Boolean).join(" - ");
       const productKey = item.variant?.id || `title:${normalizeKey(productLabel)}`;
 
       return {

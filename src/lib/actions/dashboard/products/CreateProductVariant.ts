@@ -13,6 +13,7 @@ import {
   ProductVariantSchemaRequest,
 } from "@/lib/validators/dashboard/products/ProductVariantValidator";
 import { revalidatePath } from "next/cache";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 export const createProductVariantAction = async (
   values: ProductVariantSchemaRequest,
@@ -29,11 +30,11 @@ export const createProductVariantAction = async (
     const settings = await getProductApprovalSettings();
     const product = await prisma.product.findFirst({
       where: { id: data.productId, deletedAt: null },
-      select: { name: true },
+      select: { name: true, displayName: true },
     });
     if (!product) return fail("Product not found");
 
-    const title = `${product.name} — ${data.variant}`;
+    const title = `${catalogProductName(product)} — ${data.variant}`;
     await prisma.productApprovalRequest.create({
       data: {
         type: "VARIANT_CREATE",

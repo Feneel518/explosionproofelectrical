@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 
 import { prisma } from "@/lib/prisma/db";
+import { catalogProductName, catalogVariantName } from "@/lib/products/catalogNames";
 import { SITE_NAME, SITE_URL } from "@/lib/seo/site";
 
 export const dynamic = "force-dynamic";
@@ -31,12 +32,14 @@ export default async function GalleryPage() {
     select: {
       id: true,
       name: true,
+      displayName: true,
       variants: {
         where: { status: "ACTIVE" },
         orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
         select: {
           id: true,
           variant: true,
+          displayName: true,
           images: {
             orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
             take: 4,
@@ -58,7 +61,7 @@ export default async function GalleryPage() {
         id: media.id,
         url: media.url,
         title:
-          media.title?.trim() || `${product.name}${variant.variant ? ` - ${variant.variant}` : ""}`,
+          media.title?.trim() || `${catalogProductName(product)}${catalogVariantName(variant) ? ` - ${catalogVariantName(variant)}` : ""}`,
       })),
     ),
   );

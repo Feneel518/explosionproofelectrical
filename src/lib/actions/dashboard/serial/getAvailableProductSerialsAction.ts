@@ -2,6 +2,7 @@
 
 import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 export async function getAvailableProductSerialsAction(productId: string) {
   await requirePermission("production.read");
@@ -14,6 +15,7 @@ export async function getAvailableProductSerialsAction(productId: string) {
     where: { id: productId },
     select: {
       name: true,
+      displayName: true,
       serialPrefix: true,
       serialTrackingEnabled: true,
       serials: {
@@ -29,7 +31,7 @@ export async function getAvailableProductSerialsAction(productId: string) {
 
   return {
     ok: true as const,
-    productName: product.name,
+    productName: catalogProductName(product),
     trackingEnabled: product.serialTrackingEnabled,
     prefix: product.serialPrefix,
     serials: product.serials,

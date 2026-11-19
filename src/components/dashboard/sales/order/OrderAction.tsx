@@ -116,6 +116,12 @@ const OrderAction: FC<OrderActionProps> = ({ id, deletedAt, status }) => {
 
         {!deletedAt ? (
           <DropdownMenuItem asChild>
+            <a href={`/sales-orders/${encodeURIComponent(id)}/view?print=1`} target="_blank" rel="noopener noreferrer">Print Sales Order</a>
+          </DropdownMenuItem>
+        ) : null}
+
+        {!deletedAt ? (
+          <DropdownMenuItem asChild>
             <Link href={`/sales-orders/${id}/view`}>View Customer Copy</Link>
           </DropdownMenuItem>
         ) : null}

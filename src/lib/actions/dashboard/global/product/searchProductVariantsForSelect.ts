@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/check/permissions";
 import { prisma } from "@/lib/prisma/db";
 import { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
 import type { Prisma } from "@prisma/client";
+import { catalogItemTitle, catalogProductName, catalogVariantName } from "@/lib/products/catalogNames";
 
 interface SearchProductVariantsForSelectArgs {
   query?: string;
@@ -33,6 +34,7 @@ export const searchProductVariantsForSelectAction = async ({
   const searchForTerm = (term: string): Prisma.ProductVariantWhereInput => ({
     OR: [
       { variant: { contains: term, mode: "insensitive" } },
+      { displayName: { contains: term, mode: "insensitive" } },
       { sku: { contains: term, mode: "insensitive" } },
       { typeNumber: { contains: term, mode: "insensitive" } },
       { rating: { contains: term, mode: "insensitive" } },
@@ -53,6 +55,7 @@ export const searchProductVariantsForSelectAction = async ({
         product: {
           OR: [
             { name: { contains: term, mode: "insensitive" } },
+            { displayName: { contains: term, mode: "insensitive" } },
             { slug: { contains: term, mode: "insensitive" } },
             { flpType: { contains: term, mode: "insensitive" } },
             { protection: { contains: term, mode: "insensitive" } },
@@ -80,8 +83,10 @@ export const searchProductVariantsForSelectAction = async ({
   });
 
   const variantWhere: Prisma.ProductVariantWhereInput = {
+    status: "ACTIVE",
     product: {
       deletedAt: null,
+      status: "ACTIVE",
     },
     AND: terms.length > 0 ? terms.map(searchForTerm) : undefined,
   };
@@ -150,6 +155,7 @@ export const searchProductVariantsForSelectAction = async ({
       id: true,
       productId: true,
       variant: true,
+      displayName: true,
       sku: true,
       typeNumber: true,
       rating: true,
@@ -169,6 +175,7 @@ export const searchProductVariantsForSelectAction = async ({
       product: {
         select: {
           name: true,
+          displayName: true,
           hardware: true,
           hsnCode: true,
           shortDesc: true,
@@ -215,9 +222,9 @@ export const searchProductVariantsForSelectAction = async ({
       hardware: v.product.hardware,
       hsnCode: v.product.hsnCode,
       productId: v.productId,
-      productName: v.product.name,
-      variantName: v.variant ?? null,
-      title: [v.product.name, v.variant].filter(Boolean).join(" - "),
+      productName: catalogProductName(v.product),
+      variantName: catalogVariantName(v),
+      title: catalogItemTitle(v.product, v),
       sku: v.sku ?? null,
       typeNumber: v.typeNumber ?? null,
       rating: v.rating ?? null,

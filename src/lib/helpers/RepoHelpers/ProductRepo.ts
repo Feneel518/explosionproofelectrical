@@ -15,6 +15,7 @@ export const buildProductWhere = async (qp: ProductsQP) => {
     and.push({
       OR: [
         { name: { contains: sp.q, mode: "insensitive" as const } },
+        { displayName: { contains: sp.q, mode: "insensitive" as const } },
         { hsnCode: { contains: sp.q, mode: "insensitive" as const } },
       ],
     });

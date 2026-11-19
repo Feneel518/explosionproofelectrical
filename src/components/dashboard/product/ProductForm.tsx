@@ -52,6 +52,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { normalizeSlug } from "@/lib/helpers/globalHelpers/normalizeSlug";
 import { createProductAction } from "@/lib/actions/dashboard/products/CreateProduct";
 import { updateProductAction } from "@/lib/actions/dashboard/products/updateProductAction";
+import SimilarProductNames from "./SimilarProductNames";
 
 export default function ProductForm({
   mode,
@@ -94,9 +95,11 @@ export default function ProductForm({
     },
   });
 
+  const productName = form.watch("name");
+  const categoryId = form.watch("categoryId");
   React.useEffect(() => {
-    form.setValue("slug", normalizeSlug(form.watch("name")));
-  }, [form.watch("name")]);
+    if (mode === "create") form.setValue("slug", normalizeSlug(productName));
+  }, [form, mode, productName]);
 
   React.useEffect(() => {
     const el = firstInputRef.current;
@@ -178,7 +181,7 @@ export default function ProductForm({
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="lg:col-span-2 xl:col-span-3">
                   <FormLabel>Product Name</FormLabel>
                   <FormControl>
                     <Input
@@ -212,6 +215,12 @@ export default function ProductForm({
             />
 
             {/* TECHNICAL FIELDS GRID */}
+
+            {mode === "create" ? (
+              <div className="col-span-full">
+                <SimilarProductNames name={productName} categoryId={categoryId} />
+              </div>
+            ) : null}
 
             {[
               { name: "certificationMarking", label: "Exact approved Ex marking", placeholder: "Copy the full marking from the certificate" },

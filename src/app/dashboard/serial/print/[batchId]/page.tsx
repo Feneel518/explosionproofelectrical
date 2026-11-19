@@ -12,7 +12,7 @@ export default async function PrintSerialBatchPage({ params }: { params: Promise
   const serials = await prisma.productSerial.findMany({
     where: { batchId },
     orderBy: { sequence: "asc" },
-    select: { serialNumber: true, product: { select: { name: true } } },
+    select: { serialNumber: true, productNameSnapshot: true, product: { select: { name: true } } },
   });
 
   if (!serials.length) notFound();
@@ -26,7 +26,7 @@ export default async function PrintSerialBatchPage({ params }: { params: Promise
       <div className="grid grid-cols-3 gap-2 print:gap-1">
         {serials.flatMap((serial) => ["BODY", "LED", "DRIVER"].map((part) => (
           <div key={`${serial.serialNumber}-${part}`} className="break-inside-avoid rounded border border-black p-3 text-center">
-            <div className="truncate text-[10px] uppercase">{serial.product.name} · {part}</div>
+            <div className="truncate text-[10px] uppercase">{serial.productNameSnapshot || serial.product.name} · {part}</div>
             <div className="mt-1 whitespace-nowrap font-mono text-sm font-bold">{serial.serialNumber}</div>
           </div>
         )))}

@@ -42,8 +42,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     { id: "article-overview", title: "Article overview" },
     ...(preparedHtml?.sections ?? contentBlocks.filter((block) => block.type === "heading").map((block) => ({ id: block.id!, title: block.text }))),
   ];
+  const schemaImage = /^https?:\/\//i.test(post.image) ? post.image : absoluteUrl(post.image);
   const schema = [
-    { "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, image: [absoluteUrl(post.image)], datePublished: post.publishedAt.toISOString(), dateModified: post.updatedAt.toISOString(), author: { "@type": "Organization", name: post.authorName, url: absoluteUrl("/story") }, publisher: { "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/"), logo: { "@type": "ImageObject", url: absoluteUrl("/asset/shortLogo.png") } }, mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl(`/blog/${post.slug}`) } },
+    { "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, image: [schemaImage], articleSection: post.cat, keywords: post.keywords.join(", "), inLanguage: "en-IN", datePublished: post.publishedAt.toISOString(), dateModified: post.updatedAt.toISOString(), author: { "@type": "Organization", name: post.authorName, url: absoluteUrl("/about-us") }, publisher: { "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/"), logo: { "@type": "ImageObject", url: absoluteUrl("/asset/shortLogo.png") } }, mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl(`/blog/${post.slug}`) } },
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
       { "@type": "ListItem", position: 2, name: "Blog", item: absoluteUrl("/blog") },

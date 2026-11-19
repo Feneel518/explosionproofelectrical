@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma/db";
 import { requirePermission } from "@/lib/check/permissions";
 import { ProductVariantSearchItem } from "@/lib/types/ProductVariantSeachItem";
+import { catalogItemTitle, catalogProductName, catalogVariantName } from "@/lib/products/catalogNames";
 
 export async function getProductVariantForSelectById(
   id: string,
@@ -15,6 +16,7 @@ export async function getProductVariantForSelectById(
       id: true,
       productId: true,
       variant: true,
+      displayName: true,
       sku: true,
       typeNumber: true,
 
@@ -38,6 +40,7 @@ export async function getProductVariantForSelectById(
       product: {
         select: {
           name: true,
+          displayName: true,
           hardware: true,
           hsnCode: true,
           shortDesc: true,
@@ -65,9 +68,9 @@ export async function getProductVariantForSelectById(
     description: v.product.shortDesc ?? null,
     hardware: v.product.hardware ?? null,
     hsnCode: v.product.hsnCode ?? null,
-    productName: v.product.name,
-    variantName: v.variant ?? null,
-    title: [v.product.name, v.variant].filter(Boolean).join(" - "),
+    productName: catalogProductName(v.product),
+    variantName: catalogVariantName(v),
+    title: catalogItemTitle(v.product, v),
     sku: v.sku ?? null,
     typeNumber: v.typeNumber ?? null,
 

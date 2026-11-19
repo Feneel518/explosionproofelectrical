@@ -11,6 +11,7 @@ import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import Image from "next/image";
 import { FC } from "react";
 import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
+import { documentItemTitle } from "@/lib/products/catalogNames";
 
 interface WorkOrderItemTableProps {
   items: ClientSafe<GetSalesOrderByIdData>["items"];
@@ -65,14 +66,9 @@ const WorkOrderItemTable: FC<WorkOrderItemTableProps> = ({
                   <div className="space-y-2">
                     <div className="space-y-1">
                       <h3 className="text-base font-semibold leading-tight ">
-                        {items.product?.name || "Unnamed Product"}
+                        {documentItemTitle(items)}
                       </h3>
 
-                      {items.variant?.variant ? (
-                        <p className="text-sm ">
-                          Variant: {items.variant.variant}
-                        </p>
-                      ) : null}
                     </div>
 
                     <div className="space-y-1">

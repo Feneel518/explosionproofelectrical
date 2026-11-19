@@ -1,0 +1,3102 @@
+{
+  "applied": true,
+  "recordedAt": "2026-11-19T06:41:44.284Z",
+  "schema": "public",
+  "products": [
+    {
+      "id": "9fcc4de4-c1d0-4034-92d8-046722510731",
+      "oldName": "FLP/WP  Ground Earth Detector",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Ground Earth Detector"
+    },
+    {
+      "id": "36434a5c-dfe9-4631-afc9-ac784df7daa4",
+      "oldName": "FLP/WP 420 X 420 Panel Box",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (420 × 420 mm)"
+    },
+    {
+      "id": "c64534cf-06f3-4a28-9830-bb55beda81c9",
+      "oldName": "FLP/WP 525 X 525 Panel",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (525 × 525 mm)"
+    },
+    {
+      "id": "5aa7e05c-5902-409c-b940-2b41a17a811a",
+      "oldName": "FLP/WP Big Flood Light Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Floodlight Fitting (Large Body)"
+    },
+    {
+      "id": "a605c48c-ba48-436d-b15d-ea3c3625cd7a",
+      "oldName": "FLP/WP Big Street Light",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Streetlight Fitting (Large Body)"
+    },
+    {
+      "id": "31c1e351-d749-4da0-9dc4-0cc83b2e3a80",
+      "oldName": "FLP/WP Bulk Head Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Bulkhead Light Fitting"
+    },
+    {
+      "id": "daae5011-0cb2-4f4a-8011-0521beac382f",
+      "oldName": "FLP/WP Clean Room Push Button",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Cleanroom Push Button Station"
+    },
+    {
+      "id": "cadc96fe-531e-4d2c-ad99-4447c888d4ea",
+      "oldName": "FLP/WP Clean Room Rotary Switch",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Cleanroom Rotary Switch"
+    },
+    {
+      "id": "b2098234-b666-4474-9380-cf72a6041b6f",
+      "oldName": "FLP/WP Clean Room Switch Socket Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Cleanroom Switch Socket Unit"
+    },
+    {
+      "id": "d4ed2701-c2b7-4ead-b091-d3238050a5c5",
+      "oldName": "FLP/WP Direct Entry Push Button",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Push Button Station (Direct Entry)"
+    },
+    {
+      "id": "b629bae3-6024-4150-b699-e321d333e6ea",
+      "oldName": "FLP/WP Direct Entry Rotary Switch",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Rotary Switch (Direct Entry)"
+    },
+    {
+      "id": "a4044ea7-c682-4fa4-a824-5ddef21b9e02",
+      "oldName": "FLP/WP Double Indicating Lamp",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Twin Indicator Lamp Unit"
+    },
+    {
+      "id": "d4ab2b4e-7e41-4f8d-9681-a819fa580dd0",
+      "oldName": "FLP/WP Flood Light Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Floodlight Fitting"
+    },
+    {
+      "id": "058fdbac-ade9-4abc-863c-c8efa9b9631c",
+      "oldName": "FLP/WP Flood Light Fitting Enclosure",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Floodlight Enclosure"
+    },
+    {
+      "id": "0284b213-2a58-4e72-bebe-7450d139dec2",
+      "oldName": "FLP/WP Hand Lamp Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Hand Lamp"
+    },
+    {
+      "id": "b816efe8-fc8a-4ee0-9cd3-f54c6732ddf0",
+      "oldName": "FLP/WP Hand Lamp Fitting -Multi Led Type",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Hand Lamp (Multi LED)"
+    },
+    {
+      "id": "707831c5-8f72-4cb0-a432-314baeda281e",
+      "oldName": "FLP/WP Hooter ACK",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Hooter with Flasher (ACK)"
+    },
+    {
+      "id": "96441d74-d6f7-4d64-8401-2c45ea038d11",
+      "oldName": "FLP/WP Human  Body Static Unit",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Human Body Static Discharge Unit"
+    },
+    {
+      "id": "8598f469-19f5-4148-bcb4-7ebbfae88b1a",
+      "oldName": "FLP/WP Human Body Static Discharge unit Clean Room Type",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Cleanroom Human Body Static Discharge Unit"
+    },
+    {
+      "id": "750e1445-5854-486b-904f-3c851f0dded9",
+      "oldName": "FLP/WP IIC Cable Gland",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Cable Gland (IIC Designation)"
+    },
+    {
+      "id": "589739b1-50eb-4805-a623-76c773d13413",
+      "oldName": "FLP/WP JUnction Box - 250 Dia",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Round Junction Box (250 mm Diameter)"
+    },
+    {
+      "id": "7932a323-832a-4154-acd1-26831aa1fb18",
+      "oldName": "FLP/WP Junction Box - 100 Dia",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Round Junction Box (100 mm Diameter)"
+    },
+    {
+      "id": "7a1305e8-6dfd-4c39-b0f7-eadeaeebf015",
+      "oldName": "FLP/WP Junction Box .ECP-63265",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Junction Box (ECP-63265)"
+    },
+    {
+      "id": "3e6491e5-c86f-4ee0-97e4-92510480a7ca",
+      "oldName": "FLP/WP Junction Box 150Dia",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Round Junction Box (150 mm Diameter)"
+    },
+    {
+      "id": "992fa582-46be-47eb-b6b2-6a2a91583edc",
+      "oldName": "FLP/WP Junction Box 250 x 200",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Junction Box (250 × 200 mm)"
+    },
+    {
+      "id": "c10c3483-4969-4a0b-b62d-7cf8435f5de2",
+      "oldName": "FLP/WP Junction Box 250Dia IIC",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Round Junction Box (250 mm Diameter, IIC Designation)"
+    },
+    {
+      "id": "bc90bdb0-649e-438b-9274-9fd190dd8bc0",
+      "oldName": "FLP/WP Junction Box 350Dia",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Round Junction Box (350 mm Diameter)"
+    },
+    {
+      "id": "0ca56735-0865-4c56-9a6f-6939d6a0ff7d",
+      "oldName": "FLP/WP Junction Box. 200 X 200",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Junction Box (200 × 200 mm)"
+    },
+    {
+      "id": "e80f0836-847a-4c41-ab19-4ca7b4115ecc",
+      "oldName": "FLP/WP Kachua Bulk Head",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Bulkhead Light Fitting (Kachua Body)"
+    },
+    {
+      "id": "e3067ecc-f2c7-4454-a063-3723b715d456",
+      "oldName": "FLP/WP Metrics Cable Gland",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Metric Cable Gland"
+    },
+    {
+      "id": "fd529779-eabe-499d-a9b5-af45bff06eef",
+      "oldName": "FLP/WP Only Start Push Button",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Start Push Button Station"
+    },
+    {
+      "id": "4bfc965c-0d20-49c1-8e3e-1b733de90a3b",
+      "oldName": "FLP/WP Only Stop Push Button",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Stop Push Button Station"
+    },
+    {
+      "id": "07a714c5-7245-453d-8f9c-927ba885b80c",
+      "oldName": "FLP/WP PANEL BOX 300 x 300",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (300 × 300 mm)"
+    },
+    {
+      "id": "6ce3a725-0100-4ac5-b61f-4691a28d551d",
+      "oldName": "FLP/WP PANEL BOX 350 X 350",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (350 × 350 mm)"
+    },
+    {
+      "id": "62f01327-a34e-47f4-bd45-769cc5b275e8",
+      "oldName": "FLP/WP PANEL BOX 680 x 525",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (680 × 525 mm)"
+    },
+    {
+      "id": "d7d6f745-e26f-47e5-8632-07974a8afafb",
+      "oldName": "FLP/WP PANEL BOX 780 x 525",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (780 × 525 mm)"
+    },
+    {
+      "id": "7ce6e28a-077f-4a5c-9000-abe6b869d58b",
+      "oldName": "FLP/WP PANEL BOX ECP-63265",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (ECP-63265)"
+    },
+    {
+      "id": "8c6734f5-d31f-4a1e-a6d1-7dff3dd7c021",
+      "oldName": "FLP/WP Panel Box 630 x 630",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (630 × 630 mm)"
+    },
+    {
+      "id": "9b5c1c44-cfdf-43e6-abed-6b11e8293660",
+      "oldName": "FLP/WP Panel Box 780 X 550",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Panel Enclosure (780 × 550 mm)"
+    },
+    {
+      "id": "a5e5e558-dec3-4260-9375-c673a163a508",
+      "oldName": "FLP/WP Proximity Switch",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Proximity Switch Enclosure"
+    },
+    {
+      "id": "242a2b73-c602-4da1-a424-158a78d4c47e",
+      "oldName": "FLP/WP R.P.M Meter",
+      "previousDisplayName": null,
+      "newName": "FLP/WP RPM Meter"
+    },
+    {
+      "id": "cc6753c8-af6f-4d75-9b46-2bd24a74debe",
+      "oldName": "FLP/WP Reactor Vessel Lamp (Holder Type)",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Reactor Vessel Lamp (Lamp Holder Type)"
+    },
+    {
+      "id": "e5e733b2-cea9-49b9-90e3-93fffe737d1e",
+      "oldName": "FLP/WP Rechargeable Torch",
+      "previousDisplayName": null,
+      "newName": "FLP/WP LED Rechargeable Torch"
+    },
+    {
+      "id": "22fbe237-cbe7-42bb-a7f6-2179ab98f7aa",
+      "oldName": "FLP/WP Reducer",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Thread Reducer"
+    },
+    {
+      "id": "ebee2afc-211e-4beb-9678-009cec7a3909",
+      "oldName": "FLP/WP Rotary Switch Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Rotary Switch Assembly (Legacy Fitting)"
+    },
+    {
+      "id": "a0dd7c2c-c665-4a3e-aff8-192b5dc56818",
+      "oldName": "FLP/WP SS Cable Gland",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Stainless Steel Cable Gland"
+    },
+    {
+      "id": "56b4140b-852e-4ae0-9c72-cba4527b086d",
+      "oldName": "FLP/WP STAR DELTA STARTER",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Star-Delta Starter"
+    },
+    {
+      "id": "535962ec-a48f-467b-b928-afbe103d0e97",
+      "oldName": "FLP/WP Small Flood Light Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Floodlight Fitting (Compact Body)"
+    },
+    {
+      "id": "c2f7af0e-1a29-47ad-a1a7-3df92a8d583c",
+      "oldName": "FLP/WP Smoke Detector",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Smoke Detector Enclosure"
+    },
+    {
+      "id": "8cdc0cd3-bb6d-420d-a5dc-cbcf6ce09b1b",
+      "oldName": "FLP/WP Spare Crocodile Clamp",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Crocodile Clamp Assembly"
+    },
+    {
+      "id": "fb43942b-30ab-4b37-add1-18dc8e07a975",
+      "oldName": "FLP/WP Square Bulk Head Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Square Bulkhead Light Fitting"
+    },
+    {
+      "id": "12d70cb8-7f11-43fe-a394-2883008bac51",
+      "oldName": "FLP/WP Square Bulk Head Fitting (420 x 420)",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Square Bulkhead Light Fitting (420 × 420 mm)"
+    },
+    {
+      "id": "6fb75a94-aa42-4925-ab30-b14170e9867e",
+      "oldName": "FLP/WP Start Stop Push Button",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Start-Stop Push Button Station"
+    },
+    {
+      "id": "b8e3399a-b9e5-4ddf-972c-15d6f4739996",
+      "oldName": "FLP/WP Stop Forward Reverse",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Stop-Forward-Reverse Control Station"
+    },
+    {
+      "id": "ae520403-5000-485e-a3cb-ec0fc6d334c6",
+      "oldName": "FLP/WP Street Light",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Streetlight Fitting"
+    },
+    {
+      "id": "f175135e-b019-4e9b-8a85-a1ee0ee6f817",
+      "oldName": "FLP/WP Temp Controller",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Temperature Controller"
+    },
+    {
+      "id": "11454a52-3d11-4cce-8b88-ed1afc483721",
+      "oldName": "FLP/WP Torch",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Rechargeable Torch"
+    },
+    {
+      "id": "4c35a85b-051a-488d-840e-5b9571f3ccc8",
+      "oldName": "FLP/WP Tube Axial Flow Fan",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Tube Axial Fan"
+    },
+    {
+      "id": "f4b255ac-9207-4469-8f30-8db87d465dd1",
+      "oldName": "FLP/WP Tube Light Fitting 2 x 18w",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Twin-Tube Light Fitting"
+    },
+    {
+      "id": "17492495-be27-496b-a1b0-e6df12466430",
+      "oldName": "FLP/WP Tubelight Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Tube Light Fitting"
+    },
+    {
+      "id": "3a5031e0-dc70-4ff9-8458-0ad2b80638d9",
+      "oldName": "FLP/WP Wall Fan",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Wall-Mounted Fan"
+    },
+    {
+      "id": "b9eff8d3-3d44-4807-9049-a9e647fd3d85",
+      "oldName": "FLP/WP Well Glass Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Well Glass Light Fitting"
+    },
+    {
+      "id": "9d08d9a6-1612-42f7-ba73-f772839c85d5",
+      "oldName": "FLP/WP Well Glass Fitting Enclosure",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Well Glass Enclosure"
+    },
+    {
+      "id": "f78f2636-a63a-418d-8f2d-8a2a944da7fd",
+      "oldName": "FLP/WP Well Glass Standard Fitting",
+      "previousDisplayName": null,
+      "newName": "FLP/WP Well Glass Light Fitting (MLL Type)"
+    },
+    {
+      "id": "3de26442-886c-466f-9ae0-d01fb3ae1ae0",
+      "oldName": "NON FLP  Flood Light Fitting",
+      "previousDisplayName": null,
+      "newName": "Non-FLP Floodlight Fitting"
+    },
+    {
+      "id": "628571ef-afe6-45a4-91bc-08ee02032650",
+      "oldName": "NON FLP Exhaust Fan",
+      "previousDisplayName": null,
+      "newName": "Non-FLP Exhaust Fan"
+    },
+    {
+      "id": "4d3333ac-46d4-408d-88d7-c1f90cb35d42",
+      "oldName": "NON FLP RTD Sensor",
+      "previousDisplayName": null,
+      "newName": "Non-FLP RTD Sensor"
+    },
+    {
+      "id": "3ab47de5-f759-4700-a097-36f1cd1bbdeb",
+      "oldName": "NON-FLP Street Light Fitting",
+      "previousDisplayName": null,
+      "newName": "Non-FLP Streetlight Fitting"
+    },
+    {
+      "id": "7055f7aa-b849-42db-9375-44a0612eb319",
+      "oldName": "Non FLP -  Cable Gland SC",
+      "previousDisplayName": null,
+      "newName": "Non-FLP Cable Gland (SC Type)"
+    },
+    {
+      "id": "7aeeefec-5f38-4a6f-9514-aadc4e19b7dd",
+      "oldName": "Non FLP Emergency Light",
+      "previousDisplayName": null,
+      "newName": "Non-FLP Emergency Light"
+    },
+    {
+      "id": "49bb32d9-25e6-4659-8b69-0cda1819d70b",
+      "oldName": "Non FLP Start Stop Push Button",
+      "previousDisplayName": null,
+      "newName": "Non-FLP Start-Stop Push Button Station"
+    },
+    {
+      "id": "616852fc-9aff-45db-8b77-07f48609b0a9",
+      "oldName": "Petcoke",
+      "previousDisplayName": null,
+      "newName": "Petroleum Coke"
+    },
+    {
+      "id": "bb8d445b-b1d8-4fc6-865f-f26658f8d3d0",
+      "oldName": "Spare Battery",
+      "previousDisplayName": null,
+      "newName": "Replacement Emergency Light Battery"
+    },
+    {
+      "id": "127edc49-52cd-4378-9842-aef2de356d6d",
+      "oldName": "Spare Cable Box",
+      "previousDisplayName": null,
+      "newName": "Replacement Reactor Vessel Lamp Cable Box"
+    },
+    {
+      "id": "0889ee65-9690-4b09-bf28-b6905226264e",
+      "oldName": "Spare Cap",
+      "previousDisplayName": null,
+      "newName": "Replacement Socket Cap"
+    },
+    {
+      "id": "d63c55f7-e935-4d7f-980b-8e50ef8ea3bd",
+      "oldName": "Spare Circuit",
+      "previousDisplayName": null,
+      "newName": "Replacement Circuit Assembly"
+    },
+    {
+      "id": "981c7836-f1ca-479e-bb19-6d2bf44e7dbf",
+      "oldName": "Spare Driver",
+      "previousDisplayName": null,
+      "newName": "Replacement LED Driver"
+    },
+    {
+      "id": "9e7caa04-a8a8-49c0-897b-3c8f8e7ef0bc",
+      "oldName": "Spare FRP Canopy",
+      "previousDisplayName": null,
+      "newName": "Replacement FRP Canopy"
+    },
+    {
+      "id": "41501a3c-41fc-4e42-9014-97ce1cf20e94",
+      "oldName": "Spare Fan Blade",
+      "previousDisplayName": null,
+      "newName": "Replacement Fan Blade"
+    },
+    {
+      "id": "8618fdc7-c591-4395-a625-975653bd2c59",
+      "oldName": "Spare Fan Jali",
+      "previousDisplayName": null,
+      "newName": "Replacement Fan Guard"
+    },
+    {
+      "id": "e955614a-73b2-4d66-a95b-3c7061ac313b",
+      "oldName": "Spare Glass",
+      "previousDisplayName": null,
+      "newName": "Replacement Light Fitting Glass"
+    },
+    {
+      "id": "e714e346-4318-438e-a96b-df70d3716aaf",
+      "oldName": "Spare Indicating Lamp",
+      "previousDisplayName": null,
+      "newName": "Replacement Panel Indicator Lamp"
+    },
+    {
+      "id": "cb69d87a-38d4-495a-9328-f16096d9f39f",
+      "oldName": "Spare Jali",
+      "previousDisplayName": null,
+      "newName": "Replacement Well Glass Guard"
+    },
+    {
+      "id": "c6116aa1-f1f8-4f9f-9ced-50dd6fa1e8f3",
+      "oldName": "Spare Knob",
+      "previousDisplayName": null,
+      "newName": "Replacement Rotary Switch Knob"
+    },
+    {
+      "id": "f68820d8-7e30-4036-90b7-d89328d2ea2b",
+      "oldName": "Spare Led",
+      "previousDisplayName": null,
+      "newName": "Replacement LED Module"
+    },
+    {
+      "id": "d28d2520-9157-4ca1-83e3-755f312ce4f3",
+      "oldName": "Spare Led Adhesive",
+      "previousDisplayName": null,
+      "newName": "Thermal Interface Compound"
+    },
+    {
+      "id": "c1a470b0-f3fe-4953-b7a1-196a84680998",
+      "oldName": "Spare Led Kit",
+      "previousDisplayName": null,
+      "newName": "Replacement LED Kit"
+    },
+    {
+      "id": "cec4f3b4-725c-4358-8d70-b9f7bc7be49f",
+      "oldName": "Spare MS Box",
+      "previousDisplayName": null,
+      "newName": "Replacement Mild Steel Box"
+    },
+    {
+      "id": "313a9fb2-c49c-4d58-bc81-7c92040b6b16",
+      "oldName": "Spare Push Assembly",
+      "previousDisplayName": null,
+      "newName": "Replacement Push Button Assembly"
+    },
+    {
+      "id": "4694d313-14ad-4f43-8573-55c1d24705b3",
+      "oldName": "Spare Regulator",
+      "previousDisplayName": null,
+      "newName": "Replacement Wall Fan Regulator"
+    },
+    {
+      "id": "b441a1a0-fd33-4357-a0bc-4d069e1fae95",
+      "oldName": "Spare Switch",
+      "previousDisplayName": null,
+      "newName": "Replacement Switch"
+    },
+    {
+      "id": "43ae12e7-5444-4ea3-be35-ce41f84b5496",
+      "oldName": "Stopping Plug NPT",
+      "previousDisplayName": null,
+      "newName": "NPT Stopping Plug"
+    },
+    {
+      "id": "fccbb2af-17b3-4112-9d9c-07bac056a346",
+      "oldName": "Tube Light Rod",
+      "previousDisplayName": null,
+      "newName": "Replacement UV Tube"
+    }
+  ],
+  "variants": [
+    {
+      "id": "a7a0fe1f-4aee-4c37-b073-41a7b43b99bc",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "2cbb493a-2c49-4b0a-8730-e9f275a5dff6",
+      "oldName": "2 x 20w",
+      "previousDisplayName": null,
+      "newName": "2 × 20 W"
+    },
+    {
+      "id": "b399adcf-58f3-4fc3-a787-4c4c57c815b3",
+      "oldName": "10W PLL + UV Tube",
+      "previousDisplayName": null,
+      "newName": "10 W PLL + UV Tube"
+    },
+    {
+      "id": "a2eb555d-0987-4e49-a40c-55313a382de7",
+      "oldName": "Rotary Switch 16A 230v 02Nos.",
+      "previousDisplayName": null,
+      "newName": "2 Rotary Switches / 16 A / 230 V"
+    },
+    {
+      "id": "471e7554-a593-4981-89af-78c5b58b8ced",
+      "oldName": "Start Stop PB With A meter",
+      "previousDisplayName": null,
+      "newName": "Start-Stop Push Buttons / With Ammeter"
+    },
+    {
+      "id": "7ee96d13-2341-433b-83fc-9ac2456c8bb1",
+      "oldName": "120mm Height",
+      "previousDisplayName": null,
+      "newName": "120 mm Height"
+    },
+    {
+      "id": "2b0a04b4-1aab-4474-a279-18d7163b0649",
+      "oldName": "174mm Height",
+      "previousDisplayName": null,
+      "newName": "174 mm Height"
+    },
+    {
+      "id": "51aabfb5-a9b2-4258-8f45-20e3066b3f87",
+      "oldName": "210mm Height",
+      "previousDisplayName": null,
+      "newName": "210 mm Height"
+    },
+    {
+      "id": "b57bd3fe-aff8-406e-883f-e53a10bddfc9",
+      "oldName": "225mm Height",
+      "previousDisplayName": null,
+      "newName": "225 mm Height"
+    },
+    {
+      "id": "dec33617-5330-4966-851f-fe79f6a307fc",
+      "oldName": "200mm",
+      "previousDisplayName": null,
+      "newName": "200 mm"
+    },
+    {
+      "id": "cc222e4d-7c94-4991-ad15-e57ba2613624",
+      "oldName": "300mm",
+      "previousDisplayName": null,
+      "newName": "300 mm"
+    },
+    {
+      "id": "3c573e24-3b52-4cf6-a3c5-ec7756acaec0",
+      "oldName": "200W",
+      "previousDisplayName": null,
+      "newName": "200 W"
+    },
+    {
+      "id": "3d02885c-ea7d-41cf-9a8f-4475920ad05d",
+      "oldName": "150W",
+      "previousDisplayName": null,
+      "newName": "150 W"
+    },
+    {
+      "id": "fa267b72-f2ed-4169-9cf4-caaeac9c5bf4",
+      "oldName": "200W",
+      "previousDisplayName": null,
+      "newName": "200 W"
+    },
+    {
+      "id": "47e6099e-c095-4791-ba42-23317a2f907e",
+      "oldName": "225 x 200 x 125",
+      "previousDisplayName": null,
+      "newName": "225 × 200 × 125"
+    },
+    {
+      "id": "38050521-5225-475d-91fa-a59242183734",
+      "oldName": "275 x 255 x 150",
+      "previousDisplayName": null,
+      "newName": "275 × 255 × 150"
+    },
+    {
+      "id": "d61d6a11-8f39-4b52-ae98-97f86263e451",
+      "oldName": "2 x 20W",
+      "previousDisplayName": null,
+      "newName": "2 × 20 W"
+    },
+    {
+      "id": "d6551f2a-a77b-4fd3-ba06-e6e466c647da",
+      "oldName": "2 x 30W",
+      "previousDisplayName": null,
+      "newName": "2 × 30 W"
+    },
+    {
+      "id": "173ef50b-a5f3-4ca5-86b8-a8a42675e99f",
+      "oldName": "40W",
+      "previousDisplayName": null,
+      "newName": "40 W"
+    },
+    {
+      "id": "046322de-2ce0-4592-b2b9-74a89ad0985a",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "73c410f7-d98a-4eef-9596-7270cb706bd7",
+      "oldName": "2 x 30W",
+      "previousDisplayName": null,
+      "newName": "2 × 30 W"
+    },
+    {
+      "id": "943e8738-1545-46f2-998d-9546be9ccfce",
+      "oldName": "2 x 30W DUAL Light",
+      "previousDisplayName": null,
+      "newName": "2 × 30 W Dual Light"
+    },
+    {
+      "id": "ae2d4860-ebf3-40e6-9ac5-66034edaa761",
+      "oldName": "With Rotary switch 16A 230V 08Nos",
+      "previousDisplayName": null,
+      "newName": "8 Rotary Switches / 16 A / 230 V"
+    },
+    {
+      "id": "8cc30db7-5e9b-4d89-bf5f-a9fa137c0dc4",
+      "oldName": "16A 230V",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V"
+    },
+    {
+      "id": "8fabf59a-f7f3-4ed8-9fab-e3243972ae98",
+      "oldName": "32A 415V",
+      "previousDisplayName": null,
+      "newName": "32 A / 415 V"
+    },
+    {
+      "id": "dafa2ee3-84af-46d8-9d56-1e0e8d6a0df1",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "97477ebc-f737-4d67-9fda-a2585eb7d5ae",
+      "oldName": "16A - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 2-entry"
+    },
+    {
+      "id": "d558e4a7-3b45-407a-b6e8-cfff1c00f2d7",
+      "oldName": "16A - 3 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 3-entry"
+    },
+    {
+      "id": "faa98dec-83f4-4d1d-9307-0ed56d7988c6",
+      "oldName": "16A, 230V - 3 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V / 3-pin / 2-entry"
+    },
+    {
+      "id": "982d156e-997c-415b-a23d-7f3bf5949812",
+      "oldName": "32A, 415V - 4 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 415 V / 4-pin / 2-entry"
+    },
+    {
+      "id": "ece586ef-9651-455b-b3a3-ca51737b15ee",
+      "oldName": "32A, 415V - 5 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 415 V / 5-pin / 2-entry"
+    },
+    {
+      "id": "c7ebdd54-8928-4937-a1e6-8b90a3c844e3",
+      "oldName": "63A, 415V - 5 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "63 A / 415 V / 5-pin / 2-entry"
+    },
+    {
+      "id": "6e5ebaab-7fc3-4943-aaf7-60478d0751e4",
+      "oldName": "AMP Meter",
+      "previousDisplayName": null,
+      "newName": "Ammeter Configuration"
+    },
+    {
+      "id": "49193750-05b5-4f91-8958-caa070e27edb",
+      "oldName": "Start stop PB With Switch (RUN-STOP-TRY)",
+      "previousDisplayName": null,
+      "newName": "Start-Stop Push Buttons / Run-Stop-Try Switch"
+    },
+    {
+      "id": "ac666e72-451a-4d91-9784-266474b425f3",
+      "oldName": "6 Digit",
+      "previousDisplayName": null,
+      "newName": "6-digit Display"
+    },
+    {
+      "id": "6653b7a3-e7c6-4b4b-a497-d4d56cdec505",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "2ff859b8-b0ef-40aa-a846-41f738825758",
+      "oldName": "16A 230V",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V"
+    },
+    {
+      "id": "5b6dd29a-e32b-4a51-8a73-b96a134e1990",
+      "oldName": "Direct Entry - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "Direct Entry / 2-entry"
+    },
+    {
+      "id": "caed1727-b140-4cce-82cd-20e77e580cd8",
+      "oldName": "1/2\"NPT",
+      "previousDisplayName": null,
+      "newName": "1/2 in NPT"
+    },
+    {
+      "id": "ea90ee5c-b1aa-4f5d-88c3-122861af67f5",
+      "oldName": "19mm Electrical Thread (brass nickel plated)",
+      "previousDisplayName": null,
+      "newName": "19 mm ET / Nickel-Plated Brass"
+    },
+    {
+      "id": "d1e5594c-8b82-4680-a2f2-9877f915b11a",
+      "oldName": "19mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "19 mm ET (BS Conduit)"
+    },
+    {
+      "id": "3fd68966-8d0f-422c-883b-8b47a854db9a",
+      "oldName": "19mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "19 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "220aabe4-461b-44dc-8587-e9b3f6893326",
+      "oldName": "25mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "25 mm ET (BS Conduit)"
+    },
+    {
+      "id": "df9d7949-c0e9-4864-a607-3e824d4b67ca",
+      "oldName": "25mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "25 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "32caa50f-6a99-4334-8f40-c287221df6e0",
+      "oldName": "32mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "32 mm ET (BS Conduit)"
+    },
+    {
+      "id": "c2326002-d70d-43cc-9ef7-2e49a77b4a9c",
+      "oldName": "32mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "32 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "806f4996-5816-4b68-a0fd-a0722a32c84c",
+      "oldName": "38mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "38 mm ET (BS Conduit)"
+    },
+    {
+      "id": "18b8f29d-5a55-4804-9468-c138ba04dadf",
+      "oldName": "40mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "40 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "47ca9be0-32d0-4e75-9a60-ffb26ce70ea6",
+      "oldName": "50mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "50 mm ET (BS Conduit)"
+    },
+    {
+      "id": "fa18efd0-e09c-4bca-a083-3d0a86a0e020",
+      "oldName": "57mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "57 mm ET (BS Conduit)"
+    },
+    {
+      "id": "881b3c0a-9b5e-4732-847c-5fa23fbb13d1",
+      "oldName": "63mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "63 mm ET (BS Conduit)"
+    },
+    {
+      "id": "98f09fdd-3a82-47b8-918d-4f8cdc5edf67",
+      "oldName": "75mm Electrical Thread (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "75 mm ET (BS Conduit)"
+    },
+    {
+      "id": "704a062a-045d-45d4-83cf-b8676a4a7af1",
+      "oldName": "20W",
+      "previousDisplayName": null,
+      "newName": "20 W"
+    },
+    {
+      "id": "afece326-cad2-4184-b16d-4292d4bfb185",
+      "oldName": "12\" - 230v",
+      "previousDisplayName": null,
+      "newName": "12 in / 230 V"
+    },
+    {
+      "id": "b62fde22-273a-473c-abfd-85f8c9a72dd9",
+      "oldName": "15\" - 230v",
+      "previousDisplayName": null,
+      "newName": "15 in / 230 V"
+    },
+    {
+      "id": "9ef735df-0eac-4f77-9ea9-a17a6cc8c381",
+      "oldName": "16\" - 230V",
+      "previousDisplayName": null,
+      "newName": "16 in / 230 V"
+    },
+    {
+      "id": "5505fa85-8e41-47d7-842e-22f2954afbcc",
+      "oldName": "16\" - 415V",
+      "previousDisplayName": null,
+      "newName": "16 in / 415 V"
+    },
+    {
+      "id": "91a2dc02-fb7a-46a7-bb83-f38e9dfd96d1",
+      "oldName": "18\" - 230V",
+      "previousDisplayName": null,
+      "newName": "18 in / 230 V"
+    },
+    {
+      "id": "8b3e395e-2df4-456e-8dfd-4d6f9c0bc54f",
+      "oldName": "18\" - 415V",
+      "previousDisplayName": null,
+      "newName": "18 in / 415 V"
+    },
+    {
+      "id": "7f1944e1-81ce-4738-b81f-a6e7fc0d678f",
+      "oldName": "24\" - 230v",
+      "previousDisplayName": null,
+      "newName": "24 in / 230 V"
+    },
+    {
+      "id": "51c75bc3-f0c6-4362-a718-870e0055e3df",
+      "oldName": "24\" - 415V",
+      "previousDisplayName": null,
+      "newName": "24 in / 415 V"
+    },
+    {
+      "id": "b65aa2a4-2192-441e-91b1-15719a047b97",
+      "oldName": "30\" - 230v",
+      "previousDisplayName": null,
+      "newName": "30 in / 230 V"
+    },
+    {
+      "id": "d60c11b6-e65d-473c-8f87-3a3eb6793b73",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "27440c62-834f-4871-90b5-3735ea564e9c",
+      "oldName": "60W",
+      "previousDisplayName": null,
+      "newName": "60 W"
+    },
+    {
+      "id": "b57310e0-d996-4a4b-b6eb-cafd75a20fc7",
+      "oldName": "65W",
+      "previousDisplayName": null,
+      "newName": "65 W"
+    },
+    {
+      "id": "acbae5e2-d657-4d74-b4fd-8def287da49f",
+      "oldName": "72W",
+      "previousDisplayName": null,
+      "newName": "72 W"
+    },
+    {
+      "id": "af228e7a-2990-4e43-8eb5-08dda30d4e7e",
+      "oldName": "80W",
+      "previousDisplayName": null,
+      "newName": "80 W"
+    },
+    {
+      "id": "ae1a7215-864d-4004-85e1-e013fa128dc1",
+      "oldName": "90W",
+      "previousDisplayName": null,
+      "newName": "90 W"
+    },
+    {
+      "id": "a7e42b29-45ac-41e6-b37e-ad3b0905b8cb",
+      "oldName": "100W",
+      "previousDisplayName": null,
+      "newName": "100 W"
+    },
+    {
+      "id": "f0923946-133e-46cf-934d-499a431a49ce",
+      "oldName": "120W",
+      "previousDisplayName": null,
+      "newName": "120 W"
+    },
+    {
+      "id": "c875be8b-2564-44aa-94ae-9349aeb43bbf",
+      "oldName": "150W",
+      "previousDisplayName": null,
+      "newName": "150 W"
+    },
+    {
+      "id": "92f79c1a-f3e9-4505-880a-1fed187c369c",
+      "oldName": "200W",
+      "previousDisplayName": null,
+      "newName": "200 W"
+    },
+    {
+      "id": "ec601438-09fe-4283-9ab8-ff81d3f2a58d",
+      "oldName": "50W",
+      "previousDisplayName": null,
+      "newName": "50 W"
+    },
+    {
+      "id": "fb4ec9fb-8ed5-4cc5-9bf6-af7569cde83d",
+      "oldName": "15W - COB",
+      "previousDisplayName": null,
+      "newName": "15 W / COB"
+    },
+    {
+      "id": "cb42e5d7-cde3-4eda-ae27-f2e674b50b1f",
+      "oldName": "20W - Multi",
+      "previousDisplayName": null,
+      "newName": "20 W / Multi"
+    },
+    {
+      "id": "42c05039-404a-4e4e-887d-84fda2fb488e",
+      "oldName": "20W",
+      "previousDisplayName": null,
+      "newName": "20 W"
+    },
+    {
+      "id": "cb53cd1c-a19b-409e-b30b-4e57a1518f80",
+      "oldName": "24V DC",
+      "previousDisplayName": null,
+      "newName": "24 V DC"
+    },
+    {
+      "id": "e89b3afc-a673-44bf-bf09-29788068c55c",
+      "oldName": "110V",
+      "previousDisplayName": null,
+      "newName": "110 V"
+    },
+    {
+      "id": "06f79b83-3e0b-4c1f-abd4-43e40a523014",
+      "oldName": "230V",
+      "previousDisplayName": null,
+      "newName": "230 V"
+    },
+    {
+      "id": "458c5043-1fab-4e95-bf63-0f8db53da565",
+      "oldName": "ACK - 2 Chamber",
+      "previousDisplayName": null,
+      "newName": "ACK / 2-chamber"
+    },
+    {
+      "id": "14f4291b-4a57-42fc-9c13-f5ef8f8afb47",
+      "oldName": "360 x 385 x 80",
+      "previousDisplayName": null,
+      "newName": "360 × 385 × 80"
+    },
+    {
+      "id": "00316c1f-a7ad-436a-9f05-1a563e180baa",
+      "oldName": "with glue board",
+      "previousDisplayName": null,
+      "newName": "Glue-Board Type"
+    },
+    {
+      "id": "85ea66d6-0cd2-45ad-84d4-0eea05f77aae",
+      "oldName": "Bolting Type",
+      "previousDisplayName": null,
+      "newName": "Bolted Closure"
+    },
+    {
+      "id": "4cf88cce-1e5e-4503-82a3-ccaa389af04d",
+      "oldName": "4 Way",
+      "previousDisplayName": null,
+      "newName": "4-way"
+    },
+    {
+      "id": "6894dc1f-e697-4d5e-9a6c-b11aa8eced0f",
+      "oldName": "Bolting Type",
+      "previousDisplayName": null,
+      "newName": "Bolted Closure"
+    },
+    {
+      "id": "ac230d69-7fe5-4390-bf71-efa2b40650a8",
+      "oldName": "Bolt-in",
+      "previousDisplayName": null,
+      "newName": "Bolted Closure"
+    },
+    {
+      "id": "f58a0074-bcbc-4f23-a4cb-c68e2b31402e",
+      "oldName": "60W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "60 W / Multi LED 5050"
+    },
+    {
+      "id": "103f9f30-f004-444f-b091-b6e9e161adc8",
+      "oldName": "magnetic",
+      "previousDisplayName": null,
+      "newName": "Magnetic"
+    },
+    {
+      "id": "6c5abd58-bb1f-47c9-bfd7-f18718b828e0",
+      "oldName": "4 Push",
+      "previousDisplayName": null,
+      "newName": "4 Push Buttons"
+    },
+    {
+      "id": "a28f3794-72fd-4a74-90fa-0b32dcc9ee58",
+      "oldName": "5 Push",
+      "previousDisplayName": null,
+      "newName": "5 Push Buttons"
+    },
+    {
+      "id": "ab2c94bc-8e0f-4660-9e1d-1170f9811cb9",
+      "oldName": "6 Push",
+      "previousDisplayName": null,
+      "newName": "6 Push Buttons"
+    },
+    {
+      "id": "43ec7dd0-b59d-4cb3-af2d-01df1fa1cd88",
+      "oldName": "9 Push",
+      "previousDisplayName": null,
+      "newName": "9 Push Buttons"
+    },
+    {
+      "id": "cfca8f3e-7314-47f0-8f5a-525da63e3178",
+      "oldName": "Display With 07-PB-02-RS",
+      "previousDisplayName": null,
+      "newName": "Display / 7 Push Buttons / 2 Rotary Switches"
+    },
+    {
+      "id": "ba5c5f0b-a339-4f1a-8131-7293fe1057fc",
+      "oldName": "Display With Single PB",
+      "previousDisplayName": null,
+      "newName": "Display / 1 Push Button"
+    },
+    {
+      "id": "3ffd728d-5eb6-4b34-9a93-09fca65c1b72",
+      "oldName": "Temperature Controller",
+      "previousDisplayName": null,
+      "newName": "Temperature Controller Configuration"
+    },
+    {
+      "id": "82319fcc-c60e-4d41-86a9-810576d55717",
+      "oldName": "16A  230V",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V"
+    },
+    {
+      "id": "97e7fc68-5b6e-481c-bdea-c1b0432178db",
+      "oldName": "32A 415V",
+      "previousDisplayName": null,
+      "newName": "32 A / 415 V"
+    },
+    {
+      "id": "f8619f1e-00e3-4be4-a647-58109b5a41d7",
+      "oldName": "Fire Alaram",
+      "previousDisplayName": null,
+      "newName": "Fire Alarm Configuration"
+    },
+    {
+      "id": "044da131-0306-4233-b263-6ea28c50e26a",
+      "oldName": "M20 Metrics Thread",
+      "previousDisplayName": null,
+      "newName": "M20 Metric Thread"
+    },
+    {
+      "id": "78fb6943-179b-438c-b25f-f820a191f5ca",
+      "oldName": "4 PUSH",
+      "previousDisplayName": null,
+      "newName": "4 Push Buttons"
+    },
+    {
+      "id": "26ef8ffd-962e-4756-a8db-c1395fa2761f",
+      "oldName": "1 - 1/4\"",
+      "previousDisplayName": null,
+      "newName": "1 1/4 in NPT"
+    },
+    {
+      "id": "980a1235-d761-40cd-aac6-b5d8bdc59c6c",
+      "oldName": "1/2\"",
+      "previousDisplayName": null,
+      "newName": "1/2 in NPT"
+    },
+    {
+      "id": "83f991f5-be5a-415e-872f-485d0d488984",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "63797f7c-3567-432c-9153-0684ac91e635",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "7375530a-7eb7-4e0c-b2eb-9697042fba9a",
+      "oldName": "Bolting Type",
+      "previousDisplayName": null,
+      "newName": "Bolted Closure"
+    },
+    {
+      "id": "33f079d2-8ff0-41a4-8a9b-fadfb52f6bae",
+      "oldName": "174mm",
+      "previousDisplayName": null,
+      "newName": "174 mm"
+    },
+    {
+      "id": "f386ddc6-9726-4536-ae37-76e5f28b235f",
+      "oldName": "16\" - 230V",
+      "previousDisplayName": null,
+      "newName": "16 in / 230 V"
+    },
+    {
+      "id": "510aaa45-ba59-4bb8-ad11-6339f857a61d",
+      "oldName": "18\" - 230V",
+      "previousDisplayName": null,
+      "newName": "18 in / 230 V"
+    },
+    {
+      "id": "039c1b35-8cb1-426c-bcba-82920c1533e2",
+      "oldName": "18\" - 415V",
+      "previousDisplayName": null,
+      "newName": "18 in / 415 V"
+    },
+    {
+      "id": "2c694eee-6aab-460e-99f7-3d7a2c57f3bb",
+      "oldName": "24\" - 230V",
+      "previousDisplayName": null,
+      "newName": "24 in / 230 V"
+    },
+    {
+      "id": "69d5e649-6ef6-4d2b-a648-5e5beb1eb169",
+      "oldName": "24\" - 415V",
+      "previousDisplayName": null,
+      "newName": "24 in / 415 V"
+    },
+    {
+      "id": "d5e29152-cea3-4c8f-a396-adb978d8a72b",
+      "oldName": "3 Pin",
+      "previousDisplayName": null,
+      "newName": "3-pin"
+    },
+    {
+      "id": "66a24328-b39b-4ec8-8c4d-01fb768259ec",
+      "oldName": "4 Pin",
+      "previousDisplayName": null,
+      "newName": "4-pin"
+    },
+    {
+      "id": "ca2db245-ae8b-4c30-81df-e2fda448f023",
+      "oldName": "5 Pin",
+      "previousDisplayName": null,
+      "newName": "5-pin"
+    },
+    {
+      "id": "607b1f00-06a5-4c4d-9bf6-ede1c4ec1766",
+      "oldName": "Only Enclosure",
+      "previousDisplayName": null,
+      "newName": "Enclosure Only"
+    },
+    {
+      "id": "46c01e02-8728-4c56-b390-a0f1291a6cd6",
+      "oldName": "With 4Nos PB",
+      "previousDisplayName": null,
+      "newName": "With 4 Push Buttons"
+    },
+    {
+      "id": "4bd30e1c-1de3-49cd-b9e6-92da0675cc81",
+      "oldName": "12W - COB",
+      "previousDisplayName": null,
+      "newName": "12 W / COB"
+    },
+    {
+      "id": "ffd392d3-aa6d-43dc-af45-782ecfc070d5",
+      "oldName": "15W - COB",
+      "previousDisplayName": null,
+      "newName": "15 W / COB"
+    },
+    {
+      "id": "b1495fe4-fe72-4fbc-92b9-d02e19eacbcf",
+      "oldName": "15W - COB - Timer",
+      "previousDisplayName": null,
+      "newName": "15 W / COB / Timer"
+    },
+    {
+      "id": "f01514e6-0e40-4d2b-b8d6-f68873132508",
+      "oldName": "15W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "15 W / Multi LED 5050"
+    },
+    {
+      "id": "6da6fd43-4c91-41e5-a343-f7b53e9cfec0",
+      "oldName": "15W - Multi LED 5050 With Timer",
+      "previousDisplayName": null,
+      "newName": "15 W / Multi LED 5050 With Timer"
+    },
+    {
+      "id": "133a12cd-ac2f-4ba1-a121-b2f4f760a21d",
+      "oldName": "23W",
+      "previousDisplayName": null,
+      "newName": "23 W"
+    },
+    {
+      "id": "c6487b01-3161-427b-8501-5e1b82e0245f",
+      "oldName": "30W - Multi LED 5050 (Monochromatic)",
+      "previousDisplayName": null,
+      "newName": "30 W / Multi LED 5050 (Monochromatic)"
+    },
+    {
+      "id": "d486e3de-128c-4e65-948f-7b6480666f51",
+      "oldName": "Only Enclosure camera housing",
+      "previousDisplayName": null,
+      "newName": "Camera Housing / Enclosure Only"
+    },
+    {
+      "id": "b6545bbd-3a26-434f-88ce-b27439663657",
+      "oldName": "16A - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 2-entry"
+    },
+    {
+      "id": "ab9ba82e-30b4-4080-bb3b-e51e19494947",
+      "oldName": "16A - 3 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 3-entry"
+    },
+    {
+      "id": "8ae98c0b-4506-4e30-a259-65a3036deb75",
+      "oldName": "32A - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 2-entry"
+    },
+    {
+      "id": "dc7bc0d1-2155-49fa-88d0-f1049abfdc5b",
+      "oldName": "32A - 415V 3 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 415 V / 3-entry"
+    },
+    {
+      "id": "f541ece2-0bb3-406b-82dc-af2ecf391f76",
+      "oldName": "63A",
+      "previousDisplayName": null,
+      "newName": "63 A"
+    },
+    {
+      "id": "10a934fd-5774-4f83-9c41-d846f89f44f3",
+      "oldName": "3/4\"ET",
+      "previousDisplayName": null,
+      "newName": "3/4 in ET"
+    },
+    {
+      "id": "f3368379-ca9b-4b0c-83dc-3d827582a0c6",
+      "oldName": "15W",
+      "previousDisplayName": null,
+      "newName": "15 W"
+    },
+    {
+      "id": "8d3eff14-5fe9-404a-a53f-0b279c884a58",
+      "oldName": "30W",
+      "previousDisplayName": null,
+      "newName": "30 W"
+    },
+    {
+      "id": "cadffa0f-54f6-4dc0-a64e-31f0c4b0718f",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "57c37569-aa1b-4156-97bb-aca4570cb739",
+      "oldName": "60W",
+      "previousDisplayName": null,
+      "newName": "60 W"
+    },
+    {
+      "id": "7fe6859d-3077-4a4a-8f4c-e06eabbdf14f",
+      "oldName": "72W",
+      "previousDisplayName": null,
+      "newName": "72 W"
+    },
+    {
+      "id": "1340bd28-a64b-426a-9384-f44cb9fa093a",
+      "oldName": "Enclosure",
+      "previousDisplayName": null,
+      "newName": "Enclosure Only"
+    },
+    {
+      "id": "f6c0462f-d6fa-4d1d-aec9-96bbb15f9648",
+      "oldName": "Only Enclosure",
+      "previousDisplayName": null,
+      "newName": "Enclosure Only"
+    },
+    {
+      "id": "c3c2b518-c273-4e2c-b009-700aa2293db7",
+      "oldName": "With SpiralCable 3M",
+      "previousDisplayName": null,
+      "newName": "With 3 m Spiral Cable"
+    },
+    {
+      "id": "a3ae6305-5b65-4b7d-98b5-410342dab366",
+      "oldName": "With SpiralCable 5M",
+      "previousDisplayName": null,
+      "newName": "With 5 m Spiral Cable"
+    },
+    {
+      "id": "f73db958-e52f-4d58-bd75-d05e7913a6a0",
+      "oldName": "18W",
+      "previousDisplayName": null,
+      "newName": "18 W"
+    },
+    {
+      "id": "76278bfa-edef-4b53-95a3-2357d55106c2",
+      "oldName": "24W",
+      "previousDisplayName": null,
+      "newName": "24 W"
+    },
+    {
+      "id": "f6d5bca6-9707-43e4-b02e-9a9dfb98a0c0",
+      "oldName": "25W",
+      "previousDisplayName": null,
+      "newName": "25 W"
+    },
+    {
+      "id": "71953a9a-601d-49d8-be97-9df703316725",
+      "oldName": "30W",
+      "previousDisplayName": null,
+      "newName": "30 W"
+    },
+    {
+      "id": "5e31a319-bb61-4a58-8d42-48d6883111cd",
+      "oldName": "40W",
+      "previousDisplayName": null,
+      "newName": "40 W"
+    },
+    {
+      "id": "5a9594a5-a425-4dd5-88e2-47b201de30f1",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "f358b573-749e-46d2-8a5c-5b40296dcdf9",
+      "oldName": "60W",
+      "previousDisplayName": null,
+      "newName": "60 W"
+    },
+    {
+      "id": "bcebdd41-43f2-491a-bf5e-cdb1eb4e51c5",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "ad8d75ed-f5c6-47f4-bd12-0cd1b3fcfc77",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "9edd8ffc-d235-4da2-acee-f9bb034afe5f",
+      "oldName": "2 Entry With FRP canopy",
+      "previousDisplayName": null,
+      "newName": "2-entry With FRP Canopy"
+    },
+    {
+      "id": "54eb974b-6b11-4b6b-92b7-4a8cf7eedfed",
+      "oldName": "With Indicating - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "With Indicator / 2-entry"
+    },
+    {
+      "id": "c8b37588-e9b5-45b3-93fc-bbccd0744d42",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "3d14aed9-2155-4786-8559-9075cfb3e9c8",
+      "oldName": "12mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "12 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "6289dc0d-34eb-4bef-872b-f574cd308e94",
+      "oldName": "16mm Electrical Thread MS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "16 mm ET (BS Conduit) / Mild Steel"
+    },
+    {
+      "id": "f513b520-8a06-44fc-ae34-54d91ce34d91",
+      "oldName": "19mm Electrical Thread MS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "19 mm ET (BS Conduit) / Mild Steel"
+    },
+    {
+      "id": "90668467-467b-4650-bd48-0f44424e9bd9",
+      "oldName": "19mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "19 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "e80fddde-d468-4f52-bca5-e63de9abf7b9",
+      "oldName": "25mm Electrical Thread MS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "25 mm ET (BS Conduit) / Mild Steel"
+    },
+    {
+      "id": "4bedc11e-5624-47ed-83d3-b785b5806306",
+      "oldName": "25mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "25 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "5c166c7c-804a-479c-a807-af8f3de61ea3",
+      "oldName": "32mm Electrical Thread MS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "32 mm ET (BS Conduit) / Mild Steel"
+    },
+    {
+      "id": "65fdb58c-f3e8-45a9-b974-d9977a47d34b",
+      "oldName": "32mm Electrical Thread SS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "32 mm ET (BS Conduit) / Stainless Steel"
+    },
+    {
+      "id": "53d46c53-be6b-4ad0-9416-1df25e46c8e6",
+      "oldName": "38mm Electrical Thread MS (BS Conduit)",
+      "previousDisplayName": null,
+      "newName": "38 mm ET (BS Conduit) / Mild Steel"
+    },
+    {
+      "id": "6dc851b1-a8a4-43ad-aa0d-385ee57bfbf8",
+      "oldName": "M20 - Brass - Hex Type",
+      "previousDisplayName": null,
+      "newName": "M20 / Brass / Hex Head"
+    },
+    {
+      "id": "f81f42ab-f0c0-413b-8d46-4cbfb14d9d72",
+      "oldName": "20W",
+      "previousDisplayName": null,
+      "newName": "20 W"
+    },
+    {
+      "id": "dfee6f21-9f44-467b-b436-9b4c3ed182f7",
+      "oldName": "30W",
+      "previousDisplayName": null,
+      "newName": "30 W"
+    },
+    {
+      "id": "e8f3eb52-39ee-48a9-924e-e320a9b700e7",
+      "oldName": "45W",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "18072ab2-bd7f-4dbf-b49e-8c27e3b0f4b7",
+      "oldName": "60W",
+      "previousDisplayName": null,
+      "newName": "60 W"
+    },
+    {
+      "id": "0c4cd157-ec27-45e9-8c09-69d14be48d7b",
+      "oldName": "100W",
+      "previousDisplayName": null,
+      "newName": "100 W"
+    },
+    {
+      "id": "4759d8f0-5147-4704-a41e-31448ccabeb6",
+      "oldName": "Enclosure",
+      "previousDisplayName": null,
+      "newName": "Enclosure Only"
+    },
+    {
+      "id": "c6a028e6-29e1-4294-bb8d-b22a275bba90",
+      "oldName": "16A, 230V - 3 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V / 3-pin / 2-entry"
+    },
+    {
+      "id": "c54be730-7d9d-4f68-bdbf-7b2c24906a03",
+      "oldName": "16A, 230V - 3 Pin - 2 Entry - Canopy",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V / 3-pin / 2-entry / Canopy"
+    },
+    {
+      "id": "ed0fba41-a8a8-43e9-8af3-ce3687f6723e",
+      "oldName": "16A, 230V - 3 Pin - RCBO - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V / 3-pin / RCBO / 2-entry"
+    },
+    {
+      "id": "339b1c93-c29c-41a0-a865-a2a0ff90d369",
+      "oldName": "32A, 440V - 4 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 440 V / 4-pin / 2-entry"
+    },
+    {
+      "id": "c8721332-df79-41a2-843e-b38b26790417",
+      "oldName": "32A, 440V - 5 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 440 V / 5-pin / 2-entry"
+    },
+    {
+      "id": "d2c93bf3-8042-4f5a-8c1f-75a7c0923b62",
+      "oldName": "32A, 440V - 5 Pin - 2 Entry - Canopy",
+      "previousDisplayName": null,
+      "newName": "32 A / 440 V / 5-pin / 2-entry / Canopy"
+    },
+    {
+      "id": "4fd09675-5826-4e84-b2ac-2f75aa7d8b0e",
+      "oldName": "32A, 440V - 5 Pin - 3 Entry",
+      "previousDisplayName": null,
+      "newName": "32 A / 440 V / 5-pin / 3-entry"
+    },
+    {
+      "id": "e8f4055e-a4ce-4784-9426-0ef09a64fabe",
+      "oldName": "63A, 440V - 4 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "63 A / 440 V / 4-pin / 2-entry"
+    },
+    {
+      "id": "5fac2d80-2d76-4068-b33e-9d7dc8d9a30f",
+      "oldName": "63A, 440V - 5 Pin - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "63 A / 440 V / 5-pin / 2-entry"
+    },
+    {
+      "id": "85bcc568-a285-482e-95a5-a5e305819c2c",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "382de2be-3d9e-4b72-8133-4da7603b4063",
+      "oldName": "3 Entry",
+      "previousDisplayName": null,
+      "newName": "3-entry"
+    },
+    {
+      "id": "9f6e5113-4abf-4bd4-93b9-276b0db2c95c",
+      "oldName": "Enclosure - 2 Entry",
+      "previousDisplayName": null,
+      "newName": "Enclosure Only / 2-entry"
+    },
+    {
+      "id": "9539e7f3-4541-4398-96c0-76245ed4853e",
+      "oldName": "Rechargeable",
+      "previousDisplayName": null,
+      "newName": "3 W / Rechargeable"
+    },
+    {
+      "id": "b62d5d0f-f7a1-4f89-b1da-a5766b59a28f",
+      "oldName": "Double Switch",
+      "previousDisplayName": null,
+      "newName": "2-switch Configuration"
+    },
+    {
+      "id": "2eac08e2-becc-40a3-acd9-67831e810e32",
+      "oldName": "Single Switch",
+      "previousDisplayName": null,
+      "newName": "1-switch Configuration"
+    },
+    {
+      "id": "022a0da9-fd18-4849-aa77-4c62a153c73c",
+      "oldName": "Size 24\"",
+      "previousDisplayName": null,
+      "newName": "24 in"
+    },
+    {
+      "id": "7ea1221a-8bff-4a04-b4a2-244777b395f1",
+      "oldName": "2 x 18w",
+      "previousDisplayName": null,
+      "newName": "2 × 18 W"
+    },
+    {
+      "id": "687a3e87-adea-4352-9865-b0e95b146c76",
+      "oldName": "18W - UV Tube",
+      "previousDisplayName": null,
+      "newName": "18 W / UV Tube"
+    },
+    {
+      "id": "8d59af22-a7f8-4978-9ee5-2252ee79486a",
+      "oldName": "20W",
+      "previousDisplayName": null,
+      "newName": "20 W"
+    },
+    {
+      "id": "013e6ca2-7798-4325-805e-b6e888b013e5",
+      "oldName": "20W - UV Tube",
+      "previousDisplayName": null,
+      "newName": "20 W / UV Tube"
+    },
+    {
+      "id": "20fa2b7b-41d3-4c2c-b110-b2933a90ec91",
+      "oldName": "40W",
+      "previousDisplayName": null,
+      "newName": "40 W"
+    },
+    {
+      "id": "43d305e8-d5c4-4959-b72b-0d69ebeb0b8e",
+      "oldName": "12'' - 440V",
+      "previousDisplayName": null,
+      "newName": "12 in / 440 V"
+    },
+    {
+      "id": "88ef7554-e382-4212-9e54-5f5e6ac25564",
+      "oldName": "18\"-230V",
+      "previousDisplayName": null,
+      "newName": "18 in / 230 V"
+    },
+    {
+      "id": "5b025ef8-0fc1-4304-ad8d-1bcca5e90033",
+      "oldName": "24\"-230V",
+      "previousDisplayName": null,
+      "newName": "24 in / 230 V"
+    },
+    {
+      "id": "15342424-6328-4463-9cee-c874a627fc5e",
+      "oldName": "15W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "15 W / Multi LED 5050"
+    },
+    {
+      "id": "e489edc7-ed96-40bd-9140-82572c8d7307",
+      "oldName": "20W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "20 W / Multi LED 5050"
+    },
+    {
+      "id": "7d977d01-e860-4b71-9c9c-8712b5444e72",
+      "oldName": "30W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "30 W / Multi LED 5050"
+    },
+    {
+      "id": "d01ac226-4abb-4ea6-a57f-15545854bbbe",
+      "oldName": "45W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "45 W / Multi LED 5050"
+    },
+    {
+      "id": "f11742a5-49bc-488b-b6aa-30c2cff35708",
+      "oldName": "45W Dimmer Type",
+      "previousDisplayName": null,
+      "newName": "45 W / Dimmer Type"
+    },
+    {
+      "id": "90e61401-ff13-46e0-afc7-c92f9c9daf47",
+      "oldName": "60W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "60 W / Multi LED 5050"
+    },
+    {
+      "id": "0887b29d-f154-4e8e-8c05-e1043470ae5f",
+      "oldName": "72W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "72 W / Multi LED 5050"
+    },
+    {
+      "id": "48d8e03b-af6a-4d03-a011-3e14a08f7210",
+      "oldName": "Aviation Light",
+      "previousDisplayName": null,
+      "newName": "Aviation Light Configuration"
+    },
+    {
+      "id": "6f635434-6892-429c-84f1-fb013e13088c",
+      "oldName": "Motion Sensor",
+      "previousDisplayName": null,
+      "newName": "45 W / With Motion Sensor"
+    },
+    {
+      "id": "fd0b48e9-5336-45e3-9c96-50964c5faa6b",
+      "oldName": "45w",
+      "previousDisplayName": null,
+      "newName": "45 W"
+    },
+    {
+      "id": "8c2d1a5f-b5c0-4cdf-91d0-653d3ac1d032",
+      "oldName": "160W - MLL",
+      "previousDisplayName": null,
+      "newName": "160 W / MLL"
+    },
+    {
+      "id": "ba287d81-544f-4745-a84e-c22354fc5cae",
+      "oldName": "for 24\" Fan 3 Phase Key Type",
+      "previousDisplayName": null,
+      "newName": "For 24 in Fan / 3-phase / Key-Type Shaft"
+    },
+    {
+      "id": "2abf0894-ecb1-4f92-9a0d-c51bb52543df",
+      "oldName": "20W",
+      "previousDisplayName": null,
+      "newName": "20 W"
+    },
+    {
+      "id": "4a49868f-5c09-43b1-90a2-885e66426d57",
+      "oldName": "200W",
+      "previousDisplayName": null,
+      "newName": "200 W"
+    },
+    {
+      "id": "5c7b0681-d34a-4f95-9b22-752c9a270dc1",
+      "oldName": "Size 24\"",
+      "previousDisplayName": null,
+      "newName": "24 in"
+    },
+    {
+      "id": "cb12af99-55b7-4d76-8d23-1ad09d10185b",
+      "oldName": "2feet",
+      "previousDisplayName": null,
+      "newName": "2 ft"
+    },
+    {
+      "id": "68b19a5e-a488-499e-8944-8235afd99121",
+      "oldName": "50W",
+      "previousDisplayName": null,
+      "newName": "50 W"
+    },
+    {
+      "id": "339fa2fd-e0cf-4f3a-bd1c-7956bf3896c9",
+      "oldName": "120W",
+      "previousDisplayName": null,
+      "newName": "120 W"
+    },
+    {
+      "id": "ba43a44c-f623-4d0c-b251-7e510c5c0a05",
+      "oldName": "1''ET",
+      "previousDisplayName": null,
+      "newName": "1 in ET"
+    },
+    {
+      "id": "6fe4c414-c19a-4c40-a17a-a73668034219",
+      "oldName": "3/4''ET",
+      "previousDisplayName": null,
+      "newName": "3/4 in ET"
+    },
+    {
+      "id": "8c81c27c-8d61-40e7-85e1-f7e7bc599766",
+      "oldName": "32mm",
+      "previousDisplayName": null,
+      "newName": "32 mm"
+    },
+    {
+      "id": "7c8bbb02-745d-404f-88de-4f397fa51ff5",
+      "oldName": "50mm",
+      "previousDisplayName": null,
+      "newName": "50 mm"
+    },
+    {
+      "id": "d0ee42f6-e81b-48ad-a9c8-e44a47aa1814",
+      "oldName": "63mm",
+      "previousDisplayName": null,
+      "newName": "63 mm"
+    },
+    {
+      "id": "627ed8b7-9fa2-47e1-9b23-a3145062e4a2",
+      "oldName": "20W",
+      "previousDisplayName": null,
+      "newName": "20 W"
+    },
+    {
+      "id": "e42fa67b-3b16-46be-bc84-90974dc52159",
+      "oldName": "60W - Multi LED 5050",
+      "previousDisplayName": null,
+      "newName": "60 W / Multi LED 5050"
+    },
+    {
+      "id": "7c204040-75f8-4912-8499-fe3839be69b3",
+      "oldName": "2 Entry",
+      "previousDisplayName": null,
+      "newName": "2-entry"
+    },
+    {
+      "id": "c7047671-846c-4bce-8436-3fc9e2ace127",
+      "oldName": "19mm",
+      "previousDisplayName": null,
+      "newName": "19 mm"
+    },
+    {
+      "id": "0be1b1d4-76e1-49cb-9d8a-5ba245571521",
+      "oldName": "25mm",
+      "previousDisplayName": null,
+      "newName": "25 mm"
+    },
+    {
+      "id": "50f148c9-aa70-4956-9eaa-cec46f15fb73",
+      "oldName": "57mm",
+      "previousDisplayName": null,
+      "newName": "57 mm"
+    },
+    {
+      "id": "bf915f8c-7833-469f-88c2-4b7b67f76962",
+      "oldName": "63MM",
+      "previousDisplayName": null,
+      "newName": "63 mm"
+    },
+    {
+      "id": "362eb1d7-dc4a-4321-9aad-4e727f03c39b",
+      "oldName": "for R V Lamp",
+      "previousDisplayName": null,
+      "newName": "For Reactor Vessel Lamp"
+    },
+    {
+      "id": "679578bf-cccd-426c-b389-4450dff76cbf",
+      "oldName": "For Temp Indicator",
+      "previousDisplayName": null,
+      "newName": "For Temperature Indicator"
+    },
+    {
+      "id": "f83e177d-e0ba-45af-b8f7-039ca1cae5a6",
+      "oldName": "22W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "22 W / Multi LED 5050"
+    },
+    {
+      "id": "9b53a13a-e38a-410e-ad3a-240e22a985e7",
+      "oldName": "30W - COB",
+      "previousDisplayName": null,
+      "newName": "30 W / COB"
+    },
+    {
+      "id": "bb826d3e-8ca5-44d4-a133-73d8c55cdb9a",
+      "oldName": "30W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "30 W / Multi LED 5050"
+    },
+    {
+      "id": "fa7212c9-f145-4195-aaf1-f0dcf4853159",
+      "oldName": "45W - COB",
+      "previousDisplayName": null,
+      "newName": "45 W / COB"
+    },
+    {
+      "id": "17575ef7-10a8-4154-81f5-2ea227479c70",
+      "oldName": "45W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "45 W / Multi LED 5050"
+    },
+    {
+      "id": "8cde7081-7454-41b1-935c-919052b24064",
+      "oldName": "60W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "60 W / Multi LED 5050"
+    },
+    {
+      "id": "ff5be130-9c2f-4ce2-9b53-160f794152e0",
+      "oldName": "100W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "100 W / Multi LED 5050"
+    },
+    {
+      "id": "9fffdbfb-e2ff-4c28-aa15-df5af01c79a8",
+      "oldName": "200W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "200 W / Multi LED 5050"
+    },
+    {
+      "id": "a81c5ed8-d82a-46da-90b8-66415c2a95b7",
+      "oldName": "NC",
+      "previousDisplayName": null,
+      "newName": "NC Contact"
+    },
+    {
+      "id": "317c4e84-3ef7-4b64-ab32-484c6f0d1c8a",
+      "oldName": "NO",
+      "previousDisplayName": null,
+      "newName": "NO Contact"
+    },
+    {
+      "id": "7e52c136-18b3-43bd-a05b-ef2bae0204f2",
+      "oldName": "For Start stop PB",
+      "previousDisplayName": null,
+      "newName": "For Start-Stop Push Button Station"
+    },
+    {
+      "id": "de6955da-593c-431f-af3e-2561498fd0c9",
+      "oldName": "18\" - MS",
+      "previousDisplayName": null,
+      "newName": "18 in / Mild Steel"
+    },
+    {
+      "id": "2cc76e22-7040-4690-adec-904918dead02",
+      "oldName": "24''",
+      "previousDisplayName": null,
+      "newName": "24 in"
+    },
+    {
+      "id": "1fbfbf81-304a-4070-b2f3-58d15cf2abd3",
+      "oldName": "24\" - Pedestal",
+      "previousDisplayName": null,
+      "newName": "24 in / For Pedestal Fan"
+    },
+    {
+      "id": "06b15f8c-38e6-4dbb-8220-aefbd204afda",
+      "oldName": "Bulk Head",
+      "previousDisplayName": null,
+      "newName": "Bulkhead"
+    },
+    {
+      "id": "41ffdabf-e02c-47b4-926e-7c3cde7a327c",
+      "oldName": "30W - Multi - 5050 (Monochromatic)",
+      "previousDisplayName": null,
+      "newName": "30 W / Multi LED 5050 (Monochromatic)"
+    },
+    {
+      "id": "c7e0ea2d-b35e-4b74-8c7f-34adeeaff76e",
+      "oldName": "30W COB",
+      "previousDisplayName": null,
+      "newName": "30 W / COB"
+    },
+    {
+      "id": "d7563de6-6e3c-45d3-8bcb-937ea534b0fb",
+      "oldName": "45W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "45 W / Multi LED 5050"
+    },
+    {
+      "id": "68f45569-cdb8-4f00-9ace-08f505e99b99",
+      "oldName": "45W - Multi - 5050 (RED)",
+      "previousDisplayName": null,
+      "newName": "45 W / Multi LED 5050 (Red)"
+    },
+    {
+      "id": "e09b52e7-7d7f-4beb-a4f9-af0a846cef1a",
+      "oldName": "45W COB",
+      "previousDisplayName": null,
+      "newName": "45 W / COB"
+    },
+    {
+      "id": "eb5eb9f9-21f4-4af7-b997-3e03fd524399",
+      "oldName": "60W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "60 W / Multi LED 5050"
+    },
+    {
+      "id": "3878a73a-8ea4-4500-9538-cd13524dc74a",
+      "oldName": "100W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "100 W / Multi LED 5050"
+    },
+    {
+      "id": "1fb39a12-1fcc-44e4-9d4d-ab4a3bdf73c7",
+      "oldName": "150W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "150 W / Multi LED 5050"
+    },
+    {
+      "id": "aaf619c5-4631-40cf-8043-66d0ab4ac75b",
+      "oldName": "200W - Multi - 5050",
+      "previousDisplayName": null,
+      "newName": "200 W / Multi LED 5050"
+    },
+    {
+      "id": "a1579ef9-3475-4f4a-a66f-70cb16008aab",
+      "oldName": "2 x 30W for Bulk head Fitting",
+      "previousDisplayName": null,
+      "newName": "2 × 30 W / For Bulkhead Light Fitting"
+    },
+    {
+      "id": "51c14f4e-afde-4bec-a044-02c70faa834c",
+      "oldName": "15W for  Reactor Vessel Lamp",
+      "previousDisplayName": null,
+      "newName": "15 W / For Reactor Vessel Lamp"
+    },
+    {
+      "id": "4507f4e8-f61b-41a2-9ffe-22930448958b",
+      "oldName": "45W for  Well Glass",
+      "previousDisplayName": null,
+      "newName": "45 W / For Well Glass Fitting"
+    },
+    {
+      "id": "abd314f7-41e6-41e1-ae7f-19bb94ee2499",
+      "oldName": "65W FLOOD LIGHT",
+      "previousDisplayName": null,
+      "newName": "65 W / For Floodlight Fitting"
+    },
+    {
+      "id": "1a80611d-219f-41f3-b6e9-d414d1c58e03",
+      "oldName": "Emergency Red Push",
+      "previousDisplayName": null,
+      "newName": "Red Emergency Push"
+    },
+    {
+      "id": "d54bd0bc-1e79-4710-8f50-af1dfd2fbb9f",
+      "oldName": "Spring With Element",
+      "previousDisplayName": null,
+      "newName": "Spring and Contact Assembly"
+    },
+    {
+      "id": "09650f94-acfb-47bc-a3ab-3a4dd3eb158e",
+      "oldName": "For Wall Fan 18\"",
+      "previousDisplayName": null,
+      "newName": "For 18 in Wall Fan"
+    },
+    {
+      "id": "8a3aa774-a83d-471a-80c3-2a9c44e441c4",
+      "oldName": "4 POSITION SELECTOR SWITCH",
+      "previousDisplayName": null,
+      "newName": "4-position Selector Switch"
+    },
+    {
+      "id": "4f001337-8974-4b38-9c87-6eaf99e1dfd1",
+      "oldName": "16A, 230V",
+      "previousDisplayName": null,
+      "newName": "16 A / 230 V"
+    },
+    {
+      "id": "aae15758-b08c-4e99-bbc0-71529e60251a",
+      "oldName": "1 - 1/4\"",
+      "previousDisplayName": null,
+      "newName": "1 1/4 in NPT"
+    },
+    {
+      "id": "a6a0153a-36c2-4d54-b82a-289ddbf54f9e",
+      "oldName": "1/2\"NPT",
+      "previousDisplayName": null,
+      "newName": "1/2 in NPT"
+    },
+    {
+      "id": "86d255f1-c4f7-442c-870d-405a127c34fd",
+      "oldName": "20W UV TUBE",
+      "previousDisplayName": null,
+      "newName": "20 W / UV Tube"
+    }
+  ],
+  "held": [
+    {
+      "type": "Product",
+      "id": "6172db02-947c-48fe-85ae-ec9a89b5744a",
+      "name": "Bottom Openable Bulk head Fitting Clean Room",
+      "reason": "Non-FLP designation is inferred from category; confirm before adding it."
+    },
+    {
+      "type": "Product",
+      "id": "3f62789c-4b0e-436c-b42b-4c76e87468d2",
+      "name": "FLP/WP 2 X 36 Bulkhead Fitting",
+      "reason": "Conflicting tube layout and ratings."
+    },
+    {
+      "type": "Product",
+      "id": "7dca4a71-12aa-439b-8d78-bf5ab93c19fc",
+      "name": "FLP/WP 3 Chamber Enclosure",
+      "reason": "Confirm enclosure versus assembled control station."
+    },
+    {
+      "type": "Product",
+      "id": "9bd84a53-0f7d-4c55-bf1f-849e79ffd3cf",
+      "name": "FLP/WP Bulk Head Fitting (T/O)",
+      "reason": "Confirm T/O expansion before changing the construction label."
+    },
+    {
+      "type": "Product",
+      "id": "71477321-c2ca-4f3a-909d-0d678488545c",
+      "name": "FLP/WP Bulk Head Fitting (T/O) 30W",
+      "reason": "Confirm T/O expansion."
+    },
+    {
+      "type": "Product",
+      "id": "37c95ea3-e6fa-47d4-9fda-2eb83162f8c0",
+      "name": "FLP/WP Bulk Head Fitting (T/O) 30W Size(300 x 300)",
+      "reason": "Confirm T/O expansion and dimensions."
+    },
+    {
+      "type": "Product",
+      "id": "1e019a4e-869a-4c1e-9290-a0d93b600ed1",
+      "name": "FLP/WP Bulk Head Fitting (T/O) Size(425 x 425)",
+      "reason": "Confirm T/O expansion and dimensions."
+    },
+    {
+      "type": "Product",
+      "id": "a938505e-73ae-4978-a5eb-c3bf50f5bb4a",
+      "name": "FLP/WP CABLE GLAND 1\"NPT",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "cd5cc0d1-5c1a-44eb-bca3-1b10a65b7af9",
+      "name": "FLP/WP Clean Room Area MCB Body",
+      "reason": "Confirm MCB meaning and supplied assembly."
+    },
+    {
+      "type": "Product",
+      "id": "91256ab2-e5ad-40d7-bd45-e9c2488f4292",
+      "name": "FLP/WP Clean Room Area MCB Socket",
+      "reason": "Confirm MCB meaning and supplied assembly."
+    },
+    {
+      "type": "Product",
+      "id": "fd0feb58-df8a-4f91-88b6-922e17a81537",
+      "name": "FLP/WP Junction Box 200 x 200 Bolting",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "ad61587e-ffda-472e-ba4f-e7dec23ea894",
+      "name": "FLP/WP Junction Box 350Dia IIC",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "e2eccbda-6a5d-422a-b91a-0d0c14438cce",
+      "name": "FLP/WP Light Fitting Rating 60W",
+      "reason": "Equipment design is unspecified."
+    },
+    {
+      "type": "Product",
+      "id": "da8e4052-12a2-4917-8902-e03a51876598",
+      "name": "FLP/WP MCB Body",
+      "reason": "Confirm MCB meaning and supplied assembly."
+    },
+    {
+      "type": "Product",
+      "id": "663e72f4-c856-4098-96bf-60a1288ff37c",
+      "name": "FLP/WP MCB Socket",
+      "reason": "Confirm MCB meaning and supplied assembly."
+    },
+    {
+      "type": "Product",
+      "id": "c68541a4-e588-4851-a580-051955da302b",
+      "name": "FLP/WP Mini MCB Body",
+      "reason": "Compact body is a provisional construction label."
+    },
+    {
+      "type": "Product",
+      "id": "bee890a8-c9cc-4696-8c94-1cf7fa8e8861",
+      "name": "FLP/WP RTD Sensor - 3000mm Length - 6mm Width",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "77f70605-5a7a-4ace-ad55-3b705e08733f",
+      "name": "FLP/WP Speaker",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "143620a7-a3dc-458f-b40d-1533855b4ef2",
+      "name": "FLP/WP Switch Socket Transformer",
+      "reason": "Confirm transformer socket assembly function."
+    },
+    {
+      "type": "Product",
+      "id": "5ca443e9-33d2-42de-aae7-2668fc66a7c4",
+      "name": "FLP/WP Telephone Fitting",
+      "reason": "Confirm complete telephone versus enclosure."
+    },
+    {
+      "type": "Product",
+      "id": "0fa7f70e-7496-4536-8ec3-61fb3d4fdbbb",
+      "name": "LED 5050",
+      "reason": "LED model and power are unspecified."
+    },
+    {
+      "type": "Product",
+      "id": "2c1c4bc5-7307-4be5-8f7d-014acffa3563",
+      "name": "Motor",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "439db78e-15a1-4ffd-8ae1-d6f15f994f73",
+      "name": "Non FLP Light Fitting (B/O)",
+      "reason": "Confirm B/O expansion before changing construction label."
+    },
+    {
+      "type": "Product",
+      "id": "166d1670-9dcf-4361-a77b-1f2f41414eb7",
+      "name": "PVC Hood",
+      "reason": "Confirm hood means cable gland shroud."
+    },
+    {
+      "type": "Product",
+      "id": "32a2acac-f10b-4e87-8259-e1c0468f3c04",
+      "name": "SPARE Fan Jali -24\"",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "9f43e0d4-07a2-4f5a-8811-6dbe5c58a2b7",
+      "name": "Spare Brass Part",
+      "reason": "Actual brass part is unspecified."
+    },
+    {
+      "type": "Product",
+      "id": "aa23eaaf-060e-45fe-996b-39b98786d43f",
+      "name": "Spare Cover for Push Button",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "eaad431c-2250-4f13-82a6-425f06227449",
+      "name": "Spare Driver 15W",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "64acb62b-06af-493f-b3de-662d61b2a707",
+      "name": "Spare Driver-COB",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "36a9e354-c104-4314-819e-9559f4e87c2d",
+      "name": "Spare Element",
+      "reason": "Confirm contact-block interpretation of Element."
+    },
+    {
+      "type": "Product",
+      "id": "0cdd6961-f6ea-436d-ba41-5d8cf1a461e9",
+      "name": "Spare FRP Plate",
+      "reason": "FRP name conflicts with saved aluminium material."
+    },
+    {
+      "type": "Product",
+      "id": "2a176458-844b-47f9-b83f-8253cbb1c4a1",
+      "name": "Spare Fan Blower",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "2425babb-b01f-4ae8-ab6d-1c1e340bc00b",
+      "name": "Spare Louvers",
+      "reason": "Confirm fan application of louver."
+    },
+    {
+      "type": "Product",
+      "id": "e44dd1e4-3a27-4b91-b15d-94f0bf3aa079",
+      "name": "Spare MS Box For Bulk Head Fitting",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "a5e09a21-cb47-41ac-9eeb-309d260d5645",
+      "name": "Spare SS Plate",
+      "reason": "Confirm mounting-plate function."
+    },
+    {
+      "type": "Product",
+      "id": "99b7b440-790c-4fe4-8d59-8183d60d497f",
+      "name": "Spare Switch 16A",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "72c76e28-520f-4fc9-9110-59efc1cfb834",
+      "name": "Spare Switch 32A 415V",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "9dd09e9b-39e2-4d51-a2dc-ec2cebe8421b",
+      "name": "Spare Timer Circuit",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "643d4f21-c7af-4a05-80ea-99d4fd330258",
+      "name": "Spare cap for Switch Socket",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "895b7fee-c1af-40c8-a619-c43222148a7a",
+      "name": "Spare cover for Switch socket",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "052d9565-05e2-498b-a6e8-9b681a6f15cc",
+      "name": "Spare led 15W",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "Product",
+      "id": "cc0e1ddc-83e9-418b-ba34-3b09d8ca5666",
+      "name": "spare Extension Rod",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "963239c5-9311-4d5d-a628-89e30700d163",
+      "name": "Ground Earth Detector",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "30d3907b-9ef7-49fd-8c6a-c3b932d35582",
+      "name": "Ground Earth Detector Small size",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "d3dfcd8c-680a-441e-a623-7ec487bf6c23",
+      "name": "30W",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "013031e1-3441-42f6-a935-f5c9deacc178",
+      "name": "30W",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "8f9baa98-d7a2-44bf-8e31-c7d354602bc9",
+      "name": "60W Dual Light",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "fa402ab9-12ed-4f79-a1f9-7efb71f23a2e",
+      "name": "120W",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "4a4dd22a-9b9a-420d-854f-6a8bd74cc160",
+      "name": "brass nickel plated",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "db1e064c-88f6-4ec8-8f24-3071d2bf6c6a",
+      "name": "SS Box & Plate",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "26f64070-8b17-4e62-bc6a-33ab69e4ba3c",
+      "name": "32- 2 Entry",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "991e5c79-fc39-40fc-a58e-aef4ff99f03b",
+      "name": "Clock",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "9d2c0d6d-328a-4bcc-9c3e-fa7522fd9bda",
+      "name": "Enclosure For Clock",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "67c711ee-9bf1-4969-8855-242fa14ae0ba",
+      "name": "16mm Electrical Thread (BS Conduit)",
+      "reason": "Saved size says 19 mm or 3/4 in ET. Resolve before approving the name."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "40683c0a-c33a-42f6-a1b4-4aa5f183895a",
+      "name": "16mm Electrical Thread (BS Conduit) GAS GR.IIC",
+      "reason": "Inactive. Resolve size and certificate scope before mapping."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "d5500d30-ff1d-4c76-81f4-96787350d196",
+      "name": "45mm Electrical Thread (BS Conduit) Copy",
+      "reason": "Remove Copy only after identity review. Correct saved 45mnm typo after size verification. Copied name: verify identity and specs before removing the suffix."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "2d2fbbdd-d175-4d35-ad45-0d97974d174f",
+      "name": "M20 Electrical Thread (BS Conduit)",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "973cb5f2-ac17-4ed6-a2b9-725089b0e4a1",
+      "name": "M25 Electrical Thread  (BS Conduit)",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "c04f2beb-1d03-4781-9cb9-e9af2ff71b8b",
+      "name": "M32 Electrical Thread (BS Conduit)",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "38ed50f4-cfa0-49d7-81eb-e5bd3cb6188b",
+      "name": "M40 Electrical Thread (BS Conduit)",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "af86ca04-1015-4e58-abf9-7fb0ff26dbed",
+      "name": "9\" - 230v Copy",
+      "reason": "Copied name: verify identity and specs before removing the suffix. Keep existing SKU. Review copied code independently from the display rename."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "619621e3-d339-42da-a20c-baa632a98331",
+      "name": "Human body static discharge unit",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "741fe114-2f06-449f-87ed-8399bb52974a",
+      "name": "16mm Electrical Thread (BS Conduit)",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "7e601537-8f3d-469b-94bd-1872526ed95b",
+      "name": "x 150",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "ce9d42a6-d75a-4871-b65f-9bd0f6b22c62",
+      "name": "x 120",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "50a785fb-8ecd-4a51-bb79-564e4e3b1dd7",
+      "name": "Threaded",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "7a474655-0059-4c66-abb6-ea28d6bb53bf",
+      "name": "280 x 220 x 160",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "3bede65d-7c36-4de8-ab56-ace5756323b4",
+      "name": "320 X 220 X 170",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "f9795bd2-b077-4d70-9dbd-41f96b20d3e9",
+      "name": "200 x 250",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "5af8e56c-d365-4707-a306-7bc5c6a72575",
+      "name": "S.S.304",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "cc234d7c-f689-4756-bd9c-0186367ca373",
+      "name": "32mm Electrical Thread (BS Conduit)",
+      "reason": "ET label conflicts with NPT parent. Verify before reclassification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "2a7fd3c6-7cbe-47a4-8ac0-e0c2f2318dc6",
+      "name": "X 200",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "e36503b1-8388-45e2-ae16-c23007a878a5",
+      "name": "X 300",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "412b94b5-18a3-468e-911c-c6fc0371a97d",
+      "name": "X 200",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "f0b7ab43-4041-4fb2-aba9-977bc8db33d4",
+      "name": "With Socket",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "75ca76cc-8104-42bd-aa88-49504605e3b1",
+      "name": "X 200",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "84167558-7ab6-4509-b3ab-3d67c7705a01",
+      "name": "X 350",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "0ad3b5c1-1e08-41ad-b17d-ddbf13d6350d",
+      "name": "POT Type",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "96908b84-32ea-4d1e-9fe5-af99294e6b42",
+      "name": "8feet Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "859348f0-3f46-4e3d-899b-4b86032b6b72",
+      "name": "150mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "882c1c71-522c-4fd6-a67c-1b735d9967c4",
+      "name": "250mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "60f6cf7a-9b20-402d-8e5d-4c368d156432",
+      "name": "400mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "92472b70-b034-4ea4-a03b-8118c5ce8a3e",
+      "name": "450mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "a0b0666f-4506-46d0-8285-114d585b3978",
+      "name": "600mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "6ce3892a-5d44-4541-8173-f9d922e6993d",
+      "name": "950mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "59090bfa-75e1-48d0-abf4-ae77eb761a17",
+      "name": "1200mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "028b2427-3c51-4dd2-a5c6-3cb729ac7923",
+      "name": "1400mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "a6c0ef04-05d0-4ee2-8682-7b37bc5a83a9",
+      "name": "1600mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "5fc96cda-f271-4067-a4c9-0113dac301d5",
+      "name": "1800mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "72497753-6c58-4523-a734-2dd97af8f6bb",
+      "name": "2000mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "50078874-674a-49fc-ad7f-b9aceb032d67",
+      "name": "2500mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "db9e6def-26c8-4c56-9493-4ab8598b7fc1",
+      "name": "3000mm Length - 6mm Width",
+      "reason": "Verify width versus diameter. Preserve the original unit and measurement."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "f62bf956-2278-4888-9108-1926e3986582",
+      "name": "Duplex",
+      "reason": "Dimensions come from the archived product name. Confirm width versus diameter."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "1ae3320b-e900-4991-b61d-d775869bf831",
+      "name": "LED",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "b68e6395-7b83-4c89-ae75-f1469644aa49",
+      "name": "1'' X 1.1/4''",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "a1432f81-e26c-4b28-bc2f-54ee24ce97d0",
+      "name": "3/4'' X 1''",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "1e72a00e-bc8c-46d6-aef1-5b5ef22db9f6",
+      "name": "16A Direct Entry",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "a76dd4b2-ca16-4824-85b1-c5ac5d504fbe",
+      "name": "16A 2 Entry",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "48727e07-caa5-4dc0-8f16-1ab37e31ff9d",
+      "name": "16A 2 Entry  With Canopy",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "3b20e0aa-164a-41fe-84b3-5718250bcd8d",
+      "name": "Starter",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "bd50cd73-dd2b-4b7a-b240-843868f5e3d3",
+      "name": "Speaker",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "d3357484-13f7-42f8-8700-c9fe1a61edec",
+      "name": "120 mm",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "7c9295de-02dc-45a4-a3b4-6032d3faabe5",
+      "name": "3 Entry",
+      "reason": "Saved cable-entry description says two entries. Resolve before approving."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "a213683b-00be-474d-8000-d5fef2215f63",
+      "name": "100VA",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "481ace51-5d56-463b-ad11-8d34bb5d17c2",
+      "name": "16A, 230V - 3 Pin - Direct Entry - 2 Entry Copy",
+      "reason": "Copied name: verify identity and specs before removing the suffix. Keep existing SKU. Review copied code independently from the display rename."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "b0b62ae2-3e54-4710-b446-5fc6ef474f92",
+      "name": "Telephone",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "114622f0-00b9-4ad6-aebd-56ac932ecb07",
+      "name": "Unit",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "919d1d61-b447-4ad9-9b56-f078d3c15e15",
+      "name": "Enclosure - 3 Entry",
+      "reason": "Saved cable-entry description says two entries. Resolve before approving."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "6fee75ad-b22b-4a3a-bf7d-a5fde970a337",
+      "name": "25W",
+      "reason": "Name conflicts with saved 20 W rating and type number."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "629ec216-3203-4922-b879-5c77a7cc322c",
+      "name": "SPARE",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "2e06f501-688d-4be1-9ff5-4188daf03aef",
+      "name": "6MM X 8\" X 3 MTR",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "c502683a-0ec5-4954-87c1-6f829c8004be",
+      "name": "Petcoke",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "fcab2ab6-a6b0-4a82-8de4-3da0fe24685f",
+      "name": "Pedestal Fan",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "b91d7cd4-b451-402d-9045-c8dd6d46c8c7",
+      "name": "For Eme.Light",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "81281194-95b8-4b6c-8ef8-ba758b6dc201",
+      "name": "Socket",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "8de97562-9b1f-48bd-87ee-6087e15e1646",
+      "name": "For Socket",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "02c978ba-5dd0-489c-a041-55bf7a44a2ef",
+      "name": "With Element",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "f05f75d9-5398-44d3-9816-98ef9d038ccc",
+      "name": "80W - Multi - 5050",
+      "reason": "Name conflicts with saved 100 W rating. Verify output specifications."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "8db8d479-d470-45c3-b66d-69cf0e6cbed5",
+      "name": "150W - Multi - 5050",
+      "reason": "Name conflicts with saved 100 W rating. Verify output specifications."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "ea9e32ac-c3d8-4fe2-a849-1df92e287c8d",
+      "name": "for rv lamp",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "fe9f7fdc-4135-4227-bf3c-a2940cc1516f",
+      "name": "20W",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "94e0dc59-a460-49b3-97c3-68623ba834eb",
+      "name": "Size.12\"",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "4ec23ac0-4827-485f-88df-df9084534a9c",
+      "name": "Old model",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "672a2dac-8528-448a-bc5c-dfc41e4761cd",
+      "name": "for Panel",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "4b3f77d3-f65a-4a48-9542-3b30e179ae6d",
+      "name": "For Well Glass",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "7d120445-60d8-4053-9f69-3afdddb74bde",
+      "name": "for Rotary switch",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "6877fcb9-9f74-4e87-85ef-aba9356d1367",
+      "name": "For Torch",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "a97e0538-0fa4-4e0e-b2bd-a4376ad4c7bd",
+      "name": "heat sink compound paste",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "842b7630-9860-451f-bcb0-2f88fe3688c8",
+      "name": "24\"",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "97ec4649-8eb7-4cf5-9908-a61f3e4f7115",
+      "name": "Push Button",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "e4e8541b-9db4-4a2a-826d-ec20937e94b6",
+      "name": "Rotary Switch",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "e98dd594-7470-4872-967a-e7f5cb5d61e5",
+      "name": "Bundwall",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "9336e90f-ddeb-423c-a5f4-f41561bfaafa",
+      "name": "For Wellglass",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "e35be089-34f2-4567-9c50-cc9d06bd2658",
+      "name": "32A, 415V",
+      "reason": "Saved rating says 16 A / 230 V. Resolve before approving."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "e4e2a702-f874-4463-b40d-5ebffbbd61e4",
+      "name": "for Switch Socket",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "82a929a9-4a54-49e6-9f5b-068301af145a",
+      "name": "for socket",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "4b57ce2a-b8b0-44c2-92c5-8a813462cceb",
+      "name": "For R.V.Lamp 24V",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "5049fd4f-93f3-4529-af9c-84c80a79a140",
+      "name": "For R.V.Lamp 230V",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "2caeae8c-da3a-4003-800a-4d10f71eaf72",
+      "name": "Rubber Type",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "87a65d92-f863-4503-b208-0f5d6900b47b",
+      "name": "with chain",
+      "reason": "Missing or ambiguous specification."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "2306c43f-0390-4c82-ab2c-0f41bd581c60",
+      "name": "for R V Lamp",
+      "reason": "Inactive or archived record is preserved."
+    },
+    {
+      "type": "ProductVariant",
+      "id": "ac5004d7-4fb8-4c32-a40a-fab9d612685a",
+      "name": "For Switch",
+      "reason": "Missing or ambiguous specification."
+    }
+  ],
+  "unchanged": 63,
+  "protectedTables": {
+    "quotations": {
+      "rows": 444,
+      "checksum": "d237d34ea4898570f1137a9e71545004"
+    },
+    "quotation_items": {
+      "rows": 956,
+      "checksum": "01e0a21ee5e914e4415d579bf51c0fbc"
+    },
+    "quotation_item_components": {
+      "rows": 1088,
+      "checksum": "618d67a2df589e51db7d1476afc3bc72"
+    },
+    "ComponentsOfQuotation": {
+      "rows": 1098,
+      "checksum": "ae2d502e3f2a22cb19bd9d300f48a273"
+    },
+    "quotation_followups": {
+      "rows": 428,
+      "checksum": "d108bf3ad9ff332ef2e727b5566224c0"
+    },
+    "sales_orders": {
+      "rows": 569,
+      "checksum": "b2c459b39ccbe7c2d7adb5ac4e541729"
+    },
+    "sales_order_items": {
+      "rows": 1016,
+      "checksum": "8a758a84a4a20adf4cfd98d437eda403"
+    },
+    "components_of_product_in_sales_order": {
+      "rows": 972,
+      "checksum": "44fde74483e18059386530340c14b6c6"
+    },
+    "invoices": {
+      "rows": 1417,
+      "checksum": "11aa0abed6b044ec23bcfecc05445690"
+    },
+    "invoice_items": {
+      "rows": 2249,
+      "checksum": "e533f8c1d0d167ba0e5fc3cb6da37b6c"
+    },
+    "invoice_packages": {
+      "rows": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "invoice_package_items": {
+      "rows": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "delivery_challans": {
+      "rows": 5,
+      "checksum": "05cc6a14973ecfea5f545773ee70c4d0"
+    },
+    "delivery_challan_items": {
+      "rows": 2,
+      "checksum": "0c557e5f71c07d02fa04a9edfe708cfc"
+    },
+    "goods_receipt_notes": {
+      "rows": 223,
+      "checksum": "adbc2d94758ca850a46fa82cfd6b8dea"
+    },
+    "goods_receipt_note_items": {
+      "rows": 358,
+      "checksum": "67aa463ea8f6845f1d0d3364b0cbc9c0"
+    },
+    "material_issues": {
+      "rows": 198,
+      "checksum": "2e1b0c3d5cbf087535ab55f63c70a047"
+    },
+    "material_issue_items": {
+      "rows": 225,
+      "checksum": "4068241b368c414e1b5ca402386c2591"
+    },
+    "stock_balances": {
+      "rows": 182,
+      "checksum": "52a9de3210edce69c9df03e4f14ecc96"
+    },
+    "stock_ledger": {
+      "rows": 631,
+      "checksum": "7f002eccd078072d61f6289971378d52"
+    },
+    "product_serials": {
+      "rows": 238,
+      "checksum": "e1ad462f029dffd9f1daeb187ab17510"
+    },
+    "product_serial_counters": {
+      "rows": 1,
+      "checksum": "2656b3440cbbb6072346c5b6f4528c28"
+    },
+    "ProductMedia": {
+      "rows": 765,
+      "checksum": "f1c1e8b21a92e35e685b0316b0e429f6"
+    },
+    "ProductComponentsOnVariants": {
+      "rows": 543,
+      "checksum": "2c8185da799edd6fce35e57224b0f31b"
+    },
+    "ProductComponent": {
+      "rows": 544,
+      "checksum": "4c554700b8298b537d4dc3cdb03732c1"
+    },
+    "variant_boms": {
+      "rows": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "variant_bom_items": {
+      "rows": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "categories": {
+      "rows": 18,
+      "checksum": "9d37fbdbd15188bc4153e89ba819d5eb"
+    },
+    "product_approval_requests": {
+      "rows": 69,
+      "checksum": "84ef0bbc2b46ee9e6753e63e70b9c704"
+    },
+    "Product": {
+      "rows": 160,
+      "checksum": "4a6295d64367922d7d1e5456d799a307"
+    },
+    "ProductVariant": {
+      "rows": 397,
+      "checksum": "65d3b3286065c4d7bd42cfe82d8f3511"
+    }
+  }
+}

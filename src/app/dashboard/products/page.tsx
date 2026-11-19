@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma/db";
 import { ProductsSearchParamsCache } from "@/lib/searchParams/dashboard/products/productsSearchParams";
 import { FC } from "react";
 import { serializeForClient } from "@/lib/helpers/server/serializeForClient";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 interface pageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -32,6 +33,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       select: {
         id: true,
         name: true,
+        displayName: true,
         hsnCode: true,
         category: {
           select: {
@@ -59,7 +61,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     },
   });
 
-  const safeItems = serializeForClient(items);
+  const safeItems = serializeForClient(items.map((product) => ({ ...product, name: catalogProductName(product) })));
   const safeCategories = serializeForClient(categories);
   return (
     <div className="space-y-6">

@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@node-rs/argon2", "pdfkit", "playwright-core", "@sparticuz/chromium"],
+  serverExternalPackages: ["@node-rs/argon2", "pdfkit", "pdf-parse", "playwright-core", "@sparticuz/chromium"],
   outputFileTracingIncludes: {
+    "/dashboard/inbox": ["./node_modules/pdf-parse/dist/**/*"],
     "/api/quotations/*/pdf": ["./node_modules/@sparticuz/chromium/**/*", "./node_modules/playwright-core/**/*"],
     "/dashboard/sales/quotations/*": ["./node_modules/@sparticuz/chromium/**/*", "./node_modules/playwright-core/**/*"],
     "/api/catalog/pdf": ["./public/catalog/**/*", "./public/asset/**/*", "./public/marketing/**/*"],

@@ -107,6 +107,15 @@
 .categoryCount { display: flex; flex-direction: column; }
 .categoryCount span { font-size: 80px; line-height: 1; letter-spacing: -.07em; color: #a9c5d8; }
 .categoryCount small { margin-top: 12px; font: 8px var(--font-industrial-mono), monospace; }
+.categoryGuides { padding: 38px 36px; border-bottom: 1px solid #ffffff35; }
+.categoryGuides h2 { margin-top: 16px; font-size: clamp(26px, 3vw, 40px); font-weight: 500; letter-spacing: -.035em; }
+.categoryGuides ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; margin-top: 24px; list-style: none; padding: 0; }
+.categoryGuides li { border-top: 1px solid #ffffff35; }
+.categoryGuides a { display: flex; justify-content: space-between; align-items: center; gap: 18px; min-height: 64px; padding: 18px 0; font-size: 14px; line-height: 1.6; }
+.categoryGuides a:hover { color: #a9c5d8; }
+.categoryGuides a:focus-visible { outline: 2px solid #a9c5d8; outline-offset: 5px; }
+.categoryGuides svg { flex-shrink: 0; }
+@media (max-width: 760px) { .categoryGuides { padding: 30px 20px; }.categoryGuides ul { grid-template-columns: 1fr; } }
 @media (min-width: 1600px) { .productGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1000px) { .catalogWorkspace { grid-template-columns: 195px minmax(0, 1fr); }.filters { padding: 25px 15px; }.results { padding: 20px; }.searchToolbar { flex-direction: column; gap: 8px; }.sort { justify-content: space-between; }.introGrid { gap: 25px; }.catalogAside { padding-left: 20px; }.productInfo { padding: 30px 25px; }.specSection { gap: 35px; }.relatedGrid, .homeCollection { gap: 16px; }.cardBody { padding: 18px; }.cardBody h3 { font-size: 21px; }.cardImage { height: 240px; } }
 @media (max-width: 700px) {

@@ -1,6 +1,7 @@
 import type { ProductCardProduct } from "@/components/marketing/ProductCard";
 import { prisma } from "@/lib/prisma/db";
 import { cache } from "react";
+import { catalogProductName, catalogVariantName } from "@/lib/products/catalogNames";
 
 export type CatalogFilterOption = {
   label: string;
@@ -50,6 +51,7 @@ const variantFields = {
 
 type CatalogProductRow = {
   name: string;
+  displayName?: string | null;
   slug: string;
   flpType: string | null;
   protection: string | null;
@@ -70,7 +72,7 @@ type CatalogProductRow = {
     name: string;
     slug: string;
   };
-  variants: (Omit<CatalogVariant, "specs"> & Partial<Record<keyof typeof variantFields, string | null>>)[];
+  variants: (Omit<CatalogVariant, "specs"> & { displayName?: string | null } & Partial<Record<keyof typeof variantFields, string | null>>)[];
 };
 
 export const getCatalogData = cache(async () => {
@@ -191,6 +193,7 @@ function activeCatalogProductWhere() {
 function catalogProductSelect() {
   return {
     name: true,
+    displayName: true,
     slug: true,
     flpType: true,
     protection: true,
@@ -221,7 +224,7 @@ function catalogProductSelect() {
         createdAt: "asc" as const,
       },
       select: {
-        id: true, variant: true, sku: true,
+        id: true, variant: true, displayName: true, sku: true,
         rating: true, terminals: true, gasket: true, mounting: true,
         cableEntry: true, earthing: true, cutoutSize: true, plateSize: true,
         size: true, glass: true, wireGuard: true, rpm: true, kW: true, horsePower: true,
@@ -249,16 +252,16 @@ function toCatalogProductCard(
 
   return {
     slug: product.slug,
-    name: product.name,
+    name: catalogProductName(product),
     cat: product.category.name,
     image,
     ip: formatProtectionLabel(product.protection) || "",
     group: product.certificationVerifiedAt && product.certificationReference ? product.certificationMarking || "" : "",
     type: variant?.typeNumber?.trim() || product.flpType?.trim() || "EXEC",
     filter: product.category.slug,
-    description: product.shortDesc?.trim() || `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
+    description: product.shortDesc?.trim() || `Explore ${catalogProductName(product).toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
     variantCount: product.variants.length,
-    searchText: product.variants.map((item) => [item.variant, item.typeNumber, item.sku, item.rating].filter(Boolean).join(" ")).join(" "),
+    searchText: product.variants.map((item) => [item.variant, catalogVariantName(item), item.typeNumber, item.sku, item.rating].filter(Boolean).join(" ")).join(" "),
   };
 }
 
@@ -271,7 +274,7 @@ export function toCatalogProductDetail(
     categorySlug: product.category.slug,
     description:
       product.shortDesc?.trim() ||
-      `Explore ${product.name.toLowerCase()} from our ${product.category.name.toLowerCase()} range. Speak with our team about your application and specification.`,
+      `Explore ${catalogProductName(product).toLowerCase()} from our ${product.category.name.toLowerCase()} range. Speak with our team about your application and specification.`,
     longDescription: product.longDesc,
     flpType: product.flpType,
     protection: product.protection,
@@ -283,7 +286,7 @@ export function toCatalogProductDetail(
     hsnCode: product.hsnCode,
     zones: product.certificationVerifiedAt && product.certificationReference && product.certificationMarking ? product.zones ?? [] : [],
     variants: product.variants.map((variant) => ({
-      id: variant.id, variant: variant.variant, typeNumber: variant.typeNumber,
+      id: variant.id, variant: catalogVariantName(variant), typeNumber: variant.typeNumber,
       sku: variant.sku, images: variant.images, drawings: variant.drawings,
       specs: Object.entries(variantFields).flatMap(([key, label]): [string, string][] => {
         const value = variant[key as keyof typeof variantFields]?.trim();

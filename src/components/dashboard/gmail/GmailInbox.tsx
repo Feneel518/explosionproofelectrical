@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { disconnectGmailAction, getGmailAlertsAction, markAllGmailNotificationsReadAction, markGmailNotificationReadAction, updateGmailFilterAction } from "@/lib/actions/dashboard/gmail/inboxActions";
 import { useGmailNotifications } from "./GmailNotificationsProvider";
+import { GmailPdfAttachments } from "./GmailPdfAttachments";
+import { GmailSuggestions } from "./GmailSuggestions";
 
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" }).format(new Date(value));
 
@@ -79,7 +81,7 @@ export function GmailInbox({ outcome }: { outcome?: string }) {
             </Field></FieldGroup>
             <div className="flex flex-wrap gap-2"><Button type="submit" size="sm" disabled={pending}>Save filter</Button><Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => setQuery(data?.defaultQuery ?? "")}>Use default</Button></div>
           </form>
-        </> : <p className="text-sm text-muted-foreground">Connect the Gmail account that receives your customer emails. We’ll show the sender, subject and arrival time, with a link to open each email in Gmail.</p>}
+        </> : <p className="text-sm text-muted-foreground">Connect the Gmail account that receives your customer emails. We’ll show the sender, subject and arrival time. Preview PDF attachments here or open the email in Gmail.</p>}
         {!loading && data && !data.configured && <p role="status" className="text-sm text-destructive">Gmail setup needs to be completed on the server before you can connect.</p>}
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
@@ -108,7 +110,9 @@ export function GmailInbox({ outcome }: { outcome?: string }) {
               <p className="break-all text-sm text-muted-foreground">{item.sender}</p>
               <time className="text-xs text-muted-foreground" dateTime={item.receivedAt}>{dateLabel(item.receivedAt)} IST</time>
             </div>
-            <div className="flex shrink-0 flex-wrap gap-2">
+            <div className="flex shrink-0 flex-wrap gap-2 sm:max-w-md sm:justify-end">
+              <GmailSuggestions notificationId={item.id} subject={item.subject} />
+              <GmailPdfAttachments notificationId={item.id} subject={item.subject} gmailUrl={`https://mail.google.com/mail/u/?authuser=${encodeURIComponent(connection?.email ?? "")}#all/${encodeURIComponent(item.threadId)}`} />
               <Button asChild size="sm" variant="outline"><a target="_blank" rel="noopener noreferrer" href={`https://mail.google.com/mail/u/?authuser=${encodeURIComponent(connection?.email ?? "")}#all/${encodeURIComponent(item.threadId)}`}>Open in Gmail<ExternalLink data-icon="inline-end" /></a></Button>
               {!item.read && <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => markGmailNotificationReadAction(item.id))}>Mark read</Button>}
             </div>

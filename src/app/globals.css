@@ -462,6 +462,48 @@
 }
 
 @media print {
+  body:has([data-pending-orders-print]) [data-slot="sidebar-wrapper"] {
+    display: block;
+    min-height: 0;
+  }
+
+  body:has([data-pending-orders-print]) [data-slot="sidebar-container"],
+  body:has([data-pending-orders-print]) [data-slot="sidebar-gap"],
+  body:has([data-pending-orders-print]) [data-slot="sidebar"],
+  body:has([data-pending-orders-print]) [data-slot="sidebar-inset"] > header,
+  body:has([data-pending-orders-print]) > section,
+  body:has([data-sales-order-copy]) > section,
+  body:has([data-pending-orders-print]) nextjs-portal,
+  body:has([data-sales-order-copy]) nextjs-portal {
+    display: none !important;
+  }
+
+  body:has([data-pending-orders-print]) [data-slot="sidebar-inset"] {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+  }
+
+  body:has([data-pending-orders-print]) [data-slot="sidebar-inset"] > div {
+    padding: 0;
+  }
+
+  [data-pending-orders-print] thead,
+  [data-sales-order-copy] thead {
+    display: table-header-group;
+  }
+
+  [data-pending-orders-print] tr,
+  [data-sales-order-copy] tr {
+    break-inside: avoid;
+  }
+
+  [data-pending-orders-print] td,
+  [data-sales-order-copy] td {
+    overflow-wrap: anywhere;
+  }
+
   @page quotation {
     size: A4;
     margin: 0;

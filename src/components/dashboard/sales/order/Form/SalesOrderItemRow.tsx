@@ -162,6 +162,7 @@ const SalesOrderItemRow: FC<SalesOrderItemRowProps> = ({
                   <FormLabel>Product Variant</FormLabel>
                   <ProductVariantCombobox
                     value={form.watch(`items.${index}.variantId`) ?? null}
+                    selectedLabel={form.watch(`items.${index}.title`)}
                     onChange={(variant) => {
                       const images = variant?.images ?? [];
                       const drawings = variant?.drawings ?? [];

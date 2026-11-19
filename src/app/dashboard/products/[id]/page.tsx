@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FC } from "react";
+import { catalogProductName, catalogVariantName } from "@/lib/products/catalogNames";
 
 interface pageProps {
   params: Promise<{
@@ -30,6 +31,7 @@ const page: FC<pageProps> = async ({ params }) => {
     select: {
       id: true,
       name: true,
+      displayName: true,
       categoryId: true,
       slug: true,
       flpType: true,
@@ -93,7 +95,7 @@ const page: FC<pageProps> = async ({ params }) => {
       sku: vari.sku,
       terminals: vari.terminals,
       typeNumber: vari.typeNumber,
-      variant: vari.variant,
+      variant: catalogVariantName(vari),
       wireGuard: vari.wireGuard,
       rating: vari.rating,
       status: vari.status,
@@ -129,7 +131,7 @@ const page: FC<pageProps> = async ({ params }) => {
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">
-              {product.name}
+              {catalogProductName(product)}
             </h1>
             <Badge
               variant={product.status === "ACTIVE" ? "default" : "secondary"}>
@@ -232,7 +234,7 @@ const page: FC<pageProps> = async ({ params }) => {
       <VariantsSection
         productId={product.id}
         variants={variants}
-        productName={product.name}
+        productName={catalogProductName(product)}
       />
     </div>
   );

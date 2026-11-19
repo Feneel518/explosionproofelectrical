@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma/db";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 export const fallbackQuoteProductOptions = [
   "Flameproof Lighting",
@@ -20,13 +21,14 @@ export async function getQuoteProductOptions() {
     },
     select: {
       name: true,
+      displayName: true,
     },
   });
 
   const names = Array.from(
     new Set(
       products
-        .map((product) => product.name.trim())
+        .map((product) => catalogProductName(product).trim())
         .filter((name) => name.length > 0),
     ),
   );

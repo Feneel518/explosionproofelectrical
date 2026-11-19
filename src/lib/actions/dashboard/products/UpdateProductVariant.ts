@@ -10,6 +10,7 @@ import {
   ProductVariantSchemaRequest,
 } from "@/lib/validators/dashboard/products/ProductVariantValidator";
 import { revalidatePath } from "next/cache";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 export const updateProductVariantAction = async (
   values: ProductVariantSchemaRequest,
@@ -24,14 +25,14 @@ export const updateProductVariantAction = async (
   try {
     const existing = await prisma.productVariant.findUnique({
       where: { id: data.id },
-      select: { id: true, productId: true, product: { select: { name: true, deletedAt: true } } },
+      select: { id: true, productId: true, product: { select: { name: true, displayName: true, deletedAt: true } } },
     });
     if (!existing) return fail("Product variant not found");
     if (existing.productId !== data.productId) return fail("Invalid product");
     if (existing.product.deletedAt) return fail("Cannot edit a variant of a deleted product.");
 
     const settings = await getProductApprovalSettings();
-    const title = `${existing.product.name} — ${data.variant}`;
+    const title = `${catalogProductName(existing.product)} — ${data.variant}`;
     await prisma.productApprovalRequest.create({
       data: {
         type: "VARIANT_UPDATE",

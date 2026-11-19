@@ -3,6 +3,7 @@ import ProductForm from "@/components/dashboard/product/ProductForm";
 import { prisma } from "@/lib/prisma/db";
 import { redirect } from "next/navigation";
 import { FC } from "react";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 interface pageProps {
   params: Promise<{
@@ -24,6 +25,7 @@ const page: FC<pageProps> = async ({ params }) => {
     select: {
       id: true,
       name: true,
+      displayName: true,
       categoryId: true,
       slug: true,
       flpType: true,
@@ -57,7 +59,7 @@ const page: FC<pageProps> = async ({ params }) => {
     <div>
       <ProductForm
         mode="edit"
-        initial={{ ...product, certificationVerified: Boolean(product.certificationVerifiedAt) }}
+        initial={{ ...product, name: catalogProductName(product), certificationVerified: Boolean(product.certificationVerifiedAt) }}
         categories={categories}></ProductForm>
     </div>
   );

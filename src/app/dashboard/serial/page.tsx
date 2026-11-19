@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { prisma } from "@/lib/prisma/db";
+import { catalogProductName } from "@/lib/products/catalogNames";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function SerialPage({ searchParams }: SerialPageProps) {
       select: {
         id: true,
         name: true,
+        displayName: true,
         serialPrefix: true,
         serialCounters: {
           where: { year: currentYear },
@@ -74,6 +76,7 @@ export default async function SerialPage({ searchParams }: SerialPageProps) {
       select: {
         id: true,
         serialNumber: true,
+        productNameSnapshot: true,
         status: true,
         createdAt: true,
         product: { select: { name: true } },
@@ -98,7 +101,7 @@ export default async function SerialPage({ searchParams }: SerialPageProps) {
 
   const productOptions = products.map((product) => ({
     id: product.id,
-    name: product.name,
+    name: catalogProductName(product),
     serialPrefix: product.serialPrefix,
     lastNumber: product.serialCounters[0]?.lastNumber ?? 0,
   }));
@@ -144,7 +147,7 @@ export default async function SerialPage({ searchParams }: SerialPageProps) {
                 return (
                   <tr key={serial.id} className="border-b last:border-0">
                     <td className="py-3 pr-4 font-mono font-medium"><Link className="text-primary underline-offset-4 hover:underline" href={`/dashboard/serial/${serial.id}`}>{serial.serialNumber}</Link></td>
-                    <td className="py-3 pr-4">{serial.product.name}</td>
+                    <td className="py-3 pr-4">{serial.productNameSnapshot || serial.product.name}</td>
                     <td className="py-3 pr-4"><Badge variant={serial.status === "AVAILABLE" ? "secondary" : serial.status === "VOID" ? "destructive" : "default"}>{serial.status}</Badge></td>
                     <td className="py-3 pr-4">{invoice ? <Button asChild variant="link" className="h-auto p-0"><Link href={`/dashboard/sales/invoices/${invoice.id}`}>{formatFinancialDocumentNumber(invoice.invoiceFy, invoice.invoiceNo)}</Link></Button> : "—"}</td>
                     <td className="py-3">{invoice?.customer?.companyName ?? invoice?.clientNameSnapshot ?? "—"}</td>

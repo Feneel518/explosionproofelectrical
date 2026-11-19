@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FC } from "react";
-import { ArrowLeft, FileText, Pencil, ReceiptText, Truck } from "lucide-react";
+import { ArrowLeft, Pencil, ReceiptText, Truck } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import { cancelSalesOrderAction } from "@/lib/actions/dashboard/sales/order/cancelSalesOrderAction";
@@ -23,6 +23,7 @@ import { reopenSalesOrderAsDraftAction } from "@/lib/actions/dashboard/sales/ord
 import { GetSalesOrderByIdData } from "@/lib/types/SalesOrderTypes";
 import PdfPreviewCard from "../../global/PDFPreviewCard";
 import WorkOrderCopyModal from "@/components/customerCopy/sales-order/WorkOrderCopyDialog";
+import PrintSalesOrderButton from "@/components/customerCopy/sales-order/PrintSalesOrderButton";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import type { ClientSafe } from "@/lib/helpers/server/serializeForClient";
 import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
@@ -66,8 +67,6 @@ function getInvoiceStatusVariant(status: string) {
 }
 
 const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
-  console.log(order.poFile.length > 0);
-
   const router = useRouter();
   const orderLabel = formatFinancialDocumentNumber(
     order.orderFy,
@@ -193,12 +192,13 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
             </Button>
           ) : null}
 
+          <PrintSalesOrderButton orderId={order.id} />
           <WorkOrderCopyModal
             orderId={order.id}
-            items={order.items.map((item, index) => ({
+            items={order.items.map((item) => ({
               id: item.id,
-              productName: item.product?.name,
-              itemName: item.variant?.variant,
+              productName: item.title,
+              itemName: "",
               description: item.description,
               qty: item.qty,
               unit: item.unit,
@@ -341,7 +341,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      order.items.map((item: any) => (
+                      order.items.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell className="align-top">
                             <div className="font-medium">{item.title}</div>
@@ -380,7 +380,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
                     No items found.
                   </div>
                 ) : (
-                  order.items.map((item: any) => (
+                  order.items.map((item) => (
                     <div
                       key={item.id}
                       className="rounded-xl border p-4 space-y-3">
@@ -477,7 +477,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
 
           {order.poFile.length > 0 && (
             <div className="space-y-4">
-              {order.poFile.map((file: any) => (
+              {order.poFile.map((file) => (
                 <PdfPreviewCard
                   key={file.id}
                   url={file.url}
@@ -567,7 +567,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
                   No delivery challans linked yet.
                 </p>
               ) : (
-                order.deliveryChallans.map((challan: any) => (
+                order.deliveryChallans.map((challan) => (
                   <Link
                     key={challan.id}
                     href={`/dashboard/sales/delivery-challans/${challan.id}`}
@@ -600,7 +600,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
                   No invoices linked yet.
                 </p>
               ) : (
-                order.invoices.map((invoice: any) => (
+                order.invoices.map((invoice) => (
                   <Link
                     key={invoice.id}
                     href={`/dashboard/sales/invoices/${invoice.id}`}
@@ -620,7 +620,7 @@ const SalesOrderDetailsPage: FC<SalesOrderDetailsPageProps> = ({ order }) => {
                       </div>
                     </div>
                     <Badge
-                      variant={getInvoiceStatusVariant(invoice.status) as any}>
+                      variant={getInvoiceStatusVariant(invoice.status)}>
                       {invoice.status}
                     </Badge>
                   </Link>

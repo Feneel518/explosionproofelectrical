@@ -37,6 +37,7 @@ type Props = {
   onChange: (item: ProductVariantSearchItem | null) => void;
   disabled?: boolean;
   placeholder?: string;
+  selectedLabel?: string | null;
 };
 
 function subLine(v: ProductVariantSearchItem) {
@@ -89,6 +90,7 @@ export function ProductVariantCombobox({
   onChange,
   placeholder = "Search & select product variant",
   disabled,
+  selectedLabel,
 }: Props) {
   const isDesktop = !useIsMobile();
 
@@ -106,7 +108,7 @@ export function ProductVariantCombobox({
   const [selectedItem, setSelectedItem] =
     React.useState<ProductVariantSearchItem | null>(null);
 
-  const buttonLabel = selectedItem ? selectedItem.title : placeholder;
+  const buttonLabel = value && selectedLabel?.trim() ? selectedLabel : selectedItem ? selectedItem.title : placeholder;
 
   async function loadFirstPage(query: string) {
     setLoading(true);

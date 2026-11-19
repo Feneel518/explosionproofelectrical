@@ -16,7 +16,7 @@ import { GmailInboxSettings } from "./GmailInboxSettings";
 import { GmailConversationPane } from "./GmailConversationPane";
 import { InboxSelect } from "./GmailInboxControls";
 
-const initialFilters: InboxFilters = { search: "", sender: "", read: "ALL", status: "ALL", attachment: false, starred: false, linked: "ALL", from: "", to: "", page: 1 };
+const initialFilters: InboxFilters = { search: "", sender: "", read: "ALL", status: "ALL", attachment: false, starred: false, linked: "ALL", salesView: "ALL", from: "", to: "", page: 1 };
 const shortDate = (value: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(value));
 
 export function GmailInbox({ outcome, initialMessage }: { outcome?: string; initialMessage?: string }) {
@@ -48,12 +48,19 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
 
   const totalPages = Math.max(1, Math.ceil((page?.total || 0) / (page?.pageSize || 30)));
   const currentPage = filters.page || 1;
-  const activeTab = filters.starred ? "STARRED" : filters.read === "UNREAD" ? "UNREAD" : "ALL";
+  const activeTab = filters.starred ? "STARRED" : filters.read === "UNREAD" ? "UNREAD" : filters.salesView || "ALL";
   const filterCount = [filters.sender, filters.from, filters.to, filters.status !== "ALL", filters.linked !== "ALL", filters.attachment].filter(Boolean).length;
-  const hasFilters = !!filters.search || filterCount > 0 || !!filters.starred || filters.read !== "ALL";
+  const hasFilters = !!filters.search || filterCount > 0 || activeTab !== "ALL";
   const selectTab = (value: string) => {
     setSelected(null);
-    change({ read: value === "UNREAD" ? "UNREAD" : "ALL", starred: value === "STARRED" });
+    setLoading(true);
+    setPage(null);
+    setError(null);
+    change({
+      read: value === "UNREAD" ? "UNREAD" : "ALL",
+      starred: value === "STARRED",
+      salesView: value === "QUOTATION" || value === "ORDER" ? value : "ALL",
+    });
   };
   return <div className="flex min-w-0 flex-col gap-5 [--ring:var(--foreground)] selection:bg-primary/30">
     <header className="flex flex-wrap items-start justify-between gap-3">
@@ -73,6 +80,8 @@ export function GmailInbox({ outcome, initialMessage }: { outcome?: string; init
     <Tabs value={activeTab} onValueChange={selectTab} className="gap-4">
       <TabsList variant="line" aria-label="Mail views" className="max-w-full flex-wrap justify-start group-data-[orientation=horizontal]/tabs:h-auto">
         <TabsTrigger value="ALL" className="h-10 flex-none px-3">All mail</TabsTrigger>
+        <TabsTrigger value="QUOTATION" className="h-10 flex-none px-3">Quotations</TabsTrigger>
+        <TabsTrigger value="ORDER" className="h-10 flex-none px-3">Sales orders</TabsTrigger>
         <TabsTrigger value="UNREAD" className="h-10 flex-none px-3">Unread{data?.unreadCount ? <span className="tabular-nums">({data.unreadCount})</span> : null}</TabsTrigger>
         <TabsTrigger value="STARRED" className="h-10 flex-none px-3">Starred</TabsTrigger>
       </TabsList>

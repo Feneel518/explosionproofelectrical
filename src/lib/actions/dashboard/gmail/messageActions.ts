@@ -13,10 +13,18 @@ const inboxFilters = z.object({
   status: z.enum(["ALL", "NEW", "IN_PROGRESS", "DONE"]).default("ALL"),
   attachment: z.boolean().default(false), starred: z.boolean().default(false),
   linked: z.enum(["ALL", "LINKED", "UNLINKED"]).default("ALL"),
+  salesView: z.enum(["ALL", "QUOTATION", "ORDER"]).default("ALL"),
   from: z.string().max(10).default(""), to: z.string().max(10).default(""),
   page: z.number().int().min(1).max(100_000).default(1),
 });
 export type InboxFilters = z.input<typeof inboxFilters>;
+
+function subjectMatches(phrases: string[]): Prisma.GmailNotificationWhereInput {
+  return { OR: phrases.map(phrase => ({ subject: { contains: phrase, mode: "insensitive" } })) };
+}
+
+const orderSubjects = subjectMatches(["purchase order", "purchase doc", "sales order", "order confirmation"]);
+const quotationSubjects = subjectMatches(["quotation", "quote request", "request for quote", "rfq", "enquiry", "inquiry"]);
 
 function filterDate(value: string, end = false) {
   if (!value) return undefined;
@@ -29,7 +37,22 @@ function filterDate(value: string, end = false) {
 export async function listGmailMessagesAction(input: InboxFilters = {}) {
   const { user } = await requireAuth();
   const filters = inboxFilters.parse(input);
-  const linkedThreads = filters.linked !== "ALL" ? await prisma.gmailThreadLink.findMany({ where: { userId: user.id, OR: [{ quotation: { deletedAt: null } }, { salesOrder: { deletedAt: null } }] }, select: { threadId: true }, distinct: ["threadId"] }) : [];
+  const linkedThreads = filters.linked !== "ALL" || filters.salesView !== "ALL"
+    ? await prisma.gmailThreadLink.findMany({
+      where: { userId: user.id, OR: [{ quotation: { deletedAt: null } }, { salesOrder: { deletedAt: null } }] },
+      select: { threadId: true, quotation: { select: { deletedAt: true } }, salesOrder: { select: { deletedAt: true } } },
+    })
+    : [];
+  const linkedThreadIds = [...new Set(linkedThreads.map(link => link.threadId))];
+  const orderThreadIds = [...new Set(linkedThreads.filter(link => link.salesOrder?.deletedAt === null).map(link => link.threadId))];
+  const salesView: Prisma.GmailNotificationWhereInput = filters.salesView === "ORDER"
+    ? { OR: [{ threadId: { in: orderThreadIds } }, { threadId: { notIn: linkedThreadIds }, ...orderSubjects }] }
+    : filters.salesView === "QUOTATION"
+      ? { threadId: { notIn: orderThreadIds }, OR: [
+        { threadId: { in: linkedThreadIds } },
+        { AND: [quotationSubjects, { NOT: orderSubjects }] },
+      ] }
+      : {};
   const where: Prisma.GmailNotificationWhereInput = {
     userId: user.id,
     ...(filters.search ? { OR: ["subject", "sender", "snippet", "bodyText", "internalNote"].map(field => ({ [field]: { contains: filters.search, mode: "insensitive" } })) } : {}),
@@ -38,7 +61,8 @@ export async function listGmailMessagesAction(input: InboxFilters = {}) {
     ...(filters.status !== "ALL" ? { status: filters.status } : {}),
     ...(filters.attachment ? { hasAttachments: true } : {}),
     ...(filters.starred ? { starred: true } : {}),
-    ...(filters.linked === "LINKED" ? { threadId: { in: linkedThreads.map(t => t.threadId) } } : filters.linked === "UNLINKED" ? { threadId: { notIn: linkedThreads.map(t => t.threadId) } } : {}),
+    ...(filters.linked === "LINKED" ? { threadId: { in: linkedThreadIds } } : filters.linked === "UNLINKED" ? { threadId: { notIn: linkedThreadIds } } : {}),
+    AND: salesView,
     ...(filters.from || filters.to ? { receivedAt: { gte: filterDate(filters.from), lt: filterDate(filters.to, true) } } : {}),
   };
   const pageSize = 30;

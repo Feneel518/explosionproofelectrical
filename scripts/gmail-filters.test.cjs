@@ -2,6 +2,55 @@ const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { load } = require('./test-loader.cjs');
 
+test('sales inbox views keep linked orders and quotation follow-ups separate', async () => {
+  const rows = [
+    { threadId: 'converted', subject: 'RFQ for motor' },
+    { threadId: 'quote', subject: 'Re: requirements' },
+    { threadId: 'purchase-doc', subject: 'Harman Purchase Doc 4830002545' },
+    { threadId: 'enquiry', subject: 'Motor ENQUIRY' },
+    { threadId: 'unclear', subject: 'Please review' },
+  ].map(row => ({ ...row, id: row.threadId, receivedAt: new Date(), readAt: null }));
+  const links = [
+    { threadId: 'converted', quotation: { deletedAt: null } },
+    { threadId: 'converted', salesOrder: { deletedAt: null } },
+    { threadId: 'quote', quotation: { deletedAt: null } },
+  ];
+  const matches = (row, where) => Object.entries(where).every(([key, value]) => {
+    if (key === 'userId') return value === 'fixture-owner';
+    if (key === 'AND') return (Array.isArray(value) ? value : [value]).every(clause => matches(row, clause));
+    if (key === 'OR') return value.some(clause => matches(row, clause));
+    if (key === 'NOT') return !matches(row, value);
+    if (value.in) return value.in.includes(row[key]);
+    if (value.notIn) return !value.notIn.includes(row[key]);
+    return (row[key] || '').toLowerCase().includes(value.contains.toLowerCase());
+  });
+  const { listGmailMessagesAction } = load('src/lib/actions/dashboard/gmail/messageActions', {
+    '@/lib/check/requireAuth': { requireAuth: async () => ({ user: { id: 'fixture-owner' } }) },
+    '@/lib/gmail/access': {},
+    '@/lib/gmail/conversation': {},
+    '@/lib/prisma/db': { prisma: {
+      gmailThreadLink: { findMany: async ({ where }) => {
+        assert.equal(where.userId, 'fixture-owner');
+        return where.threadId ? [] : links;
+      } },
+      gmailNotification: {
+        findMany: async ({ where }) => rows.filter(row => matches(row, where)),
+        count: async ({ where }) => where.contentIndexedAt === null ? 0 : rows.filter(row => matches(row, where)).length,
+      },
+    } },
+  });
+  for (const [filters, expected] of [
+    [{ salesView: 'ORDER' }, ['converted', 'purchase-doc']],
+    [{ salesView: 'QUOTATION' }, ['quote', 'enquiry']],
+    [{ salesView: 'ORDER', search: 'motor', linked: 'LINKED' }, ['converted']],
+    [{}, rows.map(row => row.id)],
+  ]) {
+    const result = await listGmailMessagesAction(filters);
+    assert.deepEqual(result.messages.map(row => row.id), expected);
+    assert.equal(result.total, expected.length);
+  }
+});
+
 test('an existing default filter is upgraded and rescanned for Purchase Doc emails', async () => {
   const { DEFAULT_GMAIL_QUERY, buildGmailSearch } = load('src/lib/gmail/google');
   const oldQuery = 'in:inbox -in:sent {subject:order subject:"purchase order" subject:inquiry subject:enquiry subject:RFQ subject:quotation subject:"quote request"}';

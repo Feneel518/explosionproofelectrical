@@ -24,6 +24,7 @@ import OrderAction from "./OrderAction";
 import { SalesOrderStatus } from "@prisma/client";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
 import { getSalesOrderStatusBadge } from "@/lib/helpers/dashboard/sales/orderStatusBadge";
+import DocumentItemsPreview from "@/components/dashboard/sales/DocumentItemsPreview";
 
 interface OrderTableProps {
   items: Item[];
@@ -208,7 +209,14 @@ const OrderTable: FC<OrderTableProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <DocumentItemsPreview
+                    mobile
+                    kind="order"
+                    id={o.id}
+                    number={formatFinancialDocumentNumber(o.orderFy, o.orderNo)}
+                    href={`/dashboard/sales/orders/${o.id}`}
+                  />
                   <OrderAction
                     id={o.id}
                     deletedAt={o.deletedAt}
@@ -259,11 +267,12 @@ const OrderTable: FC<OrderTableProps> = ({
                 return (
                   <TableRow key={o.id}>
                     <TableCell>
-                      <Link
-                        className="font-medium hover:underline"
-                        href={`/dashboard/sales/orders/${o.id}`}>
-                        {formatFinancialDocumentNumber(o.orderFy, o.orderNo)}
-                      </Link>
+                      <DocumentItemsPreview
+                        kind="order"
+                        id={o.id}
+                        number={formatFinancialDocumentNumber(o.orderFy, o.orderNo)}
+                        href={`/dashboard/sales/orders/${o.id}`}
+                      />
                       <div className="text-xs text-muted-foreground">
                         {formatDate(o.orderDate || o.createdAt)}
                       </div>

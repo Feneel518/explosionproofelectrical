@@ -1,5 +1,6 @@
 import { slugRegex } from "@/lib/helpers/regexHelpers/regexHelpers";
 import z from "zod";
+import { isNonHazardousProduct, isZoneZero, supportsZoneZero } from "@/lib/products/technical-data";
 
 export const ProductStatusSchema = z.enum(["ACTIVE", "INACTIVE"]);
 
@@ -41,11 +42,18 @@ export const ProductSchema = z.object({
   categoryId: z.string().uuid("Invalid categoryId"),
 
   status: ProductStatusSchema.optional(),
-}).superRefine((data, ctx) => {
-  if (!data.certificationVerified) return;
-  if (!data.certificationMarking) ctx.addIssue({ code: "custom", path: ["certificationMarking"], message: "Enter the exact approved marking before verifying it." });
-  if (!data.certificationReference) ctx.addIssue({ code: "custom", path: ["certificationReference"], message: "Enter the certificate number and revision." });
-  if (!data.zones.length) ctx.addIssue({ code: "custom", path: ["zones"], message: "Select only the zones supported by the certificate." });
+}).superRefine((product, context) => {
+  if (product.certificationVerified) {
+    if (!product.certificationMarking) context.addIssue({ code: "custom", path: ["certificationMarking"], message: "Enter the exact approved marking before verifying it." });
+    if (!product.certificationReference) context.addIssue({ code: "custom", path: ["certificationReference"], message: "Enter the certificate number and revision." });
+    if (!product.zones.length) context.addIssue({ code: "custom", path: ["zones"], message: "Select only the zones supported by the certificate." });
+  }
+  if (isNonHazardousProduct(product) && (product.zones.length || product.gasGroup)) {
+    context.addIssue({ code: "custom", path: ["zones"], message: "Non-FLP products must have no hazardous-zone or gas-group declarations." });
+  }
+  if (product.zones.some(isZoneZero) && !supportsZoneZero(product)) {
+    context.addIssue({ code: "custom", path: ["zones"], message: "Zone 0 requires a certificate-supported Ga / Ex da marking in the protection type. Verify the certificate or select the supported zones." });
+  }
 });
 
 export type ProductSchemaRequest = z.infer<typeof ProductSchema>;

@@ -23,6 +23,7 @@ export async function GET() {
         "Content-Length": String(pdf.length),
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
+        "X-Robots-Tag": "noindex, follow",
       },
     });
   } catch (error) {

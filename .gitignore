@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Local diagnostic output and disposable-schema browser credentials
 /tmp/
+
+.vercel
+.env*

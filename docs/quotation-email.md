@@ -1,7 +1,5 @@
 # Sending quotation emails
 
-Current implementation status: mailbox notifications, quotation sending, conversation-link helpers and attention queries are present. Gmail-to-sales draft creation and PDF-to-order import are not implemented in this checkout. References below to those review/import controls describe intended workflows. The database integration check now tests the implemented conversation and delivery behavior and requires an isolated `TEST_DATABASE_URL`.
-
 See [Gmail dashboard setup](gmail-dashboard.md) for the existing inbox integration. Sending additionally requires `https://www.googleapis.com/auth/gmail.send` in the Google consent screen and reconnecting the mailbox.
 
 ## PDF runtime

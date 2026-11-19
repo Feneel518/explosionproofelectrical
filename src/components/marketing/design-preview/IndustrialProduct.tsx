@@ -10,6 +10,7 @@ import { CatalogCard, ProductImage } from "./CatalogCard";
 import { ShareActions } from "./ShareActions";
 import home from "./industrial-home.module.css";
 import styles from "./catalog.module.css";
+import { ProductLinks } from "@/components/seo/ProductLinks";
 
 export function IndustrialProduct({ product, related }: { product: CatalogProductDetail; related: CatalogProductCard[] }) {
   const [variantId, setVariantId] = useQueryState("variant", { history: "push" });
@@ -36,7 +37,9 @@ export function IndustrialProduct({ product, related }: { product: CatalogProduc
       </div>
     </section>
     <section className={styles.specSection}><div className={styles.specIntro}><span className={styles.eyebrow}>01 / THE TECHNICAL DETAILS</span><h2>EVERY DETAIL.<br /><span>IN ONE PLACE.</span></h2><p>Product specifications and configuration details for your project conversations.</p></div><div className={styles.specTables}><h3>Product specification</h3>{specs.length ? <dl className={styles.specList}>{specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> : <p>Contact our team for the product specification.</p>}{variant && <><h3>{variant.variant} / configuration</h3>{variant.specs.length ? <dl className={styles.specList}>{variant.specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> : <p>Detailed configuration specifications are available on enquiry.</p>}</>}{Boolean(variant?.drawings.length) && <div className={styles.drawings}><h3>Drawings & documents</h3>{variant?.drawings.map((drawing, index) => <a key={`${drawing.url}-${index}`} href={drawing.url} target="_blank" rel="noopener noreferrer"><FileDown size={18} />{drawing.title || `Technical drawing ${index + 1}`}<ArrowUpRight size={16} /></a>)}</div>}{product.longDescription && <div className={styles.longDescription}><h3>About this product</h3><p>{product.longDescription}</p></div>}</div></section>
-    {related.length > 0 && <section className={styles.relatedSection}><div className={styles.relatedHeading}><div><span className={styles.eyebrow}>02 / EXPLORE THE RANGE</span><h2>IN GOOD COMPANY.</h2></div><Link href={`/catalog?cat=${product.categorySlug}`}>VIEW CATEGORY <ArrowUpRight size={17} /></Link></div><div className={styles.relatedGrid}>{related.map((item, index) => <CatalogCard key={item.slug} product={item} index={index} />)}</div></section>}
+    {product.technicalNotes.map(note => <p className={styles.selectionNote} key={note}>{note}</p>)}
+    <ProductLinks product={product} />
+    {related.length > 0 && <section className={styles.relatedSection}><div className={styles.relatedHeading}><div><span className={styles.eyebrow}>02 / EXPLORE THE RANGE</span><h2>IN GOOD COMPANY.</h2></div><Link href={`/catalog/category/${product.categorySlug}`}>VIEW CATEGORY <ArrowUpRight size={17} /></Link></div><div className={styles.relatedGrid}>{related.map((item, index) => <CatalogCard key={item.slug} product={item} index={index} />)}</div></section>}
     <div className={styles.mobileProductActions}><Link href="/catalog"><ArrowLeft size={16} />Catalog</Link><a href="#main-content">Product details ↑</a><Link href="/#contact">Enquire <ArrowUpRight size={16} /></Link></div>
   </>;
 }

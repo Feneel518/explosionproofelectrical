@@ -1,5 +1,6 @@
 import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import QuotationFormNew from "@/components/dashboard/sales/quotation/QuotationFormNew";
+import { GmailLinkedMessages } from "@/components/dashboard/gmail/GmailLinkedMessages";
 import { listCustomersForSelect } from "@/lib/actions/dashboard/global/listCustomersForSelect";
 import { getQuotationDraftAction } from "@/lib/actions/dashboard/sales/quotation/getQuotationDraftAction";
 import { prisma } from "@/lib/prisma/db";
@@ -26,6 +27,7 @@ const page: FC<pageProps> = async ({ params }) => {
 
   return (
     <div>
+      <GmailLinkedMessages kind="QUOTATION" recordId={id} />
       <QuotationFormNew
         quotationId={res.quotationId}
         quoteFY={res.quoteFY}

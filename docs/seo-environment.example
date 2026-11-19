@@ -1,0 +1,8 @@
+# Search Console URL-prefix verification token (not the full HTML tag).
+GOOGLE_SITE_VERIFICATION=
+
+# Canonical public origin. Never set this to a preview or localhost origin in production.
+NEXT_PUBLIC_SITE_URL=https://www.explosionproofelectrical.com
+
+# Optional local/post-deployment validation target.
+SEO_TEST_BASE_URL=http://localhost:3100

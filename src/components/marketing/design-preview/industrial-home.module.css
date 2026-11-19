@@ -101,7 +101,7 @@
 .heroCaption > a > svg { align-self: flex-end; }
 .heroCaption > a:hover { background: #072436; }
 .certificationStrip { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 26px 36px; border-bottom: 1px solid var(--line); color: #4a667b; background: #072436; }
-.certificationStrip > span { display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-industrial-mono), monospace; font-size: 8px; }
+.certificationStrip > :is(span, a) { display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-industrial-mono), monospace; font-size: 8px; }
 .certificationStrip i { width: 5px; height: 5px; background: #072436; }
 .sectionLabel { display: flex; align-items: center; justify-content: space-between; gap: 30px; font-family: var(--font-industrial-mono), monospace; font-size: 8px; letter-spacing: .02em; line-height: 1.7; }
 .engineeringSection { padding: 34px 36px 0; }

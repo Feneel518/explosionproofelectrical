@@ -25,11 +25,11 @@ export function GmailNotificationBell() {
           : error ? <p role="status" className="text-sm text-destructive">{error}</p>
           : !data?.connection ? <p className="text-sm text-muted-foreground">Connect Gmail to see incoming orders and inquiries here.</p>
           : count === 0 ? <p className="text-sm text-muted-foreground">You’re all caught up.</p>
-          : data.unreadPreview.map((item) => <Link key={item.id} href="/dashboard/inbox" className="flex min-w-0 flex-col gap-1 text-sm hover:underline">
+          : data.unreadPreview.map((item) => <Link key={item.id} href={`/dashboard/inbox?message=${item.id}`} className="flex min-w-0 flex-col gap-1 text-sm hover:underline">
             <span className="truncate font-medium">{item.subject}</span>
             <span className="truncate text-muted-foreground">{item.sender}</span>
           </Link>)}
-        <Button asChild variant="outline" size="sm"><Link href="/dashboard/inbox">Open Gmail inbox alerts</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link href="/dashboard/inbox">Open sales inbox</Link></Button>
       </div>
     </PopoverContent>
   </Popover>;

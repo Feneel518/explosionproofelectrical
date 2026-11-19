@@ -1,5 +1,6 @@
 import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import SalesOrderFormNew from "@/components/dashboard/sales/order/SalesOrderFormNew";
+import { GmailLinkedMessages } from "@/components/dashboard/gmail/GmailLinkedMessages";
 import { listCustomersForSelect } from "@/lib/actions/dashboard/global/listCustomersForSelect";
 import { getSalesOrderDraftAction } from "@/lib/actions/dashboard/sales/order/getSalesOrderDraftAction";
 import { SalesOrderFormValues } from "@/lib/validators/dashboard/sales/orders/OrderValidator";
@@ -20,6 +21,8 @@ const page: FC<PageProps> = async ({ params }) => {
   const customers = await listCustomersForSelect();
 
   return (
+    <div>
+    <GmailLinkedMessages kind="ORDER" recordId={id} />
     <SalesOrderFormNew
       salesOrderId={res.salesOrderId}
       orderFY={res.orderFY}
@@ -28,6 +31,7 @@ const page: FC<PageProps> = async ({ params }) => {
       initialDraftVersion={res.draftVersion}
       customers={customers}
     />
+    </div>
   );
 };
 

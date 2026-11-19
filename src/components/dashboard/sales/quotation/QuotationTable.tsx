@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import QuotationAction from "./QuotationAction";
 import { QuotationStatus } from "@prisma/client";
 import { formatFinancialDocumentNumber } from "@/lib/helpers/globalHelpers/financialYear";
+import DocumentItemsPreview from "@/components/dashboard/sales/DocumentItemsPreview";
 
 interface QuotationTableProps {
   items: Item[];
@@ -208,7 +209,14 @@ const QuotationTable: FC<QuotationTableProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <DocumentItemsPreview
+                    mobile
+                    kind="quotation"
+                    id={q.id}
+                    number={formatFinancialDocumentNumber(q.quoteFy, q.quoteNo)}
+                    href={`/dashboard/sales/quotations/${q.id}`}
+                  />
                   <QuotationAction
                     status={q.status as QuotationStatus}
                     id={q.id}
@@ -258,11 +266,12 @@ const QuotationTable: FC<QuotationTableProps> = ({
                 return (
                   <TableRow key={q.id}>
                     <TableCell>
-                      <Link
-                        className="font-medium hover:underline"
-                        href={`/dashboard/sales/quotations/${q.id}`}>
-                        {formatFinancialDocumentNumber(q.quoteFy, q.quoteNo)}
-                      </Link>
+                      <DocumentItemsPreview
+                        kind="quotation"
+                        id={q.id}
+                        number={formatFinancialDocumentNumber(q.quoteFy, q.quoteNo)}
+                        href={`/dashboard/sales/quotations/${q.id}`}
+                      />
                       <div className="text-xs text-muted-foreground">
                         {formatDate(q.createdAt)} • {q.platform}
                       </div>

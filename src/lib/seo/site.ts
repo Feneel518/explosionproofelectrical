@@ -20,8 +20,6 @@ export const SITE_KEYWORDS = [
   "well glass fitting",
   "bulkhead light",
   "hazardous area lighting",
-  "CIMFR certified flameproof products",
-  "PESO approved flameproof products",
   "flameproof manufacturer in Vapi",
   "flameproof manufacturer in Gujarat",
   "industrial explosion proof solutions",
@@ -41,4 +39,11 @@ export const COMPANY_GSTIN = "24AAAFE7591G1ZG";
 export function absoluteUrl(path = "/") {
   if (!path.startsWith("/")) return `${SITE_URL}/${path}`;
   return `${SITE_URL}${path}`;
+}
+
+export function organizationSchema() {
+  return { "@context": "https://schema.org", "@graph": [
+    { "@type": "Organization", "@id": absoluteUrl("/#organization"), name: SITE_NAME, alternateName: SITE_SHORT_NAME, url: absoluteUrl("/"), logo: absoluteUrl("/marketing/Logo.png"), email: COMPANY_EMAIL, address: { "@type": "PostalAddress", ...COMPANY_ADDRESS }, areaServed: { "@type": "Country", name: "India" }, knowsAbout: ["Flameproof enclosures", "Explosion-proof electrical equipment", "Hazardous-area lighting", "Flameproof junction boxes", "Electrical control panels"] },
+    { "@type": "WebSite", "@id": absoluteUrl("/#website"), name: SITE_BRAND, url: absoluteUrl("/"), publisher: { "@id": absoluteUrl("/#organization") }, inLanguage: "en-IN" },
+  ] };
 }

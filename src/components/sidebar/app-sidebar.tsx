@@ -77,7 +77,7 @@ const data = {
           url: "/dashboard/enquiries",
         },
         {
-          title: "Gmail Inbox Alerts",
+          title: "Gmail Sales Inbox",
           url: "/dashboard/inbox",
         },
         {

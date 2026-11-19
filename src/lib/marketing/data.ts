@@ -65,7 +65,7 @@ export const categories = [
 export const pillars = [
   { num: "01", title: "Expertise", body: "Three decades engineering flameproof equipment for India's most demanding plants." },
   { num: "02", title: "Quality", body: "Pressure-tested castings and premium materials built to outlast the environment." },
-  { num: "03", title: "Safety", body: "Every product meets the highest industry standards, CIMFR tested and PESO approved." },
+  { num: "03", title: "Safety", body: "Review the complete marking and model-specific certification and approval documents for your installation." },
   { num: "04", title: "Fast Delivery", body: "Responsive lead times and a pan-India network that keeps your plant running." },
 ];
 
@@ -142,9 +142,9 @@ export const posts = [
       "## What IP66 protects against",
       "IP-66 means complete protection against dust ingress and protection against powerful water jets from any direction.",
       "## Why ingress protection matters",
-      "For flameproof lighting, ingress protection and explosion protection work together. A cracked gasket can compromise the flame path that makes the fitting safe.",
+      "Ingress seals and flameproof joints serve different functions. Damaged seals can permit dust or water ingress; inspect the complete assembly and follow the manufacturer's instructions for both seals and controlled joints.",
       "## The minimum for harsh environments",
-      "When you specify a light fitting, read past the Ex marking to the IP rating. For outdoor and process areas, IP-66 should be the floor.",
+      "Specify the ingress-protection rating from the actual exposure, cleaning regime and project requirements. Verify it separately from the complete Ex marking and supporting product certificate.",
     ],
   },
   {
@@ -159,9 +159,9 @@ export const posts = [
       "## The role of CIMFR",
       "CIMFR is a testing authority. It subjects a design to explosion, ingress and thermal tests defined by relevant standards.",
       "## The role of PESO",
-      "PESO is the statutory approval body. It reviews certification and grants the approval that makes a product legal to install in licensed hazardous premises.",
+      "PESO approval requirements depend on the installation and the authority's jurisdiction. Review the current published procedure and the approval scope for the particular equipment and location.",
       "## What buyers should verify",
-      "A product that is CIMFR tested and PESO approved has cleared both the technical and regulatory bar.",
+      "Check the actual certificate, any required statutory approval, covered type numbers, complete Ex marking, validity and special conditions. A test report and an approval are distinct documents and do not establish suitability for every installation.",
     ],
   },
   {

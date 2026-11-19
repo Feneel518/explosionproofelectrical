@@ -19,6 +19,10 @@ export async function middleware(req: NextRequest) {
   const sessionCookie = getSessionCookie(req);
 
   const res = NextResponse.next();
+  const privatePrefixes = [...protectedRoutePrefixes, "/auth", "/serial", "/quotations", "/invoices", "/sales-orders", "/delivery-challans", "/purchase-orders", "/grn", "/design-preview"];
+  const privatePage = privatePrefixes.some(prefix => nextUrl.pathname === prefix || nextUrl.pathname.startsWith(`${prefix}/`));
+  const filteredCatalog = nextUrl.pathname === "/catalog" && ["cat", "q", "sort"].some(key => nextUrl.searchParams.has(key));
+  if (privatePage || filteredCatalog) res.headers.set("X-Robots-Tag", "noindex, follow");
 
   const isLoggedIn = !!sessionCookie;
 

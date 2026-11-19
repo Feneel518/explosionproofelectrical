@@ -25,15 +25,15 @@ export async function getGmailInboxAction(options: GmailAlertFilters & { rescan?
     }
   }
   const [connection, alerts, unreadCount, unreadRows] = await Promise.all([
-    prisma.gmailConnection.findUnique({ where: { userId: user.id }, select: { email: true, grantedScopes: true, searchQuery: true, lastSyncedAt: true } }),
+    prisma.gmailConnection.findUnique({ where: { userId: user.id }, select: { email: true, grantedScopes: true, searchQuery: true, lastSyncedAt: true, lastSyncError: true, lastSyncAttemptAt: true } }),
     loadGmailAlerts(user.id, options),
     prisma.gmailNotification.count({ where: { userId: user.id, readAt: null } }),
     prisma.gmailNotification.findMany({ where: { userId: user.id, readAt: null }, orderBy: [{ receivedAt: "desc" }, { id: "desc" }], take: 3,
       select: { id: true, subject: true, sender: true, threadId: true, receivedAt: true } }),
   ]);
   return {
-    configured, syncError, unreadCount, defaultQuery: DEFAULT_GMAIL_QUERY,
-    connection: connection ? { email: connection.email, searchQuery: connection.searchQuery, canSend: gmailCanSend(connection.grantedScopes), lastSyncedAt: connection.lastSyncedAt?.toISOString() ?? null } : null,
+    configured, syncError: syncError || connection?.lastSyncError || null, backgroundEnabled: !!process.env.CRON_SECRET, unreadCount, defaultQuery: DEFAULT_GMAIL_QUERY,
+    connection: connection ? { email: connection.email, searchQuery: connection.searchQuery, canSend: gmailCanSend(connection.grantedScopes), lastSyncedAt: connection.lastSyncedAt?.toISOString() ?? null, lastSyncAttemptAt: connection.lastSyncAttemptAt?.toISOString() ?? null } : null,
     ...alerts,
     unreadPreview: unreadRows.map(item => ({ id: item.id, subject: item.subject, sender: item.sender, threadId: item.threadId, receivedAt: item.receivedAt.toISOString() })),
   };

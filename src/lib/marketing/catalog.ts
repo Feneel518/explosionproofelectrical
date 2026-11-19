@@ -2,6 +2,8 @@ import type { ProductCardProduct } from "@/components/marketing/ProductCard";
 import { prisma } from "@/lib/prisma/db";
 import { cache } from "react";
 import { catalogProductName, catalogVariantName } from "@/lib/products/catalogNames";
+import { gasGroupLabel, isNonHazardousProduct, publishedZones, safeTechnicalDescription, technicalDataIssues } from "@/lib/products/technical-data";
+import { getCategoryLanding, matchesLanding } from "@/lib/seo/categories";
 
 export type CatalogFilterOption = {
   label: string;
@@ -29,6 +31,7 @@ export type CatalogProductDetail = CatalogProductCard & {
   hardware?: string | null;
   hsnCode?: string | null;
   zones: string[];
+  technicalNotes: string[];
   variants: CatalogVariant[];
 };
 
@@ -49,7 +52,7 @@ const variantFields = {
   rpm: "RPM", kW: "kW", horsePower: "Horsepower",
 } as const;
 
-type CatalogProductRow = {
+export type CatalogProductRow = {
   name: string;
   displayName?: string | null;
   slug: string;
@@ -144,6 +147,11 @@ export const getCatalogProductDetail = cache(async (slug: string) => {
 });
 
 export const getCatalogCategory = cache(async (slug: string) => {
+  const landing = getCategoryLanding(slug);
+  if (landing) {
+    const { products } = await getCatalogData();
+    return { category: { name: landing.name, slug: landing.slug }, products: products.filter(product => matchesLanding(product, landing)) };
+  }
   const category = await prisma.category.findFirst({
     where: { slug, status: "ACTIVE", deletedAt: null },
     select: { name: true, slug: true },
@@ -259,7 +267,7 @@ function toCatalogProductCard(
     group: product.certificationVerifiedAt && product.certificationReference ? product.certificationMarking || "" : "",
     type: variant?.typeNumber?.trim() || product.flpType?.trim() || "EXEC",
     filter: product.category.slug,
-    description: product.shortDesc?.trim() || `Explore ${catalogProductName(product).toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
+    description: safeTechnicalDescription(product.shortDesc, product) || `Explore ${catalogProductName(product).toLowerCase()} from our ${product.category.name.toLowerCase()} range.`,
     variantCount: product.variants.length,
     searchText: product.variants.map((item) => [item.variant, catalogVariantName(item), item.typeNumber, item.sku, item.rating].filter(Boolean).join(" ")).join(" "),
   };
@@ -273,18 +281,19 @@ export function toCatalogProductDetail(
     categoryId: product.categoryId,
     categorySlug: product.category.slug,
     description:
-      product.shortDesc?.trim() ||
+      safeTechnicalDescription(product.shortDesc, product) ||
       `Explore ${catalogProductName(product).toLowerCase()} from our ${product.category.name.toLowerCase()} range. Speak with our team about your application and specification.`,
-    longDescription: product.longDesc,
+    longDescription: safeTechnicalDescription(product.longDesc, product),
     flpType: product.flpType,
-    protection: product.protection,
-    gasGroup: product.certificationVerifiedAt && product.certificationReference ? product.gasGroup : null,
+    protection: formatProtectionLabel(product.protection),
+    gasGroup: product.certificationVerifiedAt && product.certificationReference && !isNonHazardousProduct(product) ? gasGroupLabel(product.gasGroup) || null : null,
     certificationMarking: product.certificationVerifiedAt && product.certificationReference ? product.certificationMarking : null,
     material: product.material,
     finish: product.finish,
     hardware: product.hardware,
     hsnCode: product.hsnCode,
-    zones: product.certificationVerifiedAt && product.certificationReference && product.certificationMarking ? product.zones ?? [] : [],
+    zones: product.certificationVerifiedAt && product.certificationReference && product.certificationMarking ? publishedZones(product) : [],
+    technicalNotes: !isNonHazardousProduct(product) && technicalDataIssues(product).length ? ["Confirm the complete Ex marking, permitted zone / EPL, temperature class and certificate conditions with our engineering team before selection."] : [],
     variants: product.variants.map((variant) => ({
       id: variant.id, variant: catalogVariantName(variant), typeNumber: variant.typeNumber,
       sku: variant.sku, images: variant.images, drawings: variant.drawings,
@@ -301,9 +310,5 @@ export function formatProtectionLabel(protection?: string | null) {
 }
 
 export function formatGasGroupLabel(gasGroup?: string | null) {
-  const gasGroups = Array.from(new Set(gasGroup?.match(/II[ABC]/gi) ?? []))
-    .map((group) => group.toUpperCase())
-    .join("/");
-
-  return gasGroups || undefined;
+  return gasGroupLabel(gasGroup) || undefined;
 }

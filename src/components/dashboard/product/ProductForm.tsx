@@ -313,6 +313,7 @@ export default function ProductForm({
               render={() => (
                 <FormItem>
                   <FormLabel>Zones</FormLabel>
+                  <FormDescription>Select only certificate-supported zones. Leave blank for non-FLP products. Zone 0 requires a documented Ga / Ex da marking.</FormDescription>
                   <div className="flex gap-6">
                     {ZONES.map((zone) => (
                       <FormField

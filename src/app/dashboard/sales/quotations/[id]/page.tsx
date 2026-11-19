@@ -1,5 +1,6 @@
 import { requirePagePermission as requirePermission } from "@/lib/check/permissions";
 import QuotationDetailView from "@/components/dashboard/sales/quotation/QuotationDetailView";
+import { GmailLinkedMessages } from "@/components/dashboard/gmail/GmailLinkedMessages";
 import { getQuotationByIdAction } from "@/lib/actions/dashboard/sales/quotation/getQuotationByIdAction";
 
 export const maxDuration = 120;
@@ -20,6 +21,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <div className="p-6">
       <QuotationDetailView quotation={res.quotation} />
+      <GmailLinkedMessages kind="QUOTATION" recordId={id} />
     </div>
   );
 }

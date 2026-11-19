@@ -1,12 +1,9 @@
 import { gmailGet } from "./google";
+import { parseGmailMessage, type GmailMessage } from "./mime";
 
 type MessageList = { messages?: { id: string }[]; nextPageToken?: string };
-type GmailMessage = {
-  id: string; threadId: string; internalDate: string;
-  payload?: { headers?: { name: string; value: string }[] };
-};
 
-export async function getMatchingGmailMessages(accessToken: string, query: string) {
+export async function getMatchingGmailMessages(accessToken: string, query: string, options: { unknownIds?: (ids: string[]) => Promise<string[]>; limit?: number } = {}) {
   const ids = new Set<string>();
   let pageToken: string | undefined;
   for (let page = 0; page < 10; page++) {
@@ -20,23 +17,23 @@ export async function getMatchingGmailMessages(accessToken: string, query: strin
   if (pageToken) throw new Error("too_many_messages");
 
   const messages: GmailMessage[] = [];
-  const allIds = [...ids];
+  const unknown = options.unknownIds ? await options.unknownIds([...ids]) : [...ids];
+  const allIds = unknown.slice(0, options.limit ?? unknown.length);
   // Bound concurrency to avoid flooding Gmail for an initial import.
   for (let index = 0; index < allIds.length; index += 10) {
     messages.push(...await Promise.all(allIds.slice(index, index + 10).map((id) => {
-      const params = new URLSearchParams({ format: "metadata" });
-      params.append("metadataHeaders", "Subject");
-      params.append("metadataHeaders", "From");
+      const params = new URLSearchParams({ format: "full" });
       return gmailGet<GmailMessage>(accessToken, `messages/${encodeURIComponent(id)}?${params}`);
     })));
   }
-  return messages.map((message) => {
-    const header = (name: string) => message.payload?.headers?.find((item) => item.name.toLowerCase() === name)?.value;
+  const parsedMessages = messages.map((message) => {
+    const parsed = parseGmailMessage(message);
     return {
       messageId: message.id, threadId: message.threadId,
-      subject: (header("subject") || "(No subject)").slice(0, 1000),
-      sender: (header("from") || "Unknown sender").slice(0, 1000),
+      subject: parsed.subject, sender: parsed.sender, snippet: parsed.snippet,
+      bodyText: parsed.bodyText, hasAttachments: parsed.hasAttachments, contentIndexedAt: new Date(),
       receivedAt: new Date(Number(message.internalDate)),
     };
   });
+  return { messages: parsedMessages, complete: unknown.length === allIds.length };
 }

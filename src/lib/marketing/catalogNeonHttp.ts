@@ -1,4 +1,4 @@
-import { toCatalogProductDetail, type CatalogProductDetail } from "./catalog";
+import { toCatalogProductDetail, type CatalogProductDetail, type CatalogProductRow } from "./catalog";
 import { request } from "node:https";
 
 function postJson(url: string, headers: Record<string, string>, body: string): Promise<Response> {
@@ -17,6 +17,10 @@ function postJson(url: string, headers: Record<string, string>, body: string): P
 
 /** Optional transport for environments that cannot establish PostgreSQL TLS. */
 export async function readCatalogOverNeonHttp(): Promise<CatalogProductDetail[]> {
+  return (await readCatalogRowsOverNeonHttp()).map(toCatalogProductDetail);
+}
+
+export async function readCatalogRowsOverNeonHttp(): Promise<CatalogProductRow[]> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is required.");
   const database = new URL(connectionString);
@@ -45,5 +49,5 @@ export async function readCatalogOverNeonHttp(): Promise<CatalogProductDetail[]>
   }
   const result = await response.json();
   if (!Array.isArray(result.rows)) throw new Error("Unexpected database response.");
-  return result.rows.map(toCatalogProductDetail);
+  return result.rows;
 }

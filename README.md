@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+SEO implementation and Search Console setup are documented in [the SEO release notes](docs/seo-release.md). See [validation results](docs/seo-validation.md) and [the engineering content plan](docs/seo-content-plan.md).
+
 ## Getting Started
 
 First, run the development server:

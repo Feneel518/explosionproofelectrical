@@ -8,6 +8,8 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import FrontendVisitTracker from "@/components/analytics/FrontendVisitTracker";
 import NextTopLoader from "nextjs-toploader";
 import { SITE_DESCRIPTION, SITE_TITLE_DEFAULT, SITE_URL } from "@/lib/seo/site";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { organizationSchema } from "@/lib/seo/site";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -30,9 +32,7 @@ export const metadata: Metadata = {
     template: "%s | ExEC",
   },
   description: SITE_DESCRIPTION,
-  alternates: {
-    canonical: "/",
-  },
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || undefined },
   robots: {
     index: true,
     follow: true,
@@ -62,6 +62,7 @@ export default function RootLayout({
         <NuqsAdapter>
           <TooltipProvider>
             <FrontendVisitTracker />
+            <JsonLd data={organizationSchema()} />
             {children}
           </TooltipProvider>
         </NuqsAdapter>

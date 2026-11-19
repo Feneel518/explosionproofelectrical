@@ -15,13 +15,14 @@ test('an existing default filter is upgraded and rescanned for Purchase Doc emai
   const { syncGmail } = load('src/lib/gmail/sync', {
     '@/lib/prisma/db': { prisma: {
       gmailConnection: { findUnique: async () => ({ ...current }), updateMany: updates },
+      gmailNotification: { findMany: async () => [] },
       $transaction: async work => work({ gmailConnection: { updateMany: updates }, gmailNotification: { createMany: async ({ data }) => imported.push(...data) } }),
     } },
     './crypto': { decryptGmailSecret: () => 'fixture-refresh' },
     './google': { ...load('src/lib/gmail/google'), exchangeGmailToken: async () => ({ access_token: 'fixture-access' }) },
     './messages': { getMatchingGmailMessages: async (_token, query) => {
       searched.push(query);
-      return query.includes('subject:"purchase doc"') ? [{ messageId: 'fixture-harman', threadId: 'fixture-thread', subject: 'Harman Finochem Purchase Doc 4830002545 / 2100', sender: 'Purchase department <buyer@example.invalid>', receivedAt: new Date() }] : [];
+      return { complete: true, messages: query.includes('subject:"purchase doc"') ? [{ messageId: 'fixture-harman', threadId: 'fixture-thread', subject: 'Harman Finochem Purchase Doc 4830002545 / 2100', sender: 'Purchase department <buyer@example.invalid>', receivedAt: new Date() }] : [] };
     } },
   });
   await syncGmail('fixture-owner');
@@ -68,10 +69,10 @@ test('forced refresh rechecks the saved query even immediately after an incremen
   const connection = { connectedAt: now, lastSyncedAt: now, searchQuery: 'subject:enquiry after:2025/01/01 before:2025/02/01', encryptedRefreshToken: 'fixture', syncLeaseUntil: null };
   const updates = async args => { claims.push(args); return { count: 1 }; };
   const { syncGmail } = load('src/lib/gmail/sync', {
-    '@/lib/prisma/db': { prisma: { gmailConnection: { findUnique: async () => connection, updateMany: updates }, $transaction: async work => work({ gmailConnection: { updateMany: updates } }) } },
+    '@/lib/prisma/db': { prisma: { gmailConnection: { findUnique: async () => connection, updateMany: updates }, gmailNotification: { findMany: async () => [] }, $transaction: async work => work({ gmailConnection: { updateMany: updates } }) } },
     './crypto': { decryptGmailSecret: () => 'fixture-refresh-token' },
     './google': { ...load('src/lib/gmail/google'), buildGmailSearch, exchangeGmailToken: async () => ({ access_token: 'fixture-access' }) },
-    './messages': { getMatchingGmailMessages: async (_token, query) => { queries.push(query); return []; } },
+    './messages': { getMatchingGmailMessages: async (_token, query) => { queries.push(query); return { messages: [], complete: true }; } },
   });
   await syncGmail('fixture-owner');
   assert.equal(queries.length, 0);

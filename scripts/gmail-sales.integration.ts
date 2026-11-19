@@ -133,4 +133,4 @@ async function main() {
   console.log("PASS: sales drafts, PDF item autofill, exact catalog links, private access, duplicate prevention and preservation of existing items (all rolled back).");
 }
 
-main().catch(error => { console.error(error instanceof Error ? error.message : "Sales integration check failed."); process.exitCode = 1; }).finally(async () => { await prisma.$disconnect(); await (globalThis as unknown as { pgPool?: { end: () => Promise<void> } }).pgPool?.end(); });
+main().catch(error => { console.error(error instanceof Error ? error.message : "Sales integration check failed."); process.exitCode = 1; }).finally(async () => { await prisma.$disconnect(); await pool.end(); });

@@ -15,7 +15,14 @@ import { absoluteUrl, SITE_NAME } from "@/lib/seo/site";
 import styles from "@/components/marketing/design-preview/blog.module.css";
 
 interface ArticlePageProps { params: Promise<{ postSlug: string }>; }
-export const dynamic = "force-dynamic";
+// Served from cache and refreshed at most every 60 s, so dashboard changes appear within a minute.
+export const revalidate = 60;
+
+/** Pre-build every published page; new ones render on first visit, then cache. */
+export async function generateStaticParams() {
+  const posts = await getPublishedBlogPosts();
+  return posts.map(({ slug }) => ({ postSlug: slug }));
+}
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { postSlug } = await params;

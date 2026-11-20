@@ -8,7 +8,8 @@ import { BlogArchive } from "@/components/marketing/design-preview/BlogArchive";
 import { getPublishedBlogPosts } from "@/lib/marketing/blog";
 import styles from "@/components/marketing/design-preview/blog.module.css";
 
-export const dynamic = "force-dynamic";
+// Served from cache and refreshed at most every 60 s, so dashboard changes appear within a minute.
+export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Flameproof Engineering Blog",
   description: "Practical guides about hazardous-area classification, flameproof equipment, PESO and CIMFR certification, lighting, installation and maintenance.",

@@ -3,9 +3,9 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { ArrowDown, ArrowRight, ArrowUpRight, BadgeCheck, BookOpen, FileText, Mail, Search } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, BadgeCheck, BookOpen, FileText, Mail } from "lucide-react";
 import { marketingAsset } from "@/lib/marketing/data";
 import { productExperience } from "@/lib/marketing/productExperience";
 import { COMPANY_EMAIL } from "@/lib/seo/site";
@@ -22,10 +22,23 @@ import styles from "./home.module.css";
 const INK = "#041a2a";
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const ProductStage = dynamic(() => import("./ProductStage"), {
-  ssr: false,
-  loading: () => <div className={styles.stageLoading}><Image src={marketingAsset("wellglass.png")} alt="ExEC 45W LED wellglass" width={320} height={380} priority /></div>,
-});
+const ProductStage = dynamic(() => import("./ProductStage"), { ssr: false, loading: () => null });
+
+/** A still of the model's starting pose, rendered from the same GLB (see public/models). */
+const MODEL_POSTER = "/models/exec-wellglass-45w-poster.webp";
+
+/** Start the 3D model once the page is idle, and not at all when the visitor asked to save data. */
+function useDeferred3D() {
+  const [load, setLoad] = useState(false);
+  useEffect(() => {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
+    const start = () => setLoad(true);
+    if (typeof window.requestIdleCallback === "function") { const id = window.requestIdleCallback(start, { timeout: 1500 }); return () => window.cancelIdleCallback(id); }
+    const id = setTimeout(start, 600); return () => clearTimeout(id);
+  }, []);
+  return load;
+}
 
 const phases = [
   { label: "Finished", eyebrow: "01 / The product", title: "", text: "" },
@@ -91,6 +104,15 @@ function Hero() {
   const stageScale = useTransform(scrollYProgress, [0, 0.3, 1], [1, 1.06, 1.02]);
   const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const onReady = useCallback(() => setReady(true), []);
+  const load3D = useDeferred3D();
+  // The live model fades in over the identical still; once it is fully opaque the still is
+  // removed and only then does the turntable start, so the swap is invisible.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!ready) return;
+    const id = setTimeout(() => setSettled(true), 800);
+    return () => clearTimeout(id);
+  }, [ready]);
 
   const goToPhase = (index: number) => {
     const element = track.current;
@@ -105,18 +127,23 @@ function Hero() {
       <div className={styles.heroGlow} aria-hidden="true" />
       <div className={styles.heroGrid} aria-hidden="true" data-active={phase > 0} />
 
-      <motion.div className={styles.stage} style={{ scale: reduce ? 1 : stageScale }} data-ready={ready}>
-        <ProductStage exploded={phase === 2} drawing={phase === 1} autoRotate resetKey={0} onReady={onReady} modelUrl={productExperience.modelUrl} paperColor={INK} lineColor="#f1eee8" showNote={false} />
+      <motion.div className={styles.stageWrap} style={{ scale: reduce ? 1 : stageScale }}>
+        <div className={styles.poster} data-hidden={settled || undefined} aria-hidden="true">
+          <Image src={MODEL_POSTER} alt="" width={1200} height={1200} priority fetchPriority="high" sizes="(max-width: 900px) 50vh, 80vh" />
+        </div>
+        <div className={styles.stage} data-ready={ready}>
+          {load3D && <ProductStage exploded={phase === 2} drawing={phase === 1} autoRotate={settled} resetKey={0} onReady={onReady} modelUrl={productExperience.modelUrl} paperColor={INK} lineColor="#f1eee8" showNote={false} />}
+        </div>
       </motion.div>
 
       <motion.div className={styles.heroCopy} style={reduce ? undefined : { opacity: introOpacity, y: introY }}>
-        <motion.span className={styles.heroEyebrow} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: EASE }}><i />Flameproof electrical equipment · Est. 1996</motion.span>
-        <RevealLines as="h1" className={styles.heroTitle} play lines={["Built to contain", <em key="s" className="serif">the spark.</em>]} delay={0.3} />
-        <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.65, ease: EASE }}>Lighting, control and connection equipment for hazardous areas — designed, cast, machined and tested in Vapi, India.</motion.p>
-        <motion.div className={styles.heroActions} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.8, ease: EASE }}>
+        <span className={`${styles.heroEyebrow} ${styles.heroIn}`}><i />Flameproof electrical equipment · Est. 1996</span>
+        <h1 className={styles.heroTitle}><span className={styles.heroLine}><span>Built to contain</span></span><span className={styles.heroLine}><em className="serif">the spark.</em></span></h1>
+        <p className={styles.heroIn} style={{ animationDelay: "160ms" }}>Lighting, control and connection equipment for hazardous areas — designed, cast, machined and tested in Vapi, India.</p>
+        <div className={`${styles.heroActions} ${styles.heroIn}`} style={{ animationDelay: "240ms" }}>
           <Link href="/catalog" className={styles.buttonLight}>Explore the range <ArrowRight size={17} /></Link>
           <Link href="/contact" className={styles.buttonGhost}>Request a quote</Link>
-        </motion.div>
+        </div>
       </motion.div>
 
       <AnimatePresence mode="wait">
@@ -249,36 +276,30 @@ function Process() {
 /* Complete collection                                                  */
 /* ------------------------------------------------------------------ */
 
+/** Six products from as many different families as possible, in catalog order. */
+function pickDistinct(products: CatalogProductCard[], count = 6) {
+  const picked: CatalogProductCard[] = [];
+  const families = new Set<string>();
+  for (const product of products) if (picked.length < count && !families.has(product.filter)) { families.add(product.filter); picked.push(product); }
+  for (const product of products) if (picked.length < count && !picked.includes(product)) picked.push(product);
+  return picked;
+}
+
 function FullCatalog({ products, filters }: { products: CatalogProductCard[]; filters: CatalogFilterOption[] }) {
-  const [category, setCategory] = useState("all");
-  const [query, setQuery] = useState("");
-  const visible = products.filter((product) => (category === "all" || product.filter === category) && `${product.name} ${product.cat} ${product.type} ${product.searchText}`.toLowerCase().includes(query.trim().toLowerCase()));
-  const used = filters.filter((filter) => filter.value === "all" || products.some((product) => product.filter === filter.value));
+  const shown = pickDistinct(products);
+  const families = filters.filter((filter) => filter.value !== "all" && products.some((product) => product.filter === filter.value)).length;
   return <section id="collection" className={styles.collection} aria-labelledby="collection-title">
     <div className={styles.collectionHead}>
       <div>
         <Reveal><span className={styles.eyebrow}>03 — The complete collection</span></Reveal>
         <RevealLines className={styles.h2} lines={["Every product.", <em key="c" className="serif">One place.</em>]} />
       </div>
-      <Reveal delay={0.1} className={styles.collectionCount}><strong><CountUp to={products.length} pad={2} /></strong><span>products across {Math.max(used.length - 1, 0)} families</span></Reveal>
+      <Reveal delay={0.1} className={styles.collectionCount}><strong><CountUp to={products.length} pad={2} /></strong><span>products across {families} families</span></Reveal>
     </div>
-    <div className={styles.collectionBar}>
-      <div className={styles.collectionFilters} role="group" aria-label="Filter by category">
-        {used.map((filter) => <button key={filter.value} type="button" aria-pressed={category === filter.value} onClick={() => setCategory(filter.value)}>
-          {category === filter.value && <motion.span layoutId="home-collection-pill" className={styles.collectionPill} transition={{ type: "spring", stiffness: 420, damping: 36 }} />}
-          <span>{filter.label === "All" ? "All" : filter.label.replace(/^Flameproof\s+/i, "")}</span>
-        </button>)}
-      </div>
-      <label className={styles.collectionSearch}><Search size={17} /><input type="search" placeholder="Search name or type number" aria-label="Search products" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-    </div>
-    {visible.length ? <motion.div layout className={styles.collectionGrid}>
-      <AnimatePresence mode="popLayout">
-        {visible.map((product, index) => <motion.div key={product.slug} layout initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.5, delay: Math.min(index, 8) * 0.04, ease: EASE }}>
-          <CatalogCard product={product} index={index} />
-        </motion.div>)}
-      </AnimatePresence>
-    </motion.div> : <p className={styles.collectionEmpty}>{products.length ? "No product matches that search." : "The collection is being updated — contact our team for the latest range."}</p>}
-    <Reveal className={styles.rangeMore}><Link href="/catalog" className={styles.buttonDark}>Open the full catalog <ArrowRight size={17} /></Link></Reveal>
+    {shown.length ? <Stagger className={styles.collectionGrid} gap={0.05}>
+      {shown.map((product, index) => <CatalogCard key={product.slug} product={product} index={index} />)}
+    </Stagger> : <p className={styles.collectionEmpty}>The collection is being updated — contact our team for the latest range.</p>}
+    <Reveal className={styles.rangeMore}><Link href="/catalog" className={styles.buttonDark}>{products.length > shown.length ? `View all ${products.length} products` : "Open the full catalog"} <ArrowRight size={17} /></Link></Reveal>
   </section>;
 }
 

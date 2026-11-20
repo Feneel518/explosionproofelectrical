@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, type ReactNode, type SVGProps } from "react";
+import { createContext, useContext, useRef, type ReactNode, type SVGProps, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { cadDrawings, type CadKind } from "./cad-drawings";
 
@@ -506,6 +506,13 @@ type DiagramProps = {
 export function ProductDiagram({ kind, className, play, labels = true, speed = 1, title }: DiagramProps) {
   const ref = useRef<SVGSVGElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.3 });
+  // Every drawing starts undrawn, so its line work is only added to the page when it is
+  // about to be seen (or first played, for drawings revealed on hover). Keeps the HTML
+  // small: the GA drawings alone are 10–20 KB of path data each.
+  const near = useInView(ref, { once: true, margin: "400px 0px 400px 0px" });
+  const [played, setPlayed] = useState(false);
+  if (play && !played) setPlayed(true);
+  const mounted = play === undefined ? near : played;
   const reduce = Boolean(useReducedMotion());
   const Drawing = drawings[kind];
   // Without labels a GA drawing is cropped to the part itself, so it fills its frame.
@@ -513,7 +520,7 @@ export function ProductDiagram({ kind, className, play, labels = true, speed = 1
   const viewBox = cadBox ? `${cadBox[0] - 10} ${cadBox[1] - 10} ${cadBox[2] + 20} ${cadBox[3] + 20}` : "0 0 400 400";
   return <svg ref={ref} viewBox={viewBox} className={`exec-diagram ${className ?? ""}`} role="img" aria-label={`Line drawing: ${title ?? diagramTitles[kind]}`}>
     <DiagramContext.Provider value={{ shown: play ?? inView, reduce, labels, speed }}>
-      <Drawing />
+      {mounted && <Drawing />}
     </DiagramContext.Provider>
   </svg>;
 }

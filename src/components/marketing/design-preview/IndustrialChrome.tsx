@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { COMPANY_ADDRESS, COMPANY_EMAIL, SITE_NAME } from "@/lib/seo/site";
-import { AutoReveal, SmoothScroll } from "@/components/site/motion";
+import { AutoReveal } from "@/components/site/motion";
 import styles from "./chrome.module.css";
 
 const links = [
@@ -43,9 +43,8 @@ export function IndustrialHeader() {
     if (!open) return;
     const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpenPath(null); };
     window.addEventListener("keydown", closeOnEscape);
-    window.__execLenis?.stop();
     document.documentElement.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", closeOnEscape); window.__execLenis?.start(); document.documentElement.style.overflow = ""; };
+    return () => { window.removeEventListener("keydown", closeOnEscape); document.documentElement.style.overflow = ""; };
   }, [open]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -111,14 +110,13 @@ export function IndustrialFooter() {
     <div className={styles.footerBottom}>
       <span>© {new Date().getFullYear()} {SITE_NAME}</span>
       <span>Built to contain the spark.</span>
-      <a href="#top" onClick={(event) => { if (window.__execLenis) { event.preventDefault(); window.__execLenis.scrollTo(0); } }}>Back to top ↑</a>
+      <a href="#top" onClick={(event) => { event.preventDefault(); window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }}>Back to top ↑</a>
     </div>
   </footer>;
 }
 
 export function IndustrialShell({ children, flush = false }: { children: React.ReactNode; flush?: boolean }) {
   return <div className={styles.site} id="top">
-    <SmoothScroll />
     {!flush && <AutoReveal />}
     <a href="#main-content" className={styles.skipLink}>Skip to content</a>
     <IndustrialHeader />

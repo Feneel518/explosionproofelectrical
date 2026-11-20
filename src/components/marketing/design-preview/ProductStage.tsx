@@ -55,13 +55,15 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
     if (!host) return;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
+      // Antialiasing is the most expensive part of each frame and is barely visible on
+      // high-density screens, so only standard-density screens get it.
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: (window.devicePixelRatio || 1) < 1.5, powerPreference: "low-power" });
     } catch {
       queueMicrotask(() => setStatus("fallback"));
       return;
     }
     let disposed = false, frame = 0, ticking = false, visible = true, contextAvailable = true;
-    let needsRender = true, loaded = false, ready = false, lastTime = 0;
+    let needsRender = true, loaded = false, ready = false, lastTime = 0, lastRender = 0;
     let lastReset = settingsRef.current.resetKey, explodeProgress = 0;
     let stageWidth = host.clientWidth, stageHeight = 0;
     let frameSampleTime = 0, frameSamples = 0;
@@ -177,8 +179,11 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       }
       const desiredFov = (stageWidth < 460 ? 39 : 35) + explodeProgress * 14;
       if (camera.fov !== desiredFov) { camera.fov = desiredFov; camera.updateProjectionMatrix(); needsRender = true; }
-      if (changed || moving || needsRender || !ready) {
-        renderer.render(scene, camera); needsRender = false;
+      // The idle turntable is slow, so 30 fps is indistinguishable from 60 and halves
+      // the GPU work. Transitions and dragging still render every frame.
+      const idleSpin = changed && rotating && !moving && !drawingMoving && !needsRender && ready && pointer === null;
+      if ((changed || moving || needsRender || !ready) && !(idleSpin && time - lastRender < 31)) {
+        renderer.render(scene, camera); needsRender = false; lastRender = time;
         if (!ready) { ready = true; setStatus("ready"); onReadyRef.current?.(); }
       }
       ticking = false;

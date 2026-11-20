@@ -106,7 +106,7 @@ function Hero() {
       <div className={styles.heroGrid} aria-hidden="true" data-active={phase > 0} />
 
       <motion.div className={styles.stage} style={{ scale: reduce ? 1 : stageScale }} data-ready={ready}>
-        <ProductStage exploded={phase === 2} drawing={phase === 1} autoRotate resetKey={0} onReady={onReady} modelUrl={productExperience.modelUrl} paperColor={INK} lineColor="#f1eee8" renderWhileScrolling showNote={false} />
+        <ProductStage exploded={phase === 2} drawing={phase === 1} autoRotate resetKey={0} onReady={onReady} modelUrl={productExperience.modelUrl} paperColor={INK} lineColor="#f1eee8" showNote={false} />
       </motion.div>
 
       <motion.div className={styles.heroCopy} style={reduce ? undefined : { opacity: introOpacity, y: introY }}>
@@ -120,7 +120,7 @@ function Hero() {
       </motion.div>
 
       <AnimatePresence mode="wait">
-        {phase > 0 && <motion.div key={phase} className={styles.phaseCopy} initial={{ opacity: 0, y: 30, filter: "blur(8px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -20, filter: "blur(8px)" }} transition={{ duration: 0.6, ease: EASE }}>
+        {phase > 0 && <motion.div key={phase} className={styles.phaseCopy} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.6, ease: EASE }}>
           <span>{phases[phase].eyebrow}</span>
           <h2>{phases[phase].title}</h2>
           <p>{phases[phase].text}</p>

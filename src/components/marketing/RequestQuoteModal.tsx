@@ -31,7 +31,7 @@ export function RequestQuoteModal({
           {triggerLabel} <ArrowUpRight size={17} aria-hidden="true" />
         </button>
       </DialogTrigger>
-      <DialogContent data-lenis-prevent className={cn(styles.dialog, contentClassName)}>
+      <DialogContent className={cn(styles.dialog, contentClassName)}>
         <div className={styles.head}>
           <DialogHeader>
             <div className={styles.eyebrow}>Send a requirement</div>

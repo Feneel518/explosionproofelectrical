@@ -1,50 +1,34 @@
 "use client";
 
 import { Children, isValidElement, useEffect, useRef, useState, type ElementType, type ReactNode } from "react";
-import Lenis from "lenis";
 import { usePathname } from "next/navigation";
 import { animate, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 /* ------------------------------------------------------------------ */
-/* Smooth scrolling                                                     */
+/* Scrolling                                                            */
 /* ------------------------------------------------------------------ */
 
-declare global {
-  interface Window { __execLenis?: Lenis }
-}
-
-export function SmoothScroll() {
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ duration: 1.1, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), anchors: { offset: -80 } });
-    window.__execLenis = lenis;
-    let frame = 0;
-    const raf = (time: number) => { lenis.raf(time); frame = requestAnimationFrame(raf); };
-    frame = requestAnimationFrame(raf);
-    return () => { cancelAnimationFrame(frame); lenis.destroy(); delete window.__execLenis; };
-  }, []);
-  return null;
-}
-
+/** Native smooth scroll (instant with reduced motion), leaving room for the floating header. */
 export function scrollToTarget(target: number | string | HTMLElement) {
-  if (window.__execLenis) { window.__execLenis.scrollTo(target, { offset: typeof target === "number" ? 0 : -80 }); return; }
-  if (typeof target === "number") window.scrollTo({ top: target, behavior: "smooth" });
-  else (typeof target === "string" ? document.querySelector(target) : target)?.scrollIntoView({ behavior: "smooth" });
+  const behavior: ScrollBehavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  if (typeof target === "number") { window.scrollTo({ top: target, behavior }); return; }
+  const element = typeof target === "string" ? document.querySelector<HTMLElement>(target) : target;
+  if (element) window.scrollTo({ top: element.getBoundingClientRect().top + window.scrollY - 80, behavior });
 }
 
 /* ------------------------------------------------------------------ */
 /* Reveal                                                               */
 /* ------------------------------------------------------------------ */
 
-type RevealProps = { children: ReactNode; delay?: number; y?: number; className?: string; as?: "div" | "section" | "article" | "li" | "span" | "p" | "header"; amount?: number; blur?: boolean };
+type RevealProps = { children: ReactNode; delay?: number; y?: number; className?: string; as?: "div" | "section" | "article" | "li" | "span" | "p" | "header"; amount?: number };
 
-export function Reveal({ children, delay = 0, y = 28, className, as = "div", amount = 0.2, blur = true }: RevealProps) {
+export function Reveal({ children, delay = 0, y = 28, className, as = "div", amount = 0.2 }: RevealProps) {
   const reduce = useReducedMotion();
   const Component = motion[as] as ElementType;
   if (reduce) return <Component className={className}>{children}</Component>;
-  return <Component className={className} initial={{ opacity: 0, y, filter: blur ? "blur(6px)" : "blur(0px)" }} whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }} viewport={{ once: true, amount }} transition={{ duration: 0.9, delay, ease: EASE }}>{children}</Component>;
+  return <Component className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount }} transition={{ duration: 0.9, delay, ease: EASE }}>{children}</Component>;
 }
 
 /** Staggers its direct children into view. Each child is wrapped in a block element. */

@@ -57,7 +57,7 @@
 .heroFoot { position: absolute; z-index: 3; left: var(--gutter); right: var(--gutter); bottom: 26px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .heroSpecs { display: flex; gap: 8px; }
 .heroSpecs span { padding: 8px 12px; border: 1px solid rgb(255 255 255 / .1); border-radius: 999px; font: 500 11px/1 var(--font-site-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--on-ink-muted); }
-.phaseNav { position: relative; display: flex; padding: 4px; border: 1px solid rgb(255 255 255 / .1); border-radius: 999px; background: rgb(255 255 255 / .04); backdrop-filter: blur(10px); }
+.phaseNav { position: relative; display: flex; padding: 4px; border: 1px solid rgb(255 255 255 / .1); border-radius: 999px; background: rgb(7 36 54 / .72); }
 .phaseNav button { position: relative; padding: 10px 16px; border: 0; border-radius: 999px; background: none; color: var(--on-ink-muted); font: 500 13px/1 var(--font-site-sans); cursor: pointer; transition: color .3s; }
 .phaseNav button > span:last-child { position: relative; z-index: 1; }
 .phaseNav button[aria-pressed="true"] { color: var(--paper); }
@@ -190,7 +190,7 @@
 .industryPhoto { position: relative; min-height: 520px; border-radius: var(--radius-lg); overflow: hidden; background: var(--block); }
 .industryPhotoInner { position: absolute; inset: -60px 0; }
 .industryPhotoInner img { object-fit: cover; filter: saturate(.75) contrast(1.05); }
-.industryPhoto > span { position: absolute; left: 22px; right: 22px; bottom: 22px; padding: 16px 18px; border-radius: 16px; background: rgb(13 16 19 / .55); backdrop-filter: blur(14px); color: var(--on-ink); font-size: 15px; line-height: 1.45; }
+.industryPhoto > span { position: absolute; left: 22px; right: 22px; bottom: 22px; padding: 16px 18px; border-radius: 16px; background: rgb(7 28 42 / .86); color: var(--on-ink); font-size: 15px; line-height: 1.45; }
 .industryList { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
 .industryList li { border-bottom: 1px solid var(--line); }
 .industryList a { display: grid; grid-template-columns: 48px 1fr auto; align-items: center; gap: 16px; padding: clamp(22px, 3vw, 36px) 0; transition: padding .5s var(--ease-out); }
@@ -247,7 +247,7 @@
 .collectionCount { text-align: right; }
 .collectionCount strong { display: block; font-size: clamp(64px, 8vw, 120px); font-weight: 500; line-height: .85; letter-spacing: -.06em; color: var(--accent); font-variant-numeric: tabular-nums; }
 .collectionCount span { display: block; margin-top: 10px; font: 500 12px var(--font-site-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.collectionBar { position: sticky; top: 86px; z-index: 20; display: flex; align-items: center; gap: 10px; margin: 36px 0 18px; padding: 8px; border-radius: 999px; background: rgb(7 36 54 / .84); backdrop-filter: blur(16px) saturate(1.3); border: 1px solid var(--line-soft); }
+.collectionBar { position: sticky; top: 86px; z-index: 20; display: flex; align-items: center; gap: 10px; margin: 36px 0 18px; padding: 8px; border-radius: 999px; background: rgb(7 36 54 / .97); border: 1px solid var(--line-soft); }
 .collectionFilters { display: flex; flex: 1; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .collectionFilters::-webkit-scrollbar { display: none; }
 .collectionFilters button { position: relative; flex-shrink: 0; height: 42px; padding: 0 16px; border: 0; border-radius: 999px; background: none; color: var(--muted); font: 500 14px var(--font-site-sans); cursor: pointer; transition: color .25s; }

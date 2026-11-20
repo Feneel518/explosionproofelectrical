@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { EB_Garamond, Poppins } from "next/font/google";
 import "@/app/globals.css";
 import "@/app/public-theme.css";
+import "@/app/site-theme.css";
+import { siteFontVariables } from "@/components/site/fonts";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -47,7 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} ${garamond.variable} antialiased font-sans no-scrollbar`}>
+        className={`${poppins.variable} ${garamond.variable} ${siteFontVariables} antialiased font-sans no-scrollbar`}>
         <NextTopLoader
           color="#1f7aec"
           height={3}

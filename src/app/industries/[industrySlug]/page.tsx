@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { industryPages } from "@/lib/seo/industries";
@@ -22,7 +22,7 @@ export default async function IndustryPage({ params }: Props) {
   const industry = industryPages.find(item => item.slug === industrySlug);
   if (!industry) notFound();
   const url = absoluteUrl(`/industries/${industry.slug}`);
-  return <IndustrialFonts><IndustrialShell>
+  return <SiteRoot><IndustrialShell>
     <JsonLd data={{ "@context": "https://schema.org", "@graph": [
       { "@type": "WebPage", "@id": `${url}#page`, name: industry.title, description: industry.description, url, publisher: { "@id": absoluteUrl("/#organization") }, about: { "@type": "Thing", name: industry.name } },
       { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") }, { "@type": "ListItem", position: 2, name: "Industries", item: absoluteUrl("/industries") }, { "@type": "ListItem", position: 3, name: industry.name, item: url }] },
@@ -30,5 +30,5 @@ export default async function IndustryPage({ params }: Props) {
     <nav className={styles.breadcrumb} aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/industries">Industries</Link><span>/</span><span aria-current="page">{industry.name}</span></nav>
     <section className={styles.categoryHero}><span className={styles.eyebrow}>ExEC / INDUSTRY APPLICATIONS / INDIA</span><div><h1>{industry.name}<br /><span>Flameproof electrical equipment.</span></h1><p>{industry.description}</p></div></section>
     <section className={styles.selectionContent}><h2>Specify for the actual installation</h2>{industry.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}<h3>Project inputs</h3><ul>{industry.checklist.map(item => <li key={item}>{item}</li>)}</ul><h3>Explore relevant product families</h3><nav className={styles.resourceLinks} aria-label="Relevant product families">{industry.categories.map(slug => <Link key={slug} href={`/catalog/category/${slug}`}>{getCategoryLanding(slug)?.name}</Link>)}</nav><nav className={styles.resourceLinks} aria-label="Application engineering resources"><Link href="/knowledge-hub/zone-0-zone-1-zone-2-hazardous-areas">Hazardous-area zones</Link><Link href="/certifications">Certificate verification</Link><Link href="/contact">Discuss your project</Link></nav></section>
-  </IndustrialShell></IndustrialFonts>;
+  </IndustrialShell></SiteRoot>;
 }

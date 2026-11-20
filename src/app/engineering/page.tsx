@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { marketingAsset } from "@/lib/marketing/data";
 import { absoluteUrl } from "@/lib/seo/site";
+import { ProductDiagram } from "@/components/site/ProductDiagram";
+import { DrawingLibrary } from "@/components/marketing/design-preview/DrawingLibrary";
 import styles from "@/components/marketing/design-preview/public-pages.module.css";
 
 export const metadata: Metadata = {
@@ -51,7 +53,7 @@ const industries = [
 
 export default function EngineeringPage() {
   return (
-    <IndustrialFonts>
+    <SiteRoot>
       <IndustrialShell>
         <div className={styles.page}>
           <section className={styles.hero} aria-labelledby="engineering-title">
@@ -68,7 +70,7 @@ export default function EngineeringPage() {
               </div>
             </div>
             <div className={`${styles.heroVisual} ${styles.productVisual}`}>
-              <Image src={marketingAsset("wellglass.png")} alt="ExEC flameproof wellglass light fitting" fill priority sizes="(max-width: 900px) 100vw, 38vw" />
+              <ProductDiagram kind="wellglass" title="ExEC flameproof wellglass light fitting" />
               <div className={styles.visualTag}><span>Product study / 001</span><span>Not to scale</span></div>
               <span className={styles.visualNumber}>EX</span>
             </div>
@@ -94,13 +96,25 @@ export default function EngineeringPage() {
             </div>
           </section>
 
+          <section id="drawings" aria-labelledby="drawings-title">
+            <div className={styles.sectionBar}><span>02 / From the drawing office</span><span>General-arrangement drawings / Sizes in mm</span></div>
+            <div className={styles.statement}>
+              <h2 id="drawings-title">Every product starts <span>as a drawing.</span></h2>
+              <div className={styles.statementBody}>
+                <p>These are ExEC general-arrangement drawings, taken from the original CAD files. Overall sizes, cable entries and mounting points are shown as drawn.</p>
+                <p>Need a drawing for your project file, or a variant for your site? Ask for it with your enquiry.</p>
+              </div>
+            </div>
+            <DrawingLibrary />
+          </section>
+
           <section className={styles.split} aria-labelledby="process-title">
             <div className={`${styles.splitVisual} ${styles.product}`}>
               <Image src={marketingAsset("panel.png")} alt="ExEC flameproof control panel" fill sizes="(max-width: 900px) 100vw, 50vw" />
               <span className={styles.micro}>FROM SINGLE ENCLOSURES TO COMPLETE CONTROL AND INSTRUMENTATION PANELS</span>
             </div>
             <div className={styles.splitCopy}>
-              <span className={styles.eyebrow}>02 / From brief to build</span>
+              <span className={styles.eyebrow}>03 / From brief to build</span>
               <h2 id="process-title">One team. <span>Every step.</span></h2>
               <p>A direct engineering conversation keeps the specification connected to the final equipment.</p>
               <div className={styles.factList}>
@@ -116,7 +130,7 @@ export default function EngineeringPage() {
           </section>
 
           <section className={styles.industries} aria-labelledby="industries-title">
-            <div className={styles.sectionBar}><span>03 / Made for the real world</span><span>Four environments / One standard of care</span></div>
+            <div className={styles.sectionBar}><span>04 / Made for the real world</span><span>Four environments / One standard of care</span></div>
             <div className={styles.statement}>
               <h2 id="industries-title">The drawing is the start. <span>The field is the test.</span></h2>
               <div className={styles.statementBody}><p>Temperature, dust, water, corrosion, maintenance access and operating duty all shape the right specification. The real environment belongs in the engineering conversation.</p></div>
@@ -144,6 +158,6 @@ export default function EngineeringPage() {
           </section>
         </div>
       </IndustrialShell>
-    </IndustrialFonts>
+    </SiteRoot>
   );
 }

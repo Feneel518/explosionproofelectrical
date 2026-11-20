@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { marketingAsset } from "@/lib/marketing/data";
 import { absoluteUrl } from "@/lib/seo/site";
@@ -35,7 +35,7 @@ const chapters = [
 
 export default function StoryPage() {
   return (
-    <IndustrialFonts>
+    <SiteRoot>
       <IndustrialShell>
         <div className={styles.page}>
           <section className={styles.hero} aria-labelledby="story-title">
@@ -71,7 +71,7 @@ export default function StoryPage() {
 
           <section className={styles.split} aria-labelledby="floor-title">
             <div className={`${styles.splitVisual} ${styles.product}`}>
-              <Image src={marketingAsset("HumanStatic.png")} alt="Flameproof equipment on the ExEC production floor" fill sizes="(max-width: 900px) 100vw, 50vw" />
+              <Image src="/asset/HumanStatic.png" alt="Flameproof equipment on the ExEC production floor" fill sizes="(max-width: 900px) 100vw, 50vw" />
               <span className={styles.micro}>THE WORK IS INDUSTRIAL. THE RESPONSIBILITY IS HUMAN.</span>
             </div>
             <div className={styles.splitCopy}>
@@ -134,6 +134,6 @@ export default function StoryPage() {
           </section>
         </div>
       </IndustrialShell>
-    </IndustrialFonts>
+    </SiteRoot>
   );
 }

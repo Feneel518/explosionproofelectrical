@@ -4,12 +4,21 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import styles from "./product-stage.module.css";
 
 type ProductStageProps = {
   exploded: boolean; autoRotate: boolean; resetKey: number;
   drawing?: boolean; onReady?: () => void; modelUrl: string; className?: string;
+  /** Colour the shaded surfaces fade into in drawing mode — match the backdrop. */
+  paperColor?: string;
+  /** Colour of the technical drawing lines. */
+  lineColor?: string;
+  /** Keep rendering during page scroll (for scroll-driven scenes). */
+  renderWhileScrolling?: boolean;
+  /** Show the small "product visualisation" note. */
+  showNote?: boolean;
 };
 
 function disposeObject(object: THREE.Object3D) {
@@ -29,7 +38,7 @@ function disposeObject(object: THREE.Object3D) {
   textures.forEach((t) => t.dispose());
 }
 
-export default function ProductStage({ exploded, autoRotate, resetKey, drawing = false, onReady, modelUrl, className = "" }: ProductStageProps) {
+export default function ProductStage({ exploded, autoRotate, resetKey, drawing = false, onReady, modelUrl, className = "", paperColor = "#072436", lineColor = "#bfd8e4", renderWhileScrolling = false, showNote = true }: ProductStageProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef({ exploded, autoRotate, resetKey, drawing });
   const onReadyRef = useRef(onReady);
@@ -47,13 +56,15 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
     if (!host) return;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
+      // Antialiasing is the most expensive part of each frame and is barely visible on
+      // high-density screens, so only standard-density screens get it.
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: (window.devicePixelRatio || 1) < 1.5, powerPreference: "low-power" });
     } catch {
       queueMicrotask(() => setStatus("fallback"));
       return;
     }
     let disposed = false, frame = 0, ticking = false, visible = true, contextAvailable = true;
-    let needsRender = true, loaded = false, ready = false, lastTime = 0;
+    let needsRender = true, loaded = false, ready = false, lastTime = 0, lastRender = 0;
     let lastReset = settingsRef.current.resetKey, explodeProgress = 0;
     let stageWidth = host.clientWidth, stageHeight = 0;
     let frameSampleTime = 0, frameSamples = 0;
@@ -92,8 +103,8 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
     const parts: { object: THREE.Object3D; restY: number; travel: number }[] = [];
     const lines: THREE.LineSegments[] = [];
     const drawingUniform = { value: settingsRef.current.drawing ? 1 : 0 };
-    const paper = new THREE.Color("#072436");
-    const drawingMaterial = new THREE.LineBasicMaterial({ color: "#bfd8e4", transparent: true, opacity: 0.75 });
+    const paper = new THREE.Color(paperColor);
+    const drawingMaterial = new THREE.LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.75 });
 
     // Only rotation is needed. Passive pointer handlers avoid the blocking
     // wheel listener that OrbitControls installs even with zoom disabled.
@@ -140,7 +151,7 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       if (Math.abs(drawingUniform.value - drawingTarget) < 0.002) drawingUniform.value = drawingTarget;
       const drawingMoving = drawingUniform.value !== previousDrawing;
       if (drawingMoving || !ready) {
-        drawingMaterial.opacity = drawingUniform.value * 0.75;
+        drawingMaterial.opacity = drawingUniform.value * 0.92;
         lines.forEach((line) => { line.visible = drawingUniform.value > 0.001; });
         needsRender = true;
       }
@@ -169,8 +180,11 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       }
       const desiredFov = (stageWidth < 460 ? 39 : 35) + explodeProgress * 14;
       if (camera.fov !== desiredFov) { camera.fov = desiredFov; camera.updateProjectionMatrix(); needsRender = true; }
-      if (changed || moving || needsRender || !ready) {
-        renderer.render(scene, camera); needsRender = false;
+      // The idle turntable is slow, so 30 fps is indistinguishable from 60 and halves
+      // the GPU work. Transitions and dragging still render every frame.
+      const idleSpin = changed && rotating && !moving && !drawingMoving && !needsRender && ready && pointer === null;
+      if ((changed || moving || needsRender || !ready) && !(idleSpin && time - lastRender < 31)) {
+        renderer.render(scene, camera); needsRender = false; lastRender = time;
         if (!ready) { ready = true; setStatus("ready"); onReadyRef.current?.(); }
       }
       ticking = false;
@@ -220,6 +234,7 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
     const onVisibility = () => { if (document.hidden) stop(); else wake(); };
     const onMotion = () => wake();
     const onScroll = () => {
+      if (renderWhileScrolling) return;
       if (!scrolling) { scrolling = true; stop(); }
       window.clearTimeout(scrollEndTimer);
       scrollEndTimer = window.setTimeout(() => { scrolling = false; wake(); }, 150);
@@ -245,7 +260,9 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
 
     // The GLB contains the original STL surfaces and offline-generated drawing
     // lines. No STL parsing, edge generation or replacement model is built here.
-    new GLTFLoader().load(modelUrl, async (gltf) => {
+    // The model is meshopt-compressed (EXT_meshopt_compression): about a third of the
+    // original download, decoded in WebAssembly.
+    new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).load(modelUrl, async (gltf) => {
       if (disposed) { disposeObject(gltf.scene); return; }
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const center = box.getCenter(new THREE.Vector3());
@@ -301,7 +318,7 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       canvas.removeEventListener("pointercancel", onPointerEnd);
       disposeObject(scene); drawingMaterial.dispose(); environmentMap.dispose(); renderer.dispose(); canvas.remove();
     };
-  }, [modelUrl]);
+  }, [modelUrl, paperColor, lineColor, renderWhileScrolling]);
 
   return <div className={`${styles.stage} ${className}`} data-stage-status={status}>
     <div ref={hostRef} className={styles.host} aria-hidden={status === "fallback"} />
@@ -309,6 +326,6 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
       <Image src="/marketing/wellglass.png" alt="ExEC wellglass product photograph" width={440} height={440} className={styles.fallbackImage} />
       <span>{status === "loading" ? "Preparing the product view" : "Product photograph · 3D unavailable on this device"}</span>
     </div>}
-    {status === "ready" && <span className={styles.modelNote}>45W wellglass · product visualisation</span>}
+    {status === "ready" && showNote && <span className={styles.modelNote}>45W wellglass · product visualisation</span>}
   </div>;
 }

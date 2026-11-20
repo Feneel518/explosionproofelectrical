@@ -1,7 +1,8 @@
 import { IndustrialHome } from "@/components/marketing/design-preview/IndustrialHome";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { getCatalogData } from "@/lib/marketing/catalog";
 import { getPublishedBlogPosts } from "@/lib/marketing/blog";
+import { knowledgeArticles } from "@/lib/marketing/knowledge";
 import type { Metadata } from "next";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_TITLE_DEFAULT } from "@/lib/seo/site";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [{ products }, blogPosts] = await Promise.all([getCatalogData(), getPublishedBlogPosts(3)]);
-  return <IndustrialFonts><IndustrialHome products={products} blogPosts={blogPosts} /></IndustrialFonts>;
+  const [{ products, filters }, blogPosts] = await Promise.all([getCatalogData(), getPublishedBlogPosts(5)]);
+  const guides = knowledgeArticles.map(({ slug, shortTitle, category, description, readMinutes }) => ({ slug, shortTitle, category, description, readMinutes }));
+  return <SiteRoot><IndustrialHome products={products} filters={filters} blogPosts={blogPosts} guides={guides} /></SiteRoot>;
 }

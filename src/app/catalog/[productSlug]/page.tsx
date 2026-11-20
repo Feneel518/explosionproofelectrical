@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { IndustrialProduct } from "@/components/marketing/design-preview/IndustrialProduct";
 import { getCatalogProductDetail } from "@/lib/marketing/catalog";
@@ -31,5 +31,5 @@ export default async function ProductPage({ params }: Props) {
   const data = await getCatalogProductDetail(productSlug);
   if (!data) notFound();
   const { product } = data;
-  return <IndustrialFonts><IndustrialShell><JsonLd data={productSchema(product)} /><Suspense fallback={<p style={{ padding: 36 }}>Loading product details...</p>}><IndustrialProduct {...data} /></Suspense></IndustrialShell></IndustrialFonts>;
+  return <SiteRoot><IndustrialShell><JsonLd data={productSchema(product)} /><Suspense fallback={<p style={{ padding: 36 }}>Loading product details...</p>}><IndustrialProduct {...data} /></Suspense></IndustrialShell></SiteRoot>;
 }

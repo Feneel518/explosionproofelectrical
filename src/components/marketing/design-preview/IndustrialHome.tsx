@@ -3,138 +3,491 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight, Pause, Play, Plus, RotateCcw, X } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { ArrowDown, ArrowRight, ArrowUpRight, BadgeCheck, BookOpen, FileText, Mail, Search } from "lucide-react";
 import { marketingAsset } from "@/lib/marketing/data";
 import { productExperience } from "@/lib/marketing/productExperience";
 import { COMPANY_EMAIL } from "@/lib/seo/site";
 import { RequestQuoteModal } from "@/components/marketing/RequestQuoteModal";
-import styles from "./industrial-home.module.css";
-import collection from "./catalog.module.css";
-import { IndustrialHeader, IndustrialFooter } from "./IndustrialChrome";
+import { CountUp, Marquee, Parallax, Reveal, RevealLines, ScrollLitText, Stagger, scrollToTarget } from "@/components/site/motion";
+import { ProductDiagram, diagramFor, type DiagramKind } from "@/components/site/ProductDiagram";
+import { IndustrialShell } from "./IndustrialChrome";
+import type { CatalogFilterOption, CatalogProductCard } from "@/lib/marketing/catalog";
+import { certificateChecklist, certificationBodies } from "@/lib/marketing/certificates";
 import { CatalogCard } from "./CatalogCard";
-import { ShareActions } from "./ShareActions";
-import { BlogHomeSection } from "./BlogHomeSection";
-import type { CatalogProductCard } from "@/lib/marketing/catalog";
 import type { PublicBlogPost } from "@/lib/marketing/blog";
+import styles from "./home.module.css";
+
+const INK = "#041a2a";
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 const ProductStage = dynamic(() => import("./ProductStage"), {
   ssr: false,
-  loading: () => <div className={styles.stageLoading}><Image src={marketingAsset("wellglass.png")} alt="ExEC wellglass light" width={300} height={360} priority /><span>PREPARING THE PRODUCT STUDY</span></div>,
+  loading: () => <div className={styles.stageLoading}><Image src={marketingAsset("wellglass.png")} alt="ExEC 45W LED wellglass" width={320} height={380} priority /></div>,
 });
-const details = [
-  { label: "Cast enclosure", code: "01", title: "Protection begins with the housing.", text: "The enclosure gives the fitting its distinctive form. Casting and precision machining are at the heart of the ExEC manufacturing process." },
-  { label: "Glass chamber", code: "02", title: "A clearer view of the details.", text: "Inside the wellglass form, the light source sits within a glass chamber. Explore the assembly to see how its elements come together." },
-  { label: "Protective guard", code: "03", title: "Every part has a purpose.", text: "The metal guard surrounds the glass. From the housing to the last visible fastener, the complete assembly deserves a closer look." },
-];
+
+const phases = [
+  { label: "Finished", eyebrow: "01 / The product", title: "", text: "" },
+  { label: "Drawing", eyebrow: "02 / The housing", title: "Protection begins with the enclosure.", text: "The cast body gives every fitting its form — and its flame path. Casting and precision machining sit at the heart of how we build." },
+  { label: "Exploded", eyebrow: "03 / The assembly", title: "Every part has a purpose.", text: "Body, cover, retaining ring, glass and guard. Each interface is machined, assembled and tested under one roof in Vapi." },
+] as const;
+
 const steps = [
-  { title: "Understand", text: "Your application. Your environment. Your specification. Every project starts with the right questions." },
-  { title: "Engineer", text: "Choose from our product range or work with us on a control panel built around your requirements." },
-  { title: "Manufacture", text: "Casting, machining and assembly. Manufacturing experience brought together in Vapi, Gujarat." },
+  { title: "Understand", text: "Your application, your environment, your specification. Every project starts with the right questions." },
+  { title: "Engineer", text: "Choose from the standard range or work with us on a panel built around your requirement." },
+  { title: "Manufacture", text: "Casting, machining and assembly — manufacturing experience brought together in Vapi, Gujarat." },
   { title: "Test & deliver", text: "Inspection and testing before dispatch, with a team you can speak to from enquiry to delivery." },
 ];
 
-export function IndustrialHome({ products, blogPosts }: { products: CatalogProductCard[]; blogPosts: PublicBlogPost[] }) {
-  const productOptions = [...products.map((item) => item.name), "Custom Build / Other"];
-  const [exploded, setExploded] = useState(false);
-  const [drawing, setDrawing] = useState(true);
-  const [autoRotate, setAutoRotate] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
-  const [sceneReady, setSceneReady] = useState(false);
-  const [selectedDetail, setSelectedDetail] = useState<number | null>(null);
-  const [activeStep, setActiveStep] = useState(0);
-  const siteRef = useRef<HTMLDivElement>(null);
-  const hasInteracted = useRef(false);
-  const onSceneReady = useCallback(() => {
-    setSceneReady(true);
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setDrawing(false);
-  }, []);
+const industries = [
+  { name: "Oil & gas", slug: "oil-and-gas", text: "Lighting, control and connection equipment for upstream and process areas." },
+  { name: "Chemicals", slug: "chemicals", text: "Equipment specified around the gas groups and zones of process plants." },
+  { name: "Pharmaceuticals", slug: "pharmaceuticals", text: "Solvent handling, API blocks and clean manufacturing environments." },
+  { name: "Refineries", slug: "refineries", text: "Dependable equipment for units, tank farms and loading areas." },
+];
 
-  useEffect(() => {
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (!preference.matches) siteRef.current?.setAttribute("data-motion", "true");
-    const onPreferenceChange = () => {
-      if (preference.matches) { setDrawing(false); setAutoRotate(false); }
-    };
-    preference.addEventListener("change", onPreferenceChange);
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.setAttribute("data-visible", "true");
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    siteRef.current?.querySelectorAll("[data-reveal]").forEach((element) => observer.observe(element));
-    return () => { observer.disconnect(); preference.removeEventListener("change", onPreferenceChange); };
-  }, []);
+const capabilities = ["CIMFR tested", "PESO approved", "Flameproof lighting", "Control stations", "Junction boxes", "Cable glands", "Custom control panels", "In-house casting", "Precision machining", "Assembly & testing"];
 
-  useEffect(() => {
-    if (!sceneReady || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setTimeout(() => {
-      if (!hasInteracted.current) setDrawing(false);
-    }, 1500);
-    return () => window.clearTimeout(timer);
-  }, [sceneReady]);
+type RangeItem = { key: string; name: string; category: string; kind: DiagramKind; href: string; chips: string[] };
 
-  const chooseView = (mode: "finished" | "drawing" | "exploded") => {
-    hasInteracted.current = true;
-    setDrawing(mode === "drawing");
-    setExploded(mode === "exploded");
+const fallbackRange: RangeItem[] = [
+  { key: "wg", name: "Well Glass Fitting", category: "Lighting", kind: "wellglass", href: "/catalog", chips: ["IP-66"] },
+  { key: "fl", name: "Flood Light Fitting", category: "Lighting", kind: "floodlight", href: "/catalog", chips: ["IP-66"] },
+  { key: "pb", name: "Start Stop Push Button", category: "Switchgear", kind: "pushbutton", href: "/catalog", chips: ["IP-66"] },
+  { key: "ss", name: "Switch Socket Unit", category: "Switchgear", kind: "switchsocket", href: "/catalog", chips: ["IP-66"] },
+  { key: "cg", name: "Cable Gland", category: "Accessories", kind: "gland", href: "/catalog", chips: ["IP-66"] },
+  { key: "jb", name: "Junction Box", category: "Junction boxes", kind: "junctionbox", href: "/catalog", chips: ["IP-66"] },
+];
+
+function toRange(products: CatalogProductCard[]): RangeItem[] {
+  if (!products.length) return fallbackRange;
+  return products.slice(0, 6).map((product) => ({
+    key: product.slug,
+    name: product.name.replace(/^FLP\/WP\s+/i, ""),
+    category: product.cat,
+    kind: diagramFor(product.name, product.cat),
+    href: `/catalog/${product.slug}`,
+    chips: [product.ip, product.group, product.type, `${product.variantCount} ${product.variantCount === 1 ? "variant" : "variants"}`].filter(Boolean) as string[],
+  }));
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero: pinned 3D product study                                        */
+/* ------------------------------------------------------------------ */
+
+function Hero() {
+  const track = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const [phase, setPhase] = useState(0);
+  const [ready, setReady] = useState(false);
+  const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    const next = p < 0.3 ? 0 : p < 0.64 ? 1 : 2;
+    setPhase((current) => (current === next ? current : next));
+  });
+  const introOpacity = useTransform(scrollYProgress, [0.12, 0.26], [1, 0]);
+  const introY = useTransform(scrollYProgress, [0.12, 0.26], [0, -60]);
+  const stageScale = useTransform(scrollYProgress, [0, 0.3, 1], [1, 1.06, 1.02]);
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const onReady = useCallback(() => setReady(true), []);
+
+  const goToPhase = (index: number) => {
+    const element = track.current;
+    if (!element) return;
+    const distance = element.offsetHeight - window.innerHeight;
+    const targets = [0, 0.42, 0.82];
+    scrollToTarget(element.offsetTop + distance * targets[index]);
   };
 
-  return <div className={styles.site} id="top" ref={siteRef}>
-    <a href="#main-content" className={styles.skipLink}>Skip to content</a>
-    <div className={styles.pageFrame}>
-      <IndustrialHeader />
+  return <section ref={track} className={styles.heroTrack} aria-labelledby="hero-title">
+    <div className={styles.heroSticky}>
+      <div className={styles.heroGlow} aria-hidden="true" />
+      <div className={styles.heroGrid} aria-hidden="true" data-active={phase > 0} />
 
-      <main id="main-content">
-        <section className={styles.hero} aria-labelledby="hero-title">
-          <div className={styles.heroDrawing}>
-            <div className={styles.rulerTop} aria-hidden="true" /><div className={styles.rulerLeft} aria-hidden="true" />
-            <span className={styles.cornerTL} aria-hidden="true">+</span><span className={styles.cornerTR} aria-hidden="true">+</span><span className={styles.cornerBL} aria-hidden="true">+</span><span className={styles.cornerBR} aria-hidden="true">+</span>
-            <div className={styles.drawingHeader}><div><span className={styles.smallLabel}>THE ExEC PRODUCT STUDY — 001</span><p>FLAMEPROOF<br />45W LED WELLGLASS</p></div><div><span className={styles.smallLabel}>ENGINEERED IN VAPI, INDIA</span><p className={styles.since}>SINCE 1996 <span>↗</span></p></div></div>
-            <div className={styles.sceneBackdrop} aria-hidden="true"><span className={styles.axisVertical} /><span className={styles.axisHorizontal} /><span className={styles.technicalCircle} /><span className={styles.dimensionLine}>PRODUCT STUDY / NOT TO SCALE</span></div>
-            <div className={styles.productStage}><ProductStage exploded={exploded} autoRotate={autoRotate} drawing={drawing} resetKey={resetKey} onReady={onSceneReady} modelUrl={productExperience.modelUrl} /></div>
-            <div className={styles.annotationLeft}><button type="button" aria-expanded={selectedDetail === 0} onClick={() => setSelectedDetail(selectedDetail === 0 ? null : 0)}><span className={styles.annotationDot}><Plus size={12} /></span><span><small>[01] / CONSTRUCTION</small>CAST ENCLOSURE</span></button><span className={styles.annotationLine} aria-hidden="true" /></div>
-            <div className={styles.annotationRight}><span className={styles.annotationLine} aria-hidden="true" /><button type="button" aria-expanded={selectedDetail === 2} onClick={() => setSelectedDetail(selectedDetail === 2 ? null : 2)}><span className={styles.annotationDot}><Plus size={12} /></span><span><small>[03] / ASSEMBLY</small>PROTECTIVE GUARD</span></button></div>
-            {selectedDetail !== null && <div className={styles.annotationInfo} role="status"><button type="button" aria-label="Close component detail" onClick={() => setSelectedDetail(null)}><X size={15} /></button><span>[{details[selectedDetail].code}] / {details[selectedDetail].label}</span><h3>{details[selectedDetail].title}</h3><p>{details[selectedDetail].text}</p></div>}
-            <div className={styles.drawingFooter}><span>DRAG TO ROTATE<br /><small>OR USE THE ARROW KEYS</small></span><div className={styles.sceneControls}><div role="group" aria-label="Product view" className={styles.viewModes}><button type="button" aria-pressed={!drawing && !exploded} onClick={() => chooseView("finished")}>FINISHED</button><button type="button" aria-pressed={drawing} onClick={() => chooseView("drawing")}>DRAWING</button><button type="button" aria-pressed={exploded} onClick={() => chooseView("exploded")}>EXPLODED</button></div><button type="button" className={styles.iconButton} aria-label={autoRotate ? "Pause rotation" : "Start rotation"} aria-pressed={autoRotate} onClick={() => setAutoRotate(!autoRotate)}>{autoRotate ? <Pause size={14} /> : <Play size={14} />}</button><button type="button" className={styles.iconButton} aria-label="Reset product view" onClick={() => { setResetKey((key) => key + 1); chooseView("finished"); setSelectedDetail(null); }}><RotateCcw size={16} /></button></div></div>
-          </div>
-          <div className={styles.heroCaption}><h1 id="hero-title">ENGINEERED TO CONTAIN.<br />BUILT TO PROTECT.</h1><p>Flameproof electrical equipment for the places where a single spark matters. Designed, manufactured and tested with purpose.</p><a href="#engineering"><span>DISCOVER THE DETAILS</span><ArrowDown size={21} /></a></div>
-        </section>
+      <motion.div className={styles.stage} style={{ scale: reduce ? 1 : stageScale }} data-ready={ready}>
+        <ProductStage exploded={phase === 2} drawing={phase === 1} autoRotate resetKey={0} onReady={onReady} modelUrl={productExperience.modelUrl} paperColor={INK} lineColor="#f1eee8" showNote={false} />
+      </motion.div>
 
-        <div className={styles.certificationStrip}><Link href="/certifications"><i />CERTIFICATE VERIFICATION</Link><Link href="/knowledge-hub/flameproof-certification-india"><i />APPROVAL DOCUMENTATION</Link><span><i />MANUFACTURED IN VAPI</span><span><i />ENGINEERING SAFETY SINCE 1996</span></div>
+      <motion.div className={styles.heroCopy} style={reduce ? undefined : { opacity: introOpacity, y: introY }}>
+        <motion.span className={styles.heroEyebrow} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: EASE }}><i />Flameproof electrical equipment · Est. 1996</motion.span>
+        <RevealLines as="h1" className={styles.heroTitle} play lines={["Built to contain", <em key="s" className="serif">the spark.</em>]} delay={0.3} />
+        <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.65, ease: EASE }}>Lighting, control and connection equipment for hazardous areas — designed, cast, machined and tested in Vapi, India.</motion.p>
+        <motion.div className={styles.heroActions} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.8, ease: EASE }}>
+          <Link href="/catalog" className={styles.buttonLight}>Explore the range <ArrowRight size={17} /></Link>
+          <Link href="/contact" className={styles.buttonGhost}>Request a quote</Link>
+        </motion.div>
+      </motion.div>
 
-        <section id="engineering" className={styles.engineeringSection}>
-          <div className={styles.sectionLabel}><span>01 / THE ENGINEERING</span><span>PRECISION IN EVERY PART.</span></div>
-          <div className={styles.statement} data-reveal><span className={styles.statementMarker}>[Ex]</span><h2>SAFETY ISN’T SOMETHING<br />YOU ADD AT THE END.<br /><span>IT’S ENGINEERED IN.<br />FROM THE VERY START.</span></h2><div className={styles.statementAside}><p>From a single enclosure to a complete control panel, the smallest details deserve our full attention.</p><Link href="/engineering" className={styles.lineLink}>EXPLORE OUR ENGINEERING <ArrowUpRight size={17} /></Link></div></div>
-          <div className={styles.engineeringDetails}>{details.map((item, index) => <article key={item.code} data-reveal><div><span>[{item.code}]</span><Plus size={16} aria-hidden="true" /></div><h3>{item.label}</h3><p>{item.text}</p><a href="#top" onClick={() => { setSelectedDetail(index); chooseView("exploded"); }}>INSPECT THE ASSEMBLY <ArrowUpRight size={16} /></a></article>)}</div>
-        </section>
+      <AnimatePresence mode="wait">
+        {phase > 0 && <motion.div key={phase} className={styles.phaseCopy} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.6, ease: EASE }}>
+          <span>{phases[phase].eyebrow}</span>
+          <h2>{phases[phase].title}</h2>
+          <p>{phases[phase].text}</p>
+          {phase === 2 && <Link href="/engineering" className={styles.textLink}>How we engineer <ArrowUpRight size={16} /></Link>}
+        </motion.div>}
+      </AnimatePresence>
 
-        <section id="products" className={styles.productsSection}>
-          <div className={styles.sectionLabel}><span>02 / THE PRODUCT RANGE</span><span>YOUR ENVIRONMENT. OUR EXPERTISE.</span></div>
-          <div className={styles.sectionHeading} data-reveal><h2>DIFFERENT CHALLENGES.<br /><span>THE SAME COMMITMENT.</span></h2><Link href="/catalog" className={styles.lineLink}>VIEW COMPLETE CATALOG <ArrowUpRight size={19} /></Link></div>
-          <div className={collection.homeCollection}>{products.slice(0, 6).map((product, index) => <CatalogCard key={product.slug} product={product} index={index} />)}</div>
-          {!products.length && <div className={collection.empty}><h3>Our product collection is being updated.</h3><p>Speak with our team about your requirement.</p><a href="#contact">CONTACT OUR TEAM <ArrowUpRight size={17} /></a></div>}
-          <div className={styles.customBar}><span>THE COMPLETE COLLECTION. READY TO SHARE.</span><ShareActions title="ExEC product catalog" path="/catalog" label="Share catalog" /></div>
-        </section>
-
-        <section className={styles.processSection}><div className={styles.sectionLabel}><span>03 / FROM BRIEF TO BUILD</span><span>ONE TEAM. EVERY STEP.</span></div><div className={styles.processBody}><div className={styles.processIntro} data-reveal><h2>GOOD ENGINEERING.<br /><span>AT EVERY STAGE.</span></h2><p>Manufacturing experience from Vapi, Gujarat. A direct conversation from your first enquiry to the finished equipment.</p><div className={styles.processNumeral} aria-hidden="true">0{activeStep + 1}<span>/ 04</span></div></div><div className={styles.processSteps}>{steps.map((step, index) => <div key={step.title} className={activeStep === index ? styles.activeStep : ""}><button type="button" aria-expanded={activeStep === index} aria-controls={`step-content-${index}`} onClick={() => setActiveStep(index)}><span>0{index + 1}</span><strong>{step.title}</strong><Plus size={20} /></button><div id={`step-content-${index}`} hidden={activeStep !== index}><p>{step.text}</p></div></div>)}</div></div></section>
-
-        <section id="our-story" className={styles.storySection}>
-          <div className={styles.sectionLabel}><span>04 / OUR STORY</span><span>VAPI, GUJARAT / EST. 1996</span></div>
-          <div className={styles.storyGrid} data-reveal><div><span className={styles.storyYear}>1996<span>THE START OF OUR STORY</span></span><h2>ROOTED IN VAPI.<br /><span>BUILT FOR INDIA.</span></h2></div><div><p>Since 1996, Explosion Proof Electrical Control has designed and manufactured flameproof electrical equipment in Vapi, Gujarat. Casting, machining, assembly and testing come together with one purpose: protecting people, assets and facilities.</p><p>From a single junction box to a complete control room, we design and fabricate flameproof control and instrumentation panels around your specification.</p><blockquote>&quot;To keep India&apos;s most demanding plants, their people, assets and facilities safe from the smallest spark.&quot;<cite>OUR MISSION</cite></blockquote><Link href="/story" className={styles.lineLink}>READ OUR FULL STORY <ArrowUpRight size={17} /></Link></div></div>
-        </section>
-
-        <BlogHomeSection posts={blogPosts} />
-
-        <section id="real-world" className={styles.industrySection} aria-labelledby="real-world-title"><div className={styles.factoryPhoto}><Image src={marketingAsset("factory.jpg")} alt="Industrial process plant operating at night" fill sizes="(max-width: 760px) 100vw, 55vw" /><span>06 / HAZARDOUS ENVIRONMENTS</span></div><div className={styles.industryCopy} data-reveal><span className={styles.smallLabel}>MADE FOR THE REAL WORLD</span><h2 id="real-world-title">WHERE THE DETAILS<br />MAKE ALL THE<br /><span>DIFFERENCE.</span></h2><p>Lighting, controls and instrumentation for demanding applications—specified around the actual zone, gas group and operating conditions.</p><div>{[["Oil & gas", "oil-and-gas"], ["Chemicals", "chemicals"], ["Pharmaceuticals", "pharmaceuticals"], ["Refineries", "refineries"]].map(([industry, anchor], index) => <Link href={`/industries/${anchor}`} key={industry}><span>[0{index + 1}]</span>{industry}<ArrowUpRight size={16} /></Link>)}</div></div></section>
-
-        <section id="contact" className={styles.contactSection}><div className={styles.sectionLabel}><span>07 / YOUR NEXT PROJECT</span><span>LET’S MAKE IT HAPPEN.</span></div><div className={styles.contactBody} data-reveal><h2>BRING THE CHALLENGE.<br /><span>WE’LL BRING<br />THE ENGINEERING.</span></h2><div><p>Share your requirements with our team.<br />Let’s take the next step, together.</p><div className={styles.quoteButton}><RequestQuoteModal productOptions={productOptions} contentClassName={styles.quoteDialog} /></div><Link href="/contact" className={styles.emailLink}>CONTACT OUR TEAM <ArrowUpRight size={17} /></Link><a href={`mailto:${COMPANY_EMAIL}`} className={styles.emailLink}>EMAIL US DIRECTLY <ArrowUpRight size={17} /></a></div></div></section>
-      </main>
-
-      <IndustrialFooter />
+      <div className={styles.heroFoot}>
+        <div className={styles.heroSpecs}><span>CIMFR tested</span><span>PESO approved</span><span>IP-66</span><span>IIA · IIB · IIC</span></div>
+        <div className={styles.phaseNav} role="group" aria-label="Product view">
+          {phases.map((item, index) => <button key={item.label} type="button" aria-pressed={phase === index} onClick={() => goToPhase(index)}>{phase === index && <motion.span layoutId="phase-pill" className={styles.phasePill} transition={{ type: "spring", stiffness: 380, damping: 34 }} />}<span>{item.label}</span></button>)}
+        </div>
+        <button type="button" className={styles.scrollCue} onClick={() => goToPhase(Math.min(2, phase + 1))} aria-label="Next view"><ArrowDown size={16} /></button>
+        <motion.span className={styles.heroProgress} style={{ width: progressWidth }} aria-hidden="true" />
+      </div>
     </div>
-  </div>;
+  </section>;
+}
+
+/* ------------------------------------------------------------------ */
+/* Range explorer                                                       */
+/* ------------------------------------------------------------------ */
+
+function RangeExplorer({ items }: { items: RangeItem[] }) {
+  const track = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const { scrollYProgress } = useScroll({ target: track, offset: ["start 0.2", "end 0.8"] });
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    const next = Math.min(items.length - 1, Math.max(0, Math.floor(p * items.length)));
+    setActive((current) => (current === next ? current : next));
+  });
+  const current = items[active];
+
+  return <section className={styles.range} aria-labelledby="range-title">
+    <div className={styles.sectionHead}>
+      <Reveal><span className={styles.eyebrow}>02 — The range</span></Reveal>
+      <RevealLines className={styles.h2} lines={["The range,", <em key="d" className="serif">drawn.</em>]} />
+      <Reveal delay={0.1}><p className={styles.lede}>Every ExEC product starts as a drawing. Scroll through the core range — each one designed around the hazardous area it will live in.</p></Reveal>
+    </div>
+
+    {/* Desktop: pinned list + drawing */}
+    <div ref={track} className={styles.rangeTrack} style={{ height: `${items.length * 62 + 40}vh` }}>
+      <div className={styles.rangeSticky}>
+        <ol className={styles.rangeList}>
+          {items.map((item, index) => <li key={item.key} data-active={index === active}>
+            <Link href={item.href}>
+              <span className={styles.rangeIndex}>{String(index + 1).padStart(2, "0")}</span>
+              <span className={styles.rangeName}>{item.name}<small>{item.category}</small></span>
+              <ArrowUpRight size={20} />
+            </Link>
+          </li>)}
+        </ol>
+        <div className={styles.rangeCard}>
+          <div className={styles.rangeCardTop}><span>FIG. {String(active + 1).padStart(2, "0")}</span><span>{current.category}</span></div>
+          <div className={styles.rangeDrawing}>
+            <AnimatePresence mode="wait">
+              <motion.div key={current.key} className={styles.rangeDrawingInner} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.2 } }}>
+                <ProductDiagram kind={current.kind} play speed={0.7} title={current.name} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <div className={styles.rangeCardFoot}>
+            <div className={styles.chips}>{current.chips.map((chip) => <span key={chip}>{chip}</span>)}</div>
+            <Link href={current.href} className={styles.circleLink} aria-label={`View ${current.name}`}><ArrowUpRight size={20} /></Link>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Mobile: swipeable drawings */}
+    <div className={styles.rangeMobile}>
+      {items.map((item, index) => <Link key={item.key} href={item.href} className={styles.rangeMobileCard}>
+        <div className={styles.rangeCardTop}><span>FIG. {String(index + 1).padStart(2, "0")}</span><span>{item.category}</span></div>
+        <div className={styles.rangeMobileDrawing}><ProductDiagram kind={item.kind} speed={0.8} title={item.name} /></div>
+        <strong>{item.name}</strong>
+        <div className={styles.chips}>{item.chips.slice(0, 3).map((chip) => <span key={chip}>{chip}</span>)}</div>
+      </Link>)}
+    </div>
+
+  </section>;
+}
+
+/* ------------------------------------------------------------------ */
+/* Process                                                              */
+/* ------------------------------------------------------------------ */
+
+function StepIcon({ index }: { index: number }) {
+  const paths = [
+    ["M10 30 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0", "M44 44 L58 58", "M20 30 L40 30 M30 20 L30 40"],
+    ["M8 52 L52 8", "M8 52 L20 52 L8 40 Z", "M36 8 L52 8 L52 24", "M14 20 L26 20 M20 14 L20 26"],
+    ["M14 22 L46 22 L40 50 L20 50 Z", "M22 14 C22 8 38 8 38 14", "M26 32 L34 32 M24 40 L36 40"],
+    ["M30 56 a24 24 0 1 1 0.1 0", "M30 32 L42 20", "M12 36 L18 36 M42 36 L48 36 M30 14 L30 20"],
+  ][index];
+  return <svg viewBox="0 0 60 60" className={styles.stepIcon} aria-hidden="true">
+    {paths.map((d, i) => <motion.path key={i} d={d} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true, amount: 0.8 }} transition={{ duration: 1.1, delay: 0.2 + i * 0.15, ease: [0.65, 0, 0.35, 1] }} />)}
+  </svg>;
+}
+
+function Process() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.6"] });
+  const line = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  return <section className={styles.processWrap} aria-labelledby="process-title">
+    <div className={styles.process}>
+      <div className={styles.processHead}>
+        <Reveal><span className={styles.eyebrowLight}>05 — From brief to build</span></Reveal>
+        <RevealLines className={styles.h2} lines={["One team.", <em key="e" className="serif">Every step.</em>]} />
+        <Reveal delay={0.1}><p className={styles.ledeLight}>A direct conversation from your first enquiry to the finished equipment — with manufacturing experience brought together in Vapi.</p></Reveal>
+      </div>
+      <div ref={ref} className={styles.steps}>
+        <svg className={styles.stepsLine} viewBox="0 0 1000 2" preserveAspectRatio="none" aria-hidden="true"><motion.line x1="0" y1="1" x2="1000" y2="1" style={{ pathLength: line }} /></svg>
+        {steps.map((step, index) => <Reveal key={step.title} delay={index * 0.08} className={styles.step}>
+          <span className={styles.stepDot} />
+          <span className={styles.stepNumber}>0{index + 1}</span>
+          <StepIcon index={index} />
+          <h3>{step.title}</h3>
+          <p>{step.text}</p>
+        </Reveal>)}
+      </div>
+    </div>
+  </section>;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Complete collection                                                  */
+/* ------------------------------------------------------------------ */
+
+function FullCatalog({ products, filters }: { products: CatalogProductCard[]; filters: CatalogFilterOption[] }) {
+  const [category, setCategory] = useState("all");
+  const [query, setQuery] = useState("");
+  const visible = products.filter((product) => (category === "all" || product.filter === category) && `${product.name} ${product.cat} ${product.type} ${product.searchText}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const used = filters.filter((filter) => filter.value === "all" || products.some((product) => product.filter === filter.value));
+  return <section id="collection" className={styles.collection} aria-labelledby="collection-title">
+    <div className={styles.collectionHead}>
+      <div>
+        <Reveal><span className={styles.eyebrow}>03 — The complete collection</span></Reveal>
+        <RevealLines className={styles.h2} lines={["Every product.", <em key="c" className="serif">One place.</em>]} />
+      </div>
+      <Reveal delay={0.1} className={styles.collectionCount}><strong><CountUp to={products.length} pad={2} /></strong><span>products across {Math.max(used.length - 1, 0)} families</span></Reveal>
+    </div>
+    <div className={styles.collectionBar}>
+      <div className={styles.collectionFilters} role="group" aria-label="Filter by category">
+        {used.map((filter) => <button key={filter.value} type="button" aria-pressed={category === filter.value} onClick={() => setCategory(filter.value)}>
+          {category === filter.value && <motion.span layoutId="home-collection-pill" className={styles.collectionPill} transition={{ type: "spring", stiffness: 420, damping: 36 }} />}
+          <span>{filter.label === "All" ? "All" : filter.label.replace(/^Flameproof\s+/i, "")}</span>
+        </button>)}
+      </div>
+      <label className={styles.collectionSearch}><Search size={17} /><input type="search" placeholder="Search name or type number" aria-label="Search products" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+    </div>
+    {visible.length ? <motion.div layout className={styles.collectionGrid}>
+      <AnimatePresence mode="popLayout">
+        {visible.map((product, index) => <motion.div key={product.slug} layout initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.5, delay: Math.min(index, 8) * 0.04, ease: EASE }}>
+          <CatalogCard product={product} index={index} />
+        </motion.div>)}
+      </AnimatePresence>
+    </motion.div> : <p className={styles.collectionEmpty}>{products.length ? "No product matches that search." : "The collection is being updated — contact our team for the latest range."}</p>}
+    <Reveal className={styles.rangeMore}><Link href="/catalog" className={styles.buttonDark}>Open the full catalog <ArrowRight size={17} /></Link></Reveal>
+  </section>;
+}
+
+/* ------------------------------------------------------------------ */
+/* Certificates                                                         */
+/* ------------------------------------------------------------------ */
+
+function CertificateArt({ label }: { label: string }) {
+  const lines = ["M30 52 H130", "M30 66 H118", "M30 80 H124", "M30 94 H96"];
+  const draw = (delay: number) => ({ initial: { pathLength: 0 }, whileInView: { pathLength: 1 }, viewport: { once: true, amount: 0.6 }, transition: { duration: 1.1, delay, ease: [0.65, 0, 0.35, 1] as const } });
+  return <svg viewBox="0 0 200 150" className={styles.certArt} aria-hidden="true">
+    <motion.rect x="12" y="10" width="176" height="130" rx="8" {...draw(0)} />
+    <motion.rect x="20" y="18" width="160" height="114" rx="4" className={styles.certFine} {...draw(0.15)} />
+    <motion.path d="M30 36 H100" className={styles.certStrong} {...draw(0.3)} />
+    {lines.map((d, i) => <motion.path key={d} d={d} className={styles.certFine} {...draw(0.4 + i * 0.08)} />)}
+    <motion.circle cx="152" cy="98" r="20" className={styles.certSeal} {...draw(0.6)} />
+    <motion.circle cx="152" cy="98" r="14" className={styles.certFine} {...draw(0.75)} />
+    <motion.path d="M140 116 L136 134 L146 128 L152 136 L156 118" className={styles.certSeal} {...draw(0.85)} />
+    <text x="152" y="101" textAnchor="middle" className={styles.certSealText}>{label}</text>
+  </svg>;
+}
+
+export function Certificates({ eyebrow = "04 — Certificates & approvals" }: { eyebrow?: string }) {
+  return <section id="certificates" className={styles.certs} aria-labelledby="certs-title">
+    <div className={styles.sectionHead}>
+      <Reveal><span className={styles.eyebrow}>{eyebrow}</span></Reveal>
+      <RevealLines className={styles.h2} lines={["Tested by CIMFR.", <em key="p" className="serif">Approved by PESO.</em>]} />
+      <Reveal delay={0.1}><p className={styles.lede}>Every flameproof design is type-tested and approved before it reaches your plant. Ask for the documents that cover the exact model you are installing.</p></Reveal>
+    </div>
+    <div className={styles.certGrid}>
+      {certificationBodies.map((body, index) => <Reveal key={body.key} delay={index * 0.1} className={styles.certCard}>
+        <div className={styles.certTop}>
+          <span className={styles.certBadge}><BadgeCheck size={16} /> {body.role}</span>
+          <span className={styles.certLocation}>{body.location}</span>
+        </div>
+        <CertificateArt label={body.short} />
+        <h3>{body.short}</h3>
+        <p className={styles.certName}>{body.name}</p>
+        <p className={styles.certSummary}>{body.summary}</p>
+        <ul className={styles.certCovers}>{body.covers.map((item) => <li key={item}>{item}</li>)}</ul>
+        <div className={styles.certRecords}>
+          {body.certificates.length ? body.certificates.map((record) => <div key={record.number} className={styles.certRecord}>
+            <FileText size={16} /><span><strong>{record.number}</strong>{record.scope}{record.validity ? ` · ${record.validity}` : ""}</span>
+            {record.documentUrl && <a href={record.documentUrl} target="_blank" rel="noopener noreferrer">View <ArrowUpRight size={14} /></a>}
+          </div>) : <div className={styles.certRecord}><FileText size={16} /><span><strong>Model-specific certificates</strong>Copies available on request for the type number you specify.</span></div>}
+        </div>
+        <a className={styles.certAction} href={`mailto:${COMPANY_EMAIL}?subject=${encodeURIComponent(`${body.short} certificate request`)}&body=${encodeURIComponent("Product name / type number:\nConfiguration:\nProject / site:\n")}`}>Request {body.short} documents <ArrowUpRight size={16} /></a>
+      </Reveal>)}
+      <Reveal delay={0.2} className={styles.certCheck}>
+        <span className={styles.eyebrowLight}>Before you install</span>
+        <h3>What to check on a certificate</h3>
+        <ol>{certificateChecklist.map((item, index) => <li key={item}><span>0{index + 1}</span>{item}</li>)}</ol>
+        <div className={styles.certLinks}>
+          <Link href="/certifications">Certificate verification <ArrowUpRight size={15} /></Link>
+          <Link href="/knowledge-hub/flameproof-equipment-certification-india">Certification in India, explained <ArrowUpRight size={15} /></Link>
+        </div>
+      </Reveal>
+    </div>
+  </section>;
+}
+
+/* ------------------------------------------------------------------ */
+/* Knowledge centre + journal                                           */
+/* ------------------------------------------------------------------ */
+
+export type GuidePreview = { slug: string; shortTitle: string; category: string; description: string; readMinutes: number };
+
+function KnowledgeAndJournal({ guides, posts }: { guides: GuidePreview[]; posts: PublicBlogPost[] }) {
+  const [featured, ...rest] = posts;
+  return <section id="knowledge" className={styles.knowledge} aria-labelledby="knowledge-title">
+    <div className={styles.journalHead}>
+      <div>
+        <Reveal><span className={styles.eyebrow}>08 — Knowledge centre & journal</span></Reveal>
+        <RevealLines className={styles.h2} lines={["Better informed.", <em key="j" className="serif">Better engineered.</em>]} />
+      </div>
+      <Reveal delay={0.1} className={styles.knowledgeLinks}><Link href="/knowledge-hub" className={styles.textLinkDark}>All guides <ArrowUpRight size={16} /></Link><Link href="/blog" className={styles.textLinkDark}>All articles <ArrowUpRight size={16} /></Link></Reveal>
+    </div>
+
+    {guides.length > 0 && <>
+      <div className={styles.subHead}><BookOpen size={16} /> Hazardous-area guides</div>
+      <Stagger className={styles.guideGrid} itemClassName={styles.guideItem}>
+        {guides.slice(0, 8).map((guide, index) => <Link key={guide.slug} href={`/knowledge-hub/${guide.slug}`} className={styles.guide}>
+          <div className={styles.guideTop}><span>REF / {String(index + 1).padStart(2, "0")}</span><ArrowUpRight size={18} /></div>
+          <h3>{guide.shortTitle}</h3>
+          <p>{guide.description}</p>
+          <div className={styles.guideMeta}><span>{guide.category}</span><span>{guide.readMinutes} min</span></div>
+        </Link>)}
+      </Stagger>
+    </>}
+
+    <div className={styles.subHead}><FileText size={16} /> From the journal</div>
+    {featured ? <div className={styles.journalLayout}>
+      <Reveal className={styles.journalFeature}>
+        <Link href={`/blog/${featured.slug}`} className={styles.post}>
+          <div className={`${styles.postImage} ${styles.postImageLarge}`}><Image src={featured.image} alt={featured.imageAlt} fill sizes="(max-width: 900px) 100vw, 55vw" /></div>
+          <div className={styles.postMeta}><span>{featured.cat}</span><span>{featured.date}</span><span>{featured.read} read</span></div>
+          <h3 className={styles.postTitleLarge}>{featured.title}</h3>
+          <p className={styles.postExcerpt}>{featured.excerpt}</p>
+          <span className={styles.postRead}>Read article <ArrowUpRight size={15} /></span>
+        </Link>
+      </Reveal>
+      <div className={styles.journalList}>
+        {rest.slice(0, 4).map((post, index) => <Reveal key={post.slug} delay={index * 0.06}>
+          <Link href={`/blog/${post.slug}`} className={styles.postRow}>
+            <div className={styles.postThumb}><Image src={post.image} alt={post.imageAlt} fill sizes="140px" /></div>
+            <div><div className={styles.postMeta}><span>{post.cat}</span><span>{post.read} read</span></div><h3>{post.title}</h3></div>
+          </Link>
+        </Reveal>)}
+      </div>
+    </div> : <p className={styles.collectionEmpty}>New articles are on the way.</p>}
+  </section>;
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                 */
+/* ------------------------------------------------------------------ */
+
+export function IndustrialHome({ products, filters, blogPosts, guides }: { products: CatalogProductCard[]; filters: CatalogFilterOption[]; blogPosts: PublicBlogPost[]; guides: GuidePreview[] }) {
+  const productOptions = [...products.map((item) => item.name), "Custom Build / Other"];
+  const range = toRange(products);
+
+  return <IndustrialShell flush>
+    <Hero />
+
+    <div className={styles.marqueeBand}>
+      <Marquee items={capabilities.map((item) => <span key={item} className={styles.marqueeItem}>{item}<i aria-hidden="true">✦</i></span>)} />
+    </div>
+
+    <section className={styles.statement} aria-labelledby="statement-title">
+      <div className={styles.statementGrid}>
+        <Reveal><span className={styles.eyebrow}>01 — Our approach</span></Reveal>
+        <div>
+          <h2 id="statement-title" className={styles.srOnly}>Our approach</h2>
+          <ScrollLitText className={styles.statementText} text="Safety isn't something you add at the end. It's engineered in — from the first casting to the final test, for the places where a single spark matters." />
+          <Stagger className={styles.facts} itemClassName={styles.fact}>
+            <div><strong><CountUp to={1996} from={1960} /></strong><span>Manufacturing flameproof equipment in Vapi, Gujarat</span></div>
+            <div><strong><CountUp to={4} pad={2} /></strong><span>In-house stages — casting, machining, assembly and testing</span></div>
+            <div><strong>IP-66</strong><span>Ingress protection across the core range</span></div>
+            <div><strong>IIC</strong><span>Gas groups IIA, IIB and IIC covered</span></div>
+          </Stagger>
+        </div>
+      </div>
+    </section>
+
+    <RangeExplorer items={range} />
+
+    <FullCatalog products={products} filters={filters} />
+
+    <Certificates />
+
+    <Process />
+
+    <section className={styles.panels} aria-labelledby="panels-title">
+      <Reveal className={styles.panelsDrawing}>
+        <div className={styles.panelsDrawingTop}><span>Engineered to order</span><span>FIG. P-01</span></div>
+        <ProductDiagram kind="panel" speed={0.9} />
+      </Reveal>
+      <div className={styles.panelsCopy}>
+        <Reveal><span className={styles.eyebrow}>06 — Custom panels</span></Reveal>
+        <RevealLines className={styles.h2} lines={["From one junction box", <span key="a">to <em className="serif">a complete</em></span>, <em key="b" className="serif">control room.</em>]} />
+        <Reveal delay={0.1}><p className={styles.lede}>We design and fabricate flameproof control and instrumentation panels to your specification — indicators, meters, controls and entries laid out around how your plant actually runs.</p></Reveal>
+        <Stagger className={styles.checks} itemClassName={styles.check}>
+          <span>Control & instrumentation panels</span>
+          <span>Built around your drawings and zone</span>
+          <span>Fabricated and tested under one roof</span>
+        </Stagger>
+        <Reveal delay={0.2}><Link href="/contact" className={styles.buttonDark}>Discuss a custom panel <ArrowRight size={17} /></Link></Reveal>
+      </div>
+    </section>
+
+    <section className={styles.industries} aria-labelledby="industries-title">
+      <div className={styles.sectionHead}>
+        <Reveal><span className={styles.eyebrow}>07 — Industries</span></Reveal>
+        <RevealLines className={styles.h2} lines={["Made for", <em key="r" className="serif">the real world.</em>]} />
+      </div>
+      <div className={styles.industryGrid}>
+        <Reveal className={styles.industryPhoto}>
+          <Parallax className={styles.industryPhotoInner} distance={50}><Image src={marketingAsset("factory.jpg")} alt="Industrial process plant operating at night" fill sizes="(max-width: 900px) 100vw, 45vw" /></Parallax>
+          <span>Specified around the actual zone, gas group and operating conditions.</span>
+        </Reveal>
+        <ul className={styles.industryList}>
+          {industries.map((industry, index) => <Reveal as="li" key={industry.slug} delay={index * 0.06}>
+            <Link href={`/industries/${industry.slug}`}>
+              <span className={styles.industryIndex}>0{index + 1}</span>
+              <span className={styles.industryName}>{industry.name}<small>{industry.text}</small></span>
+              <span className={styles.industryArrow}><ArrowUpRight size={20} /></span>
+            </Link>
+          </Reveal>)}
+        </ul>
+      </div>
+    </section>
+
+    <KnowledgeAndJournal guides={guides} posts={blogPosts} />
+
+    <section className={styles.ctaWrap} aria-labelledby="cta-title">
+      <div className={styles.cta}>
+        <div className={styles.ctaDrawing} aria-hidden="true"><ProductDiagram kind="junctionbox" labels={false} speed={1.2} /></div>
+        <Reveal><span className={styles.eyebrowLight}>09 — Your next project</span></Reveal>
+        <RevealLines className={styles.ctaTitle} lines={["Bring the challenge.", <em key="c" className="serif">We&apos;ll bring the engineering.</em>]} />
+        <Reveal delay={0.15} className={styles.ctaActions}>
+          <RequestQuoteModal productOptions={productOptions} triggerLabel="Request a quote" triggerClassName={styles.buttonAccent} />
+          <a href={`mailto:${COMPANY_EMAIL}`} className={styles.buttonGhost}><Mail size={16} /> {COMPANY_EMAIL}</a>
+        </Reveal>
+        <Reveal delay={0.25} className={styles.ctaLinks}>
+          <Link href="/certifications">Certificate verification <ArrowUpRight size={14} /></Link>
+          <Link href="/knowledge-hub/flameproof-certification-india">Approval documentation <ArrowUpRight size={14} /></Link>
+          <Link href="/catalog">Download the catalog <ArrowUpRight size={14} /></Link>
+        </Reveal>
+      </div>
+    </section>
+  </IndustrialShell>;
 }

@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, BookOpen, Plus } from "lucide-react";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { KnowledgeLibrary } from "./KnowledgeLibrary";
 import { knowledgeArticles } from "@/lib/marketing/knowledge";
@@ -41,7 +41,7 @@ export default function KnowledgeHubPage() {
   };
   const previews = knowledgeArticles.map(({ slug, shortTitle, category, description, readMinutes, takeaways }) => ({ slug, shortTitle, category, description, readMinutes, takeaways }));
 
-  return <IndustrialFonts><IndustrialShell><div className={styles.page}>
+  return <SiteRoot><IndustrialShell><div className={styles.page}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
     <section className={styles.hero} aria-labelledby="knowledge-title">
       <nav className={styles.breadcrumbs} aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">/</span><span aria-current="page">Knowledge centre</span></nav>
@@ -78,5 +78,5 @@ export default function KnowledgeHubPage() {
     </section>
     <section className={styles.cta} aria-labelledby="support-title"><div><span className={styles.eyebrow}>From reference to real application</span><h2 id="support-title">Bring us your specification.</h2><p>Share your area classification, required marking and operating conditions. Our team can help you work through the equipment details.</p></div><Link className={styles.primaryLink} href="/contact">Talk to engineering <ArrowUpRight size={18} /></Link></section>
     <p className={styles.guidanceNote}>These guides support technical understanding. For a specific installation, use the product certificate, manufacturer instructions and applicable standards with a competent hazardous-area professional.</p>
-  </div></IndustrialShell></IndustrialFonts>;
+  </div></IndustrialShell></SiteRoot>;
 }

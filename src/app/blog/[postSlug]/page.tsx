@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Clock3 } from "lucide-react";
 import { ArticleTableOfContents, type ArticleSection } from "@/components/marketing/design-preview/ArticleTableOfContents";
 import { ArticleActions, ReadingProgress } from "@/components/marketing/design-preview/ArticleActions";
-import { IndustrialFonts } from "@/components/marketing/design-preview/IndustrialFonts";
+import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { IndustrialBlogCard } from "@/components/marketing/design-preview/IndustrialBlogCard";
 import { getPublishedBlogPost, getPublishedBlogPosts } from "@/lib/marketing/blog";
@@ -52,7 +52,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     ] },
   ];
 
-  return <IndustrialFonts><IndustrialShell><div className={styles.page}>
+  return <SiteRoot><IndustrialShell><div className={styles.page}>
     <article>
       <ReadingProgress />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
@@ -79,7 +79,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </section>
     </article>
     {morePosts.length > 0 && <section className={styles.moreSection} aria-labelledby="related-title"><div className={styles.moreHeading}><div><span className={styles.eyebrow}>Keep exploring</span><h2 id="related-title">A little more perspective.</h2></div><Link href="/blog" className={styles.outlineLink}>All articles <ArrowUpRight size={17} /></Link></div><div className={styles.archiveGrid}>{morePosts.map((item, index) => <IndustrialBlogCard key={item.slug} post={item} index={index + 1} />)}</div></section>}
-  </div></IndustrialShell></IndustrialFonts>;
+  </div></IndustrialShell></SiteRoot>;
 }
 
 type ArticleBlock =

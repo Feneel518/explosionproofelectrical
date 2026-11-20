@@ -8,9 +8,10 @@ import type { CatalogProductCard } from "@/lib/marketing/catalog";
 import { ProductDiagram, diagramFor } from "@/components/site/ProductDiagram";
 import styles from "./catalog.module.css";
 
-export function ProductImage({ src, name, priority = false, fallbackKind }: { src: string; name: string; priority?: boolean; fallbackKind?: ReturnType<typeof diagramFor> }) {
+/** Product photo, resized and served as AVIF/WebP by the image optimiser. */
+export function ProductImage({ src, name, priority = false, fallbackKind, sizes = "(max-width: 700px) 92vw, (max-width: 1100px) 46vw, 30vw" }: { src: string; name: string; priority?: boolean; fallbackKind?: ReturnType<typeof diagramFor>; sizes?: string }) {
   const [failed, setFailed] = useState(false);
-  if (src && !failed) return <Image src={src} alt={name} width={600} height={500} unoptimized priority={priority} sizes="(max-width: 700px) 90vw, 40vw" onError={() => setFailed(true)} />;
+  if (src && !failed) return <Image src={src} alt={name} width={600} height={500} priority={priority} sizes={sizes} onError={() => setFailed(true)} />;
   return <div className={styles.imagePlaceholder}><ProductDiagram kind={fallbackKind ?? diagramFor(name)} labels={false} title={name} /></div>;
 }
 

@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   openGraph: { title: SITE_TITLE_DEFAULT, description: SITE_DESCRIPTION, url: absoluteUrl("/"), type: "website" },
 };
 
-export const dynamic = "force-dynamic";
+// Served from cache and refreshed at most every 60 s, so dashboard changes appear within a minute.
+export const revalidate = 60;
 
 export default async function Home() {
   const [{ products, filters }, blogPosts] = await Promise.all([getCatalogData(), getPublishedBlogPosts(5)]);

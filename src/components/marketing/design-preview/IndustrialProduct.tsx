@@ -47,11 +47,11 @@ export function IndustrialProduct({ product, related }: { product: CatalogProduc
           <AnimatePresence mode="wait">
             {showingDrawing
               ? <motion.div key="drawing" className={styles.galleryDrawing} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}><ProductDiagram kind={kind} play speed={0.75} title={product.name} /></motion.div>
-              : <motion.div key={selectedImage?.url || "empty"} className={styles.galleryPhoto} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}><ProductImage src={selectedImage?.url || ""} name={selectedImage?.title || product.name} fallbackKind={kind} priority /></motion.div>}
+              : <motion.div key={selectedImage?.url || "empty"} className={styles.galleryPhoto} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}><ProductImage src={selectedImage?.url || ""} name={selectedImage?.title || product.name} fallbackKind={kind} priority sizes="(max-width: 900px) 92vw, 50vw" /></motion.div>}
           </AnimatePresence>
           <div className={styles.galleryCaption}><span>{showingDrawing ? (kind in cadDrawings ? `From GA drawing ${cadDrawings[kind as CadKind].type} · sizes in mm` : "Illustrative line drawing · see datasheet for dimensions") : selectedImage?.title || product.name}</span><span>{!showingDrawing && images.length ? `${String(Math.min(imageIndex + 1, images.length)).padStart(2, "0")} / ${String(images.length).padStart(2, "0")}` : ""}</span></div>
         </div>
-        {images.length > 1 && !showingDrawing && <div className={styles.thumbnails} role="group" aria-label="Product images">{images.map((item, index) => <button key={`${item.url}-${index}`} type="button" aria-label={`View image ${index + 1}`} aria-pressed={index === imageIndex} onClick={() => setImageIndex(index)}><ProductImage src={item.url} name={item.title || `${product.name} view ${index + 1}`} fallbackKind={kind} /></button>)}</div>}
+        {images.length > 1 && !showingDrawing && <div className={styles.thumbnails} role="group" aria-label="Product images">{images.map((item, index) => <button key={`${item.url}-${index}`} type="button" aria-label={`View image ${index + 1}`} aria-pressed={index === imageIndex} onClick={() => setImageIndex(index)}><ProductImage src={item.url} name={item.title || `${product.name} view ${index + 1}`} fallbackKind={kind} sizes="96px" /></button>)}</div>}
       </div>
 
       <div className={styles.productInfo}>

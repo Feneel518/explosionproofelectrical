@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { CatalogCard } from "@/components/marketing/design-preview/CatalogCard";
-import { getCatalogCategory } from "@/lib/marketing/catalog";
+import { getCatalogCategory, getCatalogIndexEntries } from "@/lib/marketing/catalog";
 import { getBuyerGuideSlugsForCategory } from "@/lib/marketing/buyer-guide-posts";
 import { getPublishedBlogPosts } from "@/lib/marketing/blog";
 import { absoluteUrl, SITE_NAME } from "@/lib/seo/site";
@@ -14,7 +14,14 @@ import { getCategoryLanding } from "@/lib/seo/categories";
 import { getKnowledgeArticle } from "@/lib/marketing/knowledge";
 import { JsonLd } from "@/components/seo/JsonLd";
 
-export const dynamic = "force-dynamic";
+// Served from cache and refreshed at most every 60 s, so dashboard changes appear within a minute.
+export const revalidate = 60;
+
+/** Pre-build every published page; new ones render on first visit, then cache. */
+export async function generateStaticParams() {
+  const { categories } = await getCatalogIndexEntries();
+  return categories.map(({ slug }) => ({ categorySlug: slug }));
+}
 type Props = { params: Promise<{ categorySlug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

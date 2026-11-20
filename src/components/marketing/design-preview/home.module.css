@@ -35,11 +35,27 @@
 .heroGrid { position: absolute; z-index: -1; inset: 0; background-image: linear-gradient(rgb(255 255 255 / .045) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .045) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse 60% 70% at 66% 50%, #000 0%, transparent 75%); opacity: .35; transition: opacity 1s var(--ease-out); }
 .heroGrid[data-active="true"] { opacity: 1; }
 
-.stage { position: absolute; top: 11%; right: 2%; bottom: 11%; width: 56%; opacity: 0; transition: opacity 1.2s var(--ease-out); }
+.stageWrap { position: absolute; top: 11%; right: 2%; bottom: 11%; width: 56%; }
+/* Live 3D fades in over the poster once its first frame is drawn. */
+.stage { position: absolute; inset: 0; z-index: 1; opacity: 0; transition: opacity .6s var(--ease-out); }
 .stage[data-ready="true"] { opacity: 1; }
 .stage > div { min-height: 0; }
-.stageLoading { display: grid; place-items: center; height: 100%; }
-.stageLoading img { width: auto; height: 55%; object-fit: contain; opacity: .5; }
+/* A still of the model's starting pose, shown from the first paint. The 3D camera has a
+   fixed vertical field of view, so a square still centred at full height matches it
+   exactly; on stages under 460px the camera zooms out (39° vs 35° FOV) = 0.89×. */
+.poster { position: absolute; inset: 0; overflow: hidden; container-type: size; pointer-events: none; transition: opacity .25s linear; animation: posterIn .6s var(--ease-out) both; }
+.poster[data-hidden] { opacity: 0; }
+.poster img { position: absolute; top: 0; left: 50%; width: auto; height: 100%; aspect-ratio: 1; translate: -50% 0; }
+@container (max-width: 459px) { .poster img { scale: .89; } }
+@keyframes posterIn { from { opacity: 0; } }
+/* Hero copy animates with CSS so it paints before any JavaScript has loaded. */
+.heroIn { animation: heroRise .7s var(--ease-out) both; }
+.heroLine { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+.heroLine > * { display: block; animation: heroLine .9s var(--ease-out) both; }
+.heroLine + .heroLine > * { animation-delay: 70ms; }
+@keyframes heroRise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes heroLine { from { transform: translateY(105%); } }
+@media (prefers-reduced-motion: reduce) { .heroIn, .heroLine > *, .poster { animation: none; } }
 
 .heroCopy, .phaseCopy { position: absolute; z-index: 2; left: var(--gutter); top: 50%; translate: 0 -46%; width: min(48%, 640px); }
 .heroEyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border: 1px solid rgb(255 255 255 / .12); border-radius: 999px; font: 500 11px/1 var(--font-site-mono); letter-spacing: .02em; text-transform: uppercase; color: var(--on-ink-muted); background: rgb(255 255 255 / .03); }
@@ -68,7 +84,7 @@
 
 @media (max-width: 900px) {
   .heroTrack { height: 280vh; }
-  .stage { top: 13%; right: 0; left: 0; bottom: auto; width: 100%; height: 46%; }
+  .stageWrap { top: 13%; right: 0; left: 0; bottom: auto; width: 100%; height: 46%; }
   .heroCopy, .phaseCopy { top: auto; bottom: 108px; translate: none; width: auto; right: var(--gutter); }
   .heroTitle { margin-top: 18px; font-size: clamp(50px, 13vw, 86px); }
   .heroCopy > p { margin-top: 18px; font-size: 16px; }
@@ -82,7 +98,7 @@
 }
 @media (max-width: 520px) {
   .heroCopy, .phaseCopy { bottom: 96px; }
-  .stage { top: 11%; height: 40%; }
+  .stageWrap { top: 11%; height: 40%; }
   .heroFoot { bottom: 22px; }
   .phaseNav button { padding: 9px 12px; font-size: 12px; }
   .buttonLight, .buttonGhost { height: 48px; padding: 0 20px; font-size: 14px; }

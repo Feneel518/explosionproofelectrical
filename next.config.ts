@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
     "/api/catalog/pdf": ["./public/catalog/**/*", "./public/asset/**/*", "./public/marketing/**/*"],
   },
   images: {
+    // Smallest modern format the browser accepts; optimised copies are cached for 31 days
+    // (uploaded files get new URLs when they change).
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",

@@ -27,17 +27,17 @@ type RevealProps = { children: ReactNode; delay?: number; y?: number; className?
 export function Reveal({ children, delay = 0, y = 28, className, as = "div", amount = 0.2 }: RevealProps) {
   const reduce = useReducedMotion();
   const Component = motion[as] as ElementType;
-  if (reduce) return <Component className={className}>{children}</Component>;
-  return <Component className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount }} transition={{ duration: 0.9, delay, ease: EASE }}>{children}</Component>;
+  // Same element either way: the server cannot know the motion preference, and a
+  // different tree would leave the server's hidden starting style in place.
+  return <Component className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount }} transition={reduce ? { duration: 0 } : { duration: 0.9, delay, ease: EASE }}>{children}</Component>;
 }
 
 /** Staggers its direct children into view. Each child is wrapped in a block element. */
 export function Stagger({ children, className, itemClassName, gap = 0.08, delay = 0, y = 24 }: { children: ReactNode; className?: string; itemClassName?: string; gap?: number; delay?: number; y?: number }) {
   const reduce = useReducedMotion();
   const items = Children.toArray(children);
-  if (reduce) return <div className={className}>{items.map((child, index) => <div key={index} className={itemClassName}>{child}</div>)}</div>;
-  const variants = { hidden: { opacity: 0, y }, show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } } };
-  return <motion.div className={className} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }} variants={{ show: { transition: { staggerChildren: gap, delayChildren: delay } } }}>
+  const variants = { hidden: { opacity: 0, y }, show: { opacity: 1, y: 0, transition: reduce ? { duration: 0 } : { duration: 0.8, ease: EASE } } };
+  return <motion.div className={className} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }} variants={{ show: { transition: reduce ? {} : { staggerChildren: gap, delayChildren: delay } } }}>
     {items.map((child, index) => <motion.div key={(isValidElement(child) && child.key) || index} className={itemClassName} variants={variants}>{child}</motion.div>)}
   </motion.div>;
 }
@@ -63,10 +63,10 @@ export function RevealLines({ lines, className, delay = 0, as = "h2", play }: { 
 /* Scroll-lit paragraph (words brighten as you scroll)                  */
 /* ------------------------------------------------------------------ */
 
-function LitWord({ word, index, total, progress }: { word: string; index: number; total: number; progress: MotionValue<number> }) {
+function LitWord({ word, index, total, progress, still }: { word: string; index: number; total: number; progress: MotionValue<number>; still: boolean }) {
   const start = index / total;
   const opacity = useTransform(progress, [start - 0.08, start + 0.04], [0.16, 1]);
-  return <motion.span style={{ opacity }}>{word} </motion.span>;
+  return <motion.span style={{ opacity: still ? 1 : opacity }}>{word} </motion.span>;
 }
 
 export function ScrollLitText({ text, className, accent = [] }: { text: string; className?: string; accent?: string[] }) {
@@ -74,11 +74,13 @@ export function ScrollLitText({ text, className, accent = [] }: { text: string; 
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "end 0.45"] });
   const words = text.split(" ");
-  if (reduce) return <p ref={ref} className={className}>{text}</p>;
+  // Same markup with or without reduced motion (the server cannot know the
+  // preference), so hydration always matches; reduced motion just keeps words lit.
+  const still = Boolean(reduce);
   return <p ref={ref} className={className} aria-label={text}>
     <span aria-hidden="true">{words.map((word, index) => accent.includes(word.replace(/[.,—]/g, ""))
-      ? <motion.em key={index} className="serif" style={{ opacity: 1 }}><LitWord word={word} index={index} total={words.length} progress={scrollYProgress} /></motion.em>
-      : <LitWord key={index} word={word} index={index} total={words.length} progress={scrollYProgress} />)}</span>
+      ? <motion.em key={index} className="serif" style={{ opacity: 1 }}><LitWord word={word} index={index} total={words.length} progress={scrollYProgress} still={still} /></motion.em>
+      : <LitWord key={index} word={word} index={index} total={words.length} progress={scrollYProgress} still={still} />)}</span>
   </p>;
 }
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import styles from "./product-stage.module.css";
 
@@ -259,7 +260,9 @@ export default function ProductStage({ exploded, autoRotate, resetKey, drawing =
 
     // The GLB contains the original STL surfaces and offline-generated drawing
     // lines. No STL parsing, edge generation or replacement model is built here.
-    new GLTFLoader().load(modelUrl, async (gltf) => {
+    // The model is meshopt-compressed (EXT_meshopt_compression): about a third of the
+    // original download, decoded in WebAssembly.
+    new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).load(modelUrl, async (gltf) => {
       if (disposed) { disposeObject(gltf.scene); return; }
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const center = box.getCenter(new THREE.Vector3());

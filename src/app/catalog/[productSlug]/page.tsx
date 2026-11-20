@@ -4,12 +4,19 @@ import { notFound } from "next/navigation";
 import { SiteRoot } from "@/components/site/SiteRoot";
 import { IndustrialShell } from "@/components/marketing/design-preview/IndustrialChrome";
 import { IndustrialProduct } from "@/components/marketing/design-preview/IndustrialProduct";
-import { getCatalogProductDetail } from "@/lib/marketing/catalog";
+import { getCatalogProductDetail, getCatalogIndexEntries } from "@/lib/marketing/catalog";
 import { absoluteUrl } from "@/lib/seo/site";
 import { productMetadata, productSchema } from "@/lib/seo/product";
 import { JsonLd } from "@/components/seo/JsonLd";
 
-export const dynamic = "force-dynamic";
+// Served from cache and refreshed at most every 60 s, so dashboard changes appear within a minute.
+export const revalidate = 60;
+
+/** Pre-build every published page; new ones render on first visit, then cache. */
+export async function generateStaticParams() {
+  const { products } = await getCatalogIndexEntries();
+  return products.map(({ slug }) => ({ productSlug: slug }));
+}
 type Props = { params: Promise<{ productSlug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

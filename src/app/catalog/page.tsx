@@ -10,7 +10,8 @@ import { categoryLandings } from "@/lib/seo/categories";
 import { JsonLd } from "@/components/seo/JsonLd";
 import styles from "@/components/marketing/design-preview/catalog.module.css";
 
-export const dynamic = "force-dynamic";
+// Served from cache and refreshed at most every 60 s, so dashboard changes appear within a minute.
+export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Flameproof Electrical Products Manufacturer in India",
   description: "Explore ExEC flameproof junction boxes, lighting, switchgear, panels and cable glands manufactured in Vapi, India. Compare configurations and request specifications.",
